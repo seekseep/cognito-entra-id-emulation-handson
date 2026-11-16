@@ -1,0 +1,125 @@
+---
+title: 認証 API を作る
+docs: true
+---
+
+# 認証 API を作る
+
+![認証 API を作る](./images/00-thumbnail.svg)
+
+前のセクションで aws CLI から打っていた操作を、NestJS の API にします。`POST /auth/signup`・`/auth/confirm`・`/auth/login`・`/auth/refresh` の 4 つです。Cognito の SDK は **エンドポイントを差し替えるだけで Floci に向く** ので、コードは本番の Cognito に向けるときとまったく同じです。
+
+:::download
+[サンプルコードをダウンロード](./project.zip)
+:::
+
+## 動かす
+
+```bash
+npm install
+npm run floci:up
+npm run setup          # User Pool・App Client・admin グループを作り、.env を書き出す
+npm run start:dev      # http://localhost:3000
+```
+
+別のターミナルから呼んでみます。
+
+```bash
+curl -s -X POST localhost:3000/auth/signup -H 'content-type: application/json' \
+  -d '{"username":"carol","email":"carol@example.com","password":"Passw0rd!"}'
+# {"userSub":"...","confirmed":false}
+
+curl -s localhost:4566/_aws/ses | grep -o 'code is [0-9]*' | tail -1   # 確認コードを読む
+curl -s -X POST localhost:3000/auth/confirm -H 'content-type: application/json' \
+  -d '{"username":"carol","code":"123456"}'                            # 読んだコードに置き換える
+
+curl -s -X POST localhost:3000/auth/login -H 'content-type: application/json' \
+  -d '{"username":"carol","password":"Passw0rd!"}'
+# {"idToken":"eyJ...","accessToken":"eyJ...","refreshToken":"...","expiresIn":3600}
+```
+
+## 構成
+
+```text
+src/
+  main.ts                     起動
+  app.module.ts               ConfigModule と AuthModule を組み立てる
+  config/cognito.config.ts    環境変数 → 設定
+  auth/
+    auth.module.ts
+    auth.controller.ts        /auth/* の 4 つ
+    auth.service.ts           Cognito SDK を呼ぶ
+    cognito-error.filter.ts   Cognito の例外 → HTTP のステータス
+scripts/setup-cognito.sh      Floci に User Pool を作って .env を書く
+```
+
+NestJS は TypeScript で書いています（NestJS 12 の標準の構成）。
+
+## 設定（ConfigModule）
+
+[src/config/cognito.config.ts](./src/config/cognito.config.ts) は、環境変数から設定を組み立てます。
+
+```ts
+const endpoint = process.env.COGNITO_ENDPOINT || undefined;
+const issuer = process.env.COGNITO_ISSUER
+  ?? `${endpoint ?? `https://cognito-idp.${region}.amazonaws.com`}/${userPoolId}`;
+```
+
+`COGNITO_ENDPOINT` があれば Floci、無ければ本物の Cognito です。トークンの発行者（`iss`）は「エンドポイント/プール ID」の形で、Floci も本物も同じ組み立て方で決まります。`npm run setup` が書き出す `.env` はこうなります。
+
+```bash
+COGNITO_ENDPOINT=http://localhost:4566
+COGNITO_USER_POOL_ID=ap-northeast-1_xxxxxxxxx
+COGNITO_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+## Cognito SDK を呼ぶ（AuthService）
+
+[src/auth/auth.service.ts](./src/auth/auth.service.ts) で、SDK のクライアントを作るときに `endpoint` を渡します。
+
+```ts
+this.client = new CognitoIdentityProviderClient({
+  region: config.region,
+  endpoint: config.endpoint,   // undefined なら本物の Cognito
+});
+```
+
+ログインは CLI と同じ `InitiateAuth` です。管理者が作ったユーザーの初回ログインでは、トークンの代わりにチャレンジが返るので、そのまま返しています。
+
+```ts
+if (result.ChallengeName) {
+  return { challenge: result.ChallengeName, session: result.Session };
+}
+```
+
+## Cognito のエラーを HTTP にする
+
+SDK は Cognito のエラーを `NotAuthorizedException` などの名前付きの例外で投げます。そのままでは 500 になってしまうので、[src/auth/cognito-error.filter.ts](./src/auth/cognito-error.filter.ts) の例外フィルターで HTTP のステータスに変えます。
+
+| Cognito の例外 | HTTP |
+|---|---|
+| `NotAuthorizedException`・`UserNotFoundException` | 401（どちらも同じ文言） |
+| `UserNotConfirmedException` | 403 |
+| `UsernameExistsException` | 409 |
+| `InvalidPasswordException`・`CodeMismatchException` など | 400 |
+| それ以外 | 502 |
+
+パスワード違いと、存在しないユーザーを **同じ 401・同じ文言** にしているのが大事なところです。分けて返すと「このユーザー名は登録されている」ことが外から分かってしまいます。例外の名前も応答には含めず、ログにだけ残します。
+
+```bash
+curl -s -X POST localhost:3000/auth/login -H 'content-type: application/json' -d '{"username":"carol","password":"wrong"}'
+curl -s -X POST localhost:3000/auth/login -H 'content-type: application/json' -d '{"username":"nobody","password":"wrong"}'
+# どちらも {"statusCode":401,"message":"ユーザー名かパスワードが違います"}
+```
+
+:::faq
+
+### `.env` が無いと言われて起動しません
+
+`npm run setup` を先に実行してください。Floci を作り直すと User Pool は消えるので、そのときも `npm run setup` をやり直します（プール ID が変わるので `.env` も書き直されます）。
+
+### パスワードの強さは API でも確かめるべきですか？
+
+この API では形（文字列かどうか）だけを見て、強さの判定は Cognito のパスワードポリシーに任せています。同じ規則を 2 か所に書くと、片方だけ変えてずれる原因になるからです。
+
+:::

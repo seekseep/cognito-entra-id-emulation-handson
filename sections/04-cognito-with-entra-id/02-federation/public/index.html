@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hosted UI ログインの練習</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 44rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; }
+    section { border: 1px solid #ccc; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+    button { margin: 0 0.5rem 0.5rem 0; }
+    pre { background: #f4f4f4; padding: 0.75rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <h1>Hosted UI ログインの練習</h1>
+  <p>ログイン先: <code id="issuer">読み込み中…</code></p>
+
+  <section>
+    <div id="login-buttons"></div>
+    <button id="logout">ログアウト</button>
+    <p id="status">ログインしていません</p>
+  </section>
+
+  <section>
+    <h2>API を呼ぶ</h2>
+    <button id="me">GET /me</button>
+    <button id="admin">GET /admin/dashboard</button>
+    <pre id="output">まだ何もしていません</pre>
+  </section>
+
+  <section>
+    <h2>ID トークンの中身</h2>
+    <pre id="id-token">ログインすると表示します</pre>
+  </section>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

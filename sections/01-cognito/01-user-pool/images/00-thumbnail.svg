@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="300" viewBox="0 0 760 300" font-family="'Hiragino Sans','Noto Sans JP','Yu Gothic','Segoe UI',sans-serif">
+<defs><marker id="aR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 1 L9 5 L0 9 z" fill="#475569"/></marker><marker id="aRsub" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 1 L9 5 L0 9 z" fill="#94a3b8"/></marker></defs>
+<rect x="0" y="0" width="760" height="300" fill="#ffffff"/>
+<text x="380" y="52" text-anchor="middle" font-size="27.444444444444446" fill="#0f172a" font-weight="700">User Pool と App Client</text>
+<svg x="210.0" y="119.8" width="80.0" height="80.0" viewBox="0 0 36 36"><path fill="#FDCB58" d="M31 15c0 1.104-.896 2-2 2H7c-1.104 0-2-.896-2-2V7c0-1.104.896-2 2-2h22c1.104 0 2 .896 2 2v8z"/><path fill="#FDD888" d="M33 19c0 1.104-.896 2-2 2H5c-1.104 0-2-.896-2-2v-8c0-1.104.896-2 2-2h26c1.104 0 2 .896 2 2v8z"/><path fill="#FEE7B8" d="M35 33c0 1.104-.896 2-2 2H3c-1.104 0-2-.896-2-2V15c0-1.104.896-2 2-2h30c1.104 0 2 .896 2 2v18z"/><path fill="#67757F" d="M11 14zm0 0z"/><path fill="#78B159" d="M23 3h-5c-1.104 0-2 .895-2 2v1h2c1.104 0 2 .896 2 2h3c1.104 0 2-.896 2-2V5c0-1.105-.896-2-2-2z"/><path fill="#F18F26" d="M17 7h-5c-1.104 0-2 .896-2 2v1h2c1.104 0 2 .896 2 2h3c1.104 0 2-.896 2-2V9c0-1.104-.896-2-2-2z"/><path fill="#9268CA" d="M13 14c0 1.104-.896 2-2 2H6c-1.104 0-2-.896-2-2v-1c0-1.104.896-2 2-2h5c1.104 0 2 .896 2 2v1z"/></svg>
+<text x="250" y="227.537" text-anchor="middle" font-size="22.166666666666668" fill="#0f172a" font-weight="700">User Pool</text>
+<svg x="520.0" y="119.8" width="80.0" height="80.0" viewBox="0 0 36 36"><path fill="#31373D" d="M11 36s-4 0-4-4V4s0-4 4-4h14s4 0 4 4v28s0 4-4 4H11z"/><path fill="#55ACEE" d="M9 5h18v26H9z"/></svg>
+<text x="560" y="227.537" text-anchor="middle" font-size="22.166666666666668" fill="#0f172a" font-weight="700">App Client</text>
+<path d="M499.94 175.00 L486.27 175.00" fill="none" stroke="#475569" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M320.97 175.00 L307.29 175.00" fill="none" stroke="#475569" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#aR)"/>
+<text x="403.617" y="181.281" text-anchor="middle" font-size="17.944444444444446" fill="#0f172a" font-weight="600">ログインしにくる</text>
+</svg>

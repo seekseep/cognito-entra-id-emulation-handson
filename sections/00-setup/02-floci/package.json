@@ -1,0 +1,11 @@
+{
+  "name": "00-02-floci",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "floci:up": "podman compose up -d --wait",
+    "floci:down": "podman compose down",
+    "floci:reset": "podman compose down && podman compose up -d --wait"
+  }
+}

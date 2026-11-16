@@ -1,0 +1,14 @@
+{
+  "name": "04-01-entra-local",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "up": "podman compose up -d --wait",
+    "down": "podman compose down",
+    "endpoints": "bash scripts/show-endpoints.sh",
+    "register-app": "bash scripts/register-app.sh",
+    "create-user": "bash scripts/create-user.sh",
+    "preview-token": "bash scripts/preview-token.sh"
+  }
+}

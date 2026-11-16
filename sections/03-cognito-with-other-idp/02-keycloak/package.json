@@ -1,0 +1,11 @@
+{
+  "name": "03-02-keycloak",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "up": "podman compose up -d --wait",
+    "down": "podman compose down",
+    "endpoints": "bash scripts/show-endpoints.sh"
+  }
+}

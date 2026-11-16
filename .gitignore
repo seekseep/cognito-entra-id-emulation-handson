@@ -1,0 +1,26 @@
+node_modules/
+.DS_Store
+
+# レクチャーのビルド生成物（NestJS）
+dist/
+*.tsbuildinfo
+
+# レクチャーが書き出すローカルの値（User Pool の ID・トークン・entra-local のシークレット）
+.env
+.env.local
+.cognito.env
+.tokens.json
+.entra.env
+
+# secrets
+*.pem
+*.key
+
+# Astro / site
+site/dist/
+site/.astro/
+site/src/content/docs/
+
+# 生成物: 各レクチャーのプロジェクト ZIP（build-downloads.mjs）
+site/public/downloads/
+site/public/preview/
