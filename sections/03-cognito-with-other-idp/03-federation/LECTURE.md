@@ -40,6 +40,8 @@ npm run start:dev
 
 ![フェデレーションの流れ](./images/01-federation-flow.svg)
 
+*図: 番号は下の手順に対応します。①〜④・⑥・⑦ はリダイレクトなので、ブラウザを経由します（`localhost` で届く住所）。⑤ だけが、Floci がコンテナの中から Keycloak を直接呼ぶ通信です（サービス名で届く住所）。*
+
 1. 画面が `identity_provider=Keycloak` を付けて Cognito の `/oauth2/authorize` へ移る
 2. Cognito は自分のログイン画面を出さず、Keycloak の `authorize_url` へ転送する
 3. ユーザーが Keycloak でパスワードを入れる
@@ -48,7 +50,7 @@ npm run start:dev
 6. Cognito が User Pool にユーザーを作り（2 回目からは同じユーザーを更新し）、**自分の** 認可コードを付けてアプリへ戻す
 7. アプリは前のレクチャーと同じく、Cognito の `/oauth2/token` でトークンをもらう
 
-5 は Cognito（Floci）と Keycloak のサーバー同士の通信で、ブラウザは関わりません。
+5 だけは Cognito（Floci）と Keycloak のサーバー同士の通信で、ブラウザは関わりません。この違いが、次の節で住所を 2 種類に書き分ける理由です。
 
 ## 外部 IdP を登録する
 
