@@ -27,7 +27,7 @@ docs: true
 
 1. User Pool を作る。カスタム属性 `custom:entra_oid`（String・変更可）を足す
 2. **ドメイン** を作る（Cognito のプレフィックスドメインなら `https://<プレフィックス>.auth.<region>.amazoncognito.com`）
-3. App Client を作る。シークレットなし、認可コードフロー、スコープ `openid email profile`、コールバック URL にアプリの URL
+3. App Client を作る。シークレットなし、認可コードフロー、スコープ `openid email profile`、コールバック URL にアプリの URL。aws CLI で作るなら `--prevent-user-existence-errors ENABLED` を付ける（付けないと `LEGACY` になり、存在しないユーザーで `UserNotFoundException` が返る）
 
 ## 2. Entra でアプリを登録する
 

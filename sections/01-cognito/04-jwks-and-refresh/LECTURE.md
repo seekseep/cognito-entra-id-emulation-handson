@@ -117,7 +117,7 @@ Cognito に問い合わせれば「取り消し済み」と分かりますが、
 |---|---|---|
 | `iss` のホスト | `http://localhost:4566` | `https://cognito-idp.<region>.amazonaws.com` |
 | 確認メール | 送らずに SES にためる（`/_aws/ses`） | 実際に送る（送信数に上限がある） |
-| 存在しないユーザーでログイン | `UserNotFoundException` | 既定では `NotAuthorizedException`（存在を漏らさない） |
+| 存在しないユーザーでログイン | `PreventUserExistenceErrors` を無視し、いつも `UserNotFoundException` | `ENABLED` なら `NotAuthorizedException`（存在を漏らさない）。既定はコンソールで作ると `ENABLED`、API・CLI で値を渡さないと `LEGACY`（`UserNotFoundException`） |
 | Lambda トリガー | Floci は Lambda をコンテナで動かすので、コンテナエンジンへの接続が要る（このハンズオンでは試していない） | 動く |
 
 それ以外の、このセクションで試したこと（パスワードポリシー、確認コードの照合、`SECRET_HASH`、許可していない認証フロー、グループ、署名、更新、サインアウト）は本物と同じ振る舞いでした。

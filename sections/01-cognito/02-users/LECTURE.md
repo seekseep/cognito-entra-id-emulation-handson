@@ -103,6 +103,8 @@ aws cognito-idp list-users --user-pool-id "$POOL_ID" \
 
 ### 存在しないユーザーでログインすると、何が返りますか？
 
-Floci は `UserNotFoundException` を返します。本物の Cognito では、新しく作ったクライアントは既定で「ユーザーが存在するかを漏らさない」設定（`PreventUserExistenceErrors`）になっていて、パスワード違いと同じ `NotAuthorizedException` が返ります。ここは Floci と本物で違うので、アプリ側でも区別しないように作ります（次のセクションで扱います）。
+Floci は `UserNotFoundException` を返します。本物の Cognito では、App Client の `PreventUserExistenceErrors` が `ENABLED` なら、パスワード違いと同じ `NotAuthorizedException` が返り、ユーザーが存在するかを漏らしません。
+
+ただし既定値は作り方で変わります。**コンソールで作ったクライアントは `ENABLED`、API や aws CLI で値を渡さずに作ったクライアントは `LEGACY`**（存在しなければ `UserNotFoundException`）です。本物に向けて CLI でクライアントを作るときは、`--prevent-user-existence-errors ENABLED` を付けてください。Floci はこの設定を受け付けますが、保存せず、付けても `UserNotFoundException` を返します。どちらにしても、アプリ側でも 2 つを区別しないように作ります（次のセクションで扱います）。
 
 :::
