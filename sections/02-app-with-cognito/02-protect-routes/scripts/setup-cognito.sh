@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Floci に User Pool・App Client・admin グループを作り、API 用の .env を書き出す。
+# Floci に User Pool・App Client・admin グループと、前のレクチャーで作った carol を用意し、API 用の .env を書き出す。
 set -euo pipefail
 cd "$(dirname "$0")/.."
 source ./env.sh
@@ -19,6 +19,14 @@ CLIENT_ID=$(aws cognito-idp create-user-pool-client \
 
 aws cognito-idp create-group --user-pool-id "$POOL_ID" --group-name admin > /dev/null
 
+# 前のレクチャーの「サインアップ → 確認」を終えた状態の carol を作る。
+# Floci のデータはメモリにあり、作り直すと消えるため。
+aws cognito-idp admin-create-user --user-pool-id "$POOL_ID" --username carol \
+  --user-attributes Name=email,Value=carol@example.com Name=email_verified,Value=true \
+  --message-action SUPPRESS > /dev/null
+aws cognito-idp admin-set-user-password --user-pool-id "$POOL_ID" --username carol \
+  --password 'Passw0rd!' --permanent
+
 cat > .env <<ENV
 AWS_REGION=$AWS_REGION
 AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
@@ -27,4 +35,4 @@ COGNITO_ENDPOINT=$AWS_ENDPOINT_URL
 COGNITO_USER_POOL_ID=$POOL_ID
 COGNITO_CLIENT_ID=$CLIENT_ID
 ENV
-echo "wrote .env (pool: $POOL_ID)"
+echo "wrote .env (pool: $POOL_ID, user: carol / Passw0rd!)"

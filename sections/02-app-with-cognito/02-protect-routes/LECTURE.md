@@ -22,7 +22,7 @@ npm run setup
 npm run start:dev
 ```
 
-前のレクチャーと同じ手順で carol をサインアップ・確認・ログインし、アクセストークンを取ります。
+`npm run setup` は、前のレクチャーを終えた状態として、確認済みの carol（パスワード `Passw0rd!`）まで作ります。別のターミナルで carol としてログインし、アクセストークンを `AT` に入れます。
 
 ```bash
 AT=$(curl -s -X POST localhost:3000/auth/login -H 'content-type: application/json' \
@@ -75,7 +75,16 @@ npm run make-admin carol
 curl -s localhost:3000/admin/dashboard -H "authorization: Bearer $AT"   # まだ 403
 ```
 
-入れたのに 403 のままです。手元のトークンは admin に入る前に発行したものだからです。ログインし直して新しいトークンで呼ぶと 200 になります。
+入れたのに 403 のままです。手元のトークンは admin に入る前に発行したもので、`cognito:groups` が空のままだからです。ログインし直して、新しいトークンで呼びます。
+
+```bash
+AT=$(curl -s -X POST localhost:3000/auth/login -H 'content-type: application/json' \
+  -d '{"username":"carol","password":"Passw0rd!"}' | node -e "process.stdin.on('data',d=>console.log(JSON.parse(d).accessToken))")
+curl -s localhost:3000/admin/dashboard -H "authorization: Bearer $AT"
+# {"message":"ようこそ、管理者の carol さん"}
+```
+
+グループの変更は、次に発行されたトークンから効きます。
 
 ## 401 と 403
 
