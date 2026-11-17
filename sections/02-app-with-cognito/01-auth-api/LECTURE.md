@@ -76,7 +76,7 @@ COGNITO_USER_POOL_ID=ap-northeast-1_xxxxxxxxx
 COGNITO_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-`AWS_ACCESS_KEY_ID`・`AWS_SECRET_ACCESS_KEY` の `test` は Floci 用のダミーです。AWS の SDK は認証情報が無いと動かないので入れていますが、Floci は値を確かめません。本物の Cognito に切り替えるときは消します（[04-frontend-and-container](../04-frontend-and-container/LECTURE.md) で扱います）。
+`AWS_ACCESS_KEY_ID`・`AWS_SECRET_ACCESS_KEY` の `test` は Floci 用のダミーです。この API が呼ぶ `SignUp`・`InitiateAuth` などは認証情報なしで呼べますが、`AdminAddUserToGroup` のような管理者向けの呼び出しには認証情報が要るので、形だけ入れています。Floci は値を確かめません。本物の Cognito に切り替えるときは消します（[04-frontend-and-container](../04-frontend-and-container/LECTURE.md) で扱います）。
 
 ## Cognito SDK を呼ぶ（AuthService）
 
