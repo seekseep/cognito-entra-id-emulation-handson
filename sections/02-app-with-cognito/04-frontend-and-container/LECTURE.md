@@ -48,6 +48,8 @@ npm run api:up         # podman compose --profile api up -d --build --wait
 
 ホストで動かしている `npm run start:dev` は止めておいてください（同じ 3000 番を使います）。
 
+API のコンテナを止めてホストの `npm run start:dev` に戻るときは `npm run api:down` を使います。`npm run floci:down` も API のコンテナまでまとめて止めるので、次のレクチャーに進むときはこれで構いません。
+
 ### コンテナの中から見た Floci
 
 コンテナの中の `localhost` はそのコンテナ自身です。API のコンテナから Floci には、compose のサービス名 `floci` で届きます。そこで [compose.yaml](./compose.yaml) の `api` サービスでは、エンドポイントを差し替えています。
