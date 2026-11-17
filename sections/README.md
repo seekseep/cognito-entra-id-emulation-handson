@@ -52,8 +52,12 @@ ss -ltnp | grep -E ':(4566|3000|8080|8443) '                      # Linux / WSL2
 
 | どこ | ユーザー | パスワード |
 |---|---|---|
-| Cognito（`npm run setup` が作る） | `alice` | `Passw0rd!` |
+| Cognito（01-03・01-04 の `npm run setup` が作る） | `alice` / `bob` | `Passw0rd!` |
+| Cognito（02-02 の `npm run setup` が作る） | `carol` | `Passw0rd!` |
+| Cognito（03・04-02 の `npm run setup` が作る） | `alice` | `Passw0rd!` |
 | Keycloak | `kate` / `ken` | `Passw0rd!` |
 | Keycloak の管理コンソール | `admin` | `admin` |
 | entra-local（`npm run create-user`） | `taro@entralocal.dev` | `Passw0rd!` |
 | entra-local のシード | `alice@entralocal.dev` / `bob@entralocal.dev` | `Password1!` |
+
+01-01・01-02 と、02-01・02-03・02-04 の `npm run setup` はユーザーを作りません。本文の手順で自分でサインアップします。Floci のユーザーはレクチャーごとに別の User Pool にいるので、前のレクチャーで作ったユーザーは次のレクチャーにはいません。
