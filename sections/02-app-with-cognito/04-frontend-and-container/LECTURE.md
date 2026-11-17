@@ -50,22 +50,7 @@ npm run api:up         # podman compose --profile api up -d --build --wait
 
 ### コンテナの中から見た Floci
 
-コンテナの中の `localhost` はそのコンテナ自身です。API のコンテナから Floci には、compose のサービス名 `floci` で届きます。
-
-```yaml
-environment:
-  COGNITO_ENDPOINT: http://floci:4566
-```
-
-ところが、これだけでは `/me` が 401 になります。トークンを開くと理由が分かります。
-
-```text
-iss: http://localhost:4566/ap-northeast-1_f06ce8963
-```
-
-Floci は、どこから呼ばれても `iss` を自分の基準 URL（`http://localhost:4566`）で書きます。API は `COGNITO_ENDPOINT` から `iss` を `http://floci:4566/...` と組み立てるので、食い違います。
-
-`iss` は **発行者の名前** で、鍵を取りに行く **住所** とは別物です。compose で 2 つを分けて渡します。
+コンテナの中の `localhost` はそのコンテナ自身です。API のコンテナから Floci には、compose のサービス名 `floci` で届きます。そこで [compose.yaml](./compose.yaml) の `api` サービスでは、エンドポイントを差し替えています。
 
 ```yaml
 environment:
@@ -74,7 +59,42 @@ environment:
   COGNITO_JWKS_URL: http://floci:4566/${COGNITO_USER_POOL_ID}/.well-known/jwks.json
 ```
 
-`${COGNITO_USER_POOL_ID}` は、compose が同じフォルダの `.env` から埋めます。これで `/me` が 200 になります。
+`COGNITO_ENDPOINT` だけでよさそうに見えます。なぜ残りの 2 行が要るのか、一度外して確かめます。
+
+### 2 行を外すと 401 になる
+
+compose.yaml の `COGNITO_ISSUER` と `COGNITO_JWKS_URL` の行の先頭に `#` を付けてコメントにし、API のコンテナを作り直します。
+
+```bash
+npm run api:up
+```
+
+画面でログインし直して `GET /me` を押すと、401 `トークンを確かめられませんでした` になります。理由は API のログに出ています。
+
+```bash
+podman compose --profile api logs api | grep トークン
+# WARN [CognitoJwtGuard] トークンを確かめられませんでした: unexpected "iss" claim value
+```
+
+トークンの中を見てみます。画面の「ログイン」の結果に出ている `accessToken` をコピーし、真ん中の部分を開きます。
+
+```bash
+AT='eyJ...'   # コピーしたアクセストークン
+node -e "console.log(JSON.parse(Buffer.from(process.argv[1].split('.')[1], 'base64url')).iss)" "$AT"
+# http://localhost:4566/ap-northeast-1_f06ce8963
+```
+
+Floci は、どこから呼ばれても `iss` を自分の基準 URL（`http://localhost:4566`）で書きます。一方 API は、`COGNITO_ISSUER` が無いと `COGNITO_ENDPOINT` から `iss` を `http://floci:4566/...` と組み立てるので、食い違います。
+
+### 名前と住所を分ける
+
+`iss` は **発行者の名前** で、鍵を取りに行く **住所** とは別物です。名前は `localhost:4566` のまま、住所だけをコンテナの中から届く `floci:4566` にします。`#` を外して元に戻し、もう一度作り直します。
+
+```bash
+npm run api:up
+```
+
+`${COGNITO_USER_POOL_ID}` は、compose が同じフォルダの `.env` から埋めます。ログインし直して `GET /me` を押すと、200 になります。
 
 ## 本番の Cognito に切り替える
 

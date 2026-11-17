@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from 'jose';
 import type { Request } from 'express';
@@ -14,6 +14,7 @@ export type AuthenticatedRequest = Request & { user: CognitoUser };
 
 @Injectable()
 export class CognitoJwtGuard implements CanActivate {
+  private readonly logger = new Logger(CognitoJwtGuard.name);
   // JWKS は一度取ったらキャッシュされ、知らない kid が来たときだけ取り直す
   private readonly jwks: ReturnType<typeof createRemoteJWKSet>;
 
@@ -34,7 +35,9 @@ export class CognitoJwtGuard implements CanActivate {
     try {
       // 署名・iss・exp を確かめる
       ({ payload } = await jwtVerify(token, this.jwks, { issuer: this.config.issuer }));
-    } catch {
+    } catch (error) {
+      // 利用者には理由を返さず（攻撃の手がかりになる）、ログにだけ残す。iss のずれなどはここで分かる
+      this.logger.warn(`トークンを確かめられませんでした: ${(error as Error).message}`);
       throw new UnauthorizedException('トークンを確かめられませんでした');
     }
 
