@@ -20,6 +20,8 @@ entra-local は、MSAL（Microsoft の認証ライブラリ）が話す OIDC / O
 | アプリの登録・シークレット・ユーザー・グループ | マルチテナント（テナントは 1 つだけ） |
 | `tid`・`oid` など Entra 特有のクレーム | Graph API の大部分 |
 
+本物と違う点もあります。entra-local の userinfo は `oid` を返しますが、本物の Entra の userinfo は返しません（`oid` は ID トークンにだけ入る）。
+
 Cognito に OIDC で登録する練習には十分です。
 
 :::danger[ローカル専用の道具です]

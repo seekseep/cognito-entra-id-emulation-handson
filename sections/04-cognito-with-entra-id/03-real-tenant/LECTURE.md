@@ -51,6 +51,8 @@ aws cognito-idp create-identity-provider \
 
 続けて、App Client の `--supported-identity-providers` に `EntraID` を足します（ほかの設定も全部渡し直します）。
 
+`custom:entra_oid=oid` は、entra-local では userinfo から入りました。本物の Entra の userinfo は `oid` を返さず、`oid` は ID トークンにだけ入ります。ログインしたあと、Cognito のユーザーに `custom:entra_oid` が入っているかを確かめてください（未確認の点です）。
+
 ## 4. アプリを向け直す
 
 このハンズオンの API の `.env` から `COGNITO_ENDPOINT` を消し、プール ID とクライアント ID を本物にします。画面は discovery から本物の Hosted UI のエンドポイントを読むので、変更は要りません。

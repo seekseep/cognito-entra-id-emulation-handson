@@ -74,8 +74,12 @@ aws cognito-idp create-identity-provider \
    ```bash
    --schema Name=entra_oid,AttributeDataType=String,Mutable=true
    ```
-2. 属性のマッピングで、userinfo の `oid` を入れる: `custom:entra_oid=oid`
+2. 属性のマッピングで `oid` を入れる: `custom:entra_oid=oid`
 3. App Client で読み取りを許す: `--read-attributes ... custom:entra_oid`
+
+:::warning[本物の Entra の userinfo には `oid` が無い]
+entra-local は userinfo（`/graph/oidc/userinfo`）でも `oid` を返すので、ここではそこから入ります。本物の Entra ID の userinfo が返すのは `sub`・`name`・`family_name`・`given_name`・`picture`・`email` だけで、`oid` は **ID トークンにしか入りません**（`profile` スコープが必要）。本物の Cognito で `custom:entra_oid` が埋まるかは、Cognito が ID トークンのクレームもマッピングに使うかにかかっており、このハンズオンでは確かめていません。本物のテナントにつないだら、まず `npm run users` で `custom:entra_oid` が入っているかを確かめてください。
+:::
 
 ```bash
 npm run users
