@@ -27,14 +27,18 @@ npm run start:dev
 
 ```json
 {
-  "cognito:username": "Keycloak_50a2c065-919d-400d-8da6-bfe889ca04b5",
+  "cognito:username": "Keycloak_1f4ba046-07b3-4adf-94bd-bc3a813c870e",
   "email": "kate@example.com",
-  "identities": "[{\"userId\":\"5727a305-...\",\"providerName\":\"Keycloak\",\"providerType\":\"OIDC\", ...}]",
-  "iss": "http://localhost:4566/ap-northeast-1_1f3539781"
+  "identities": "[{\"userId\":\"3a0d6721-c5e8-4445-ad05-a120ed6fdf26\",\"providerName\":\"Keycloak\",\"providerType\":\"OIDC\", ...}]",
+  "iss": "http://localhost:4566/ap-northeast-1_adbe51972"
 }
 ```
 
-`iss` は Cognito（Floci）です。Keycloak のユーザーが、Cognito の User Pool の中に `Keycloak_<sub>` という名前で作られています。
+`iss` は Cognito（Floci）です。Keycloak のユーザーが、Cognito の User Pool の中に `Keycloak_...` という名前で作られています。`identities` の `userId` が、Keycloak での kate の `sub` です。
+
+:::notice[ユーザー名の後ろの値は、本物と Floci で違う]
+本物の Cognito は、ユーザー名を `Keycloak_<Keycloak の sub>` にします（`identities` の `userId` と同じ値）。Floci はユーザー名の後ろに別の UUID を付けるので、上のように `cognito:username` と `userId` の値が食い違います。`make-admin` などでユーザー名を使うときは、ID トークンから組み立てず、`npm run users` の Username をそのまま使ってください。
+:::
 
 ## 何が起きているか
 
@@ -85,7 +89,7 @@ aws cognito-idp create-identity-provider \
 
 ### 属性のマッピング
 
-`--attribute-mapping` は「Cognito の属性 = Keycloak の userinfo のクレーム」の対応です。`username=sub` で、Keycloak の `sub` を Cognito のユーザー名（`Keycloak_<sub>`）の元にしています。
+`--attribute-mapping` は「Cognito の属性 = Keycloak の userinfo のクレーム」の対応です。`username=sub` で、Keycloak の `sub` を Cognito のユーザー名（本物の Cognito では `Keycloak_<sub>`）の元にしています。
 
 ### クライアントで Keycloak を選べるようにする
 
@@ -133,6 +137,6 @@ userinfo の呼び出しに失敗しています。Keycloak の `KC_HOSTNAME` �
 
 ### 同じ人が 2 回ログインすると、ユーザーが 2 人になりませんか？
 
-なりません。Cognito は `Keycloak_<sub>` で同じユーザーを探し、属性を更新します（`npm run users` で確かめられます）。
+なりません。Cognito は Keycloak の `sub`（`identities` の `userId`）で同じユーザーを探し、属性を更新します。Floci でも 2 回目のログインで同じユーザー名のユーザーが使われることを確かめています（`npm run users` で確かめられます）。
 
 :::

@@ -66,7 +66,7 @@ aws cognito-idp create-identity-provider \
 
 ## `oid` を持ち込む
 
-前のレクチャーで見たとおり、Entra の `sub` はアプリごとに変わります。Cognito のユーザー名 `EntraID_<sub>` も、Entra にとっての「Cognito というアプリ」向けの値です。あとで別のアプリから同じ人を探したくなったとき、`sub` では見つかりません。
+前のレクチャーで見たとおり、Entra の `sub` はアプリごとに変わります。本物の Cognito のユーザー名 `EntraID_<sub>` も、Entra にとっての「Cognito というアプリ」向けの値です。あとで別のアプリから同じ人を探したくなったとき、`sub` では見つかりません。
 
 そこで、テナントの中で変わらない `oid` をカスタム属性 `custom:entra_oid` に持ち込みます。
 
