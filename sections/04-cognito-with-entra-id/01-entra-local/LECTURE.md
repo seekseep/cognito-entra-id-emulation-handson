@@ -61,6 +61,17 @@ environment:
 ```
 
 - `platform: linux/amd64` … amd64 向けのイメージしか無いため。Apple Silicon の Mac ではエミュレーションで動き、起動に少し時間がかかります
+
+:::notice[ARM のパソコンで動かすとき]
+Apple Silicon の Mac は、`podman machine` の仮想マシンに amd64 のエミュレーションが入っているので、そのまま動きます（手元では起動まで 10 秒ほど）。ARM の Linux（Raspberry Pi・ARM の VM など）や Windows on ARM の WSL2 では、エミュレーションを先に入れないと `exec format error` で起動しません。
+
+```bash
+# Ubuntu / Debian の例
+sudo apt-get install -y qemu-user-static
+```
+
+エミュレーションの下では起動もヘルスチェックも遅くなるので、compose.yaml のヘルスチェックは待ち時間を長め（`start_period: 60s`・`timeout: 15s`）にしてあります。それでも `container is unhealthy` で止まるときは、`podman compose logs entra-local` でログを見てください。
+:::
 - `TLS_ENABLED: "false"` … entra-local は既定で自己署名証明書の HTTPS で動きます。次のレクチャーで Floci がコンテナの中から entra-local を呼ぶとき、証明書を信頼させる手間を省くために HTTP にしています（本物の Entra は必ず HTTPS です）
 - `REQUIRE_PASSWORD: "true"` … 既定はアカウントを選ぶだけでサインインできます。本物に近づけるため、パスワードを求めます
 

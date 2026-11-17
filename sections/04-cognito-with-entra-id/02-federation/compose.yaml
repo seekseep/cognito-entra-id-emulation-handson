@@ -32,8 +32,10 @@ services:
       - entra-local-data:/app/data
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:8443/health').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      # エミュレーションの下では node の起動だけで数秒かかる。間に合わずに unhealthy にならないよう長めに取る
       interval: 5s
-      timeout: 5s
+      timeout: 15s
+      start_period: 60s
       retries: 30
 
 volumes:
