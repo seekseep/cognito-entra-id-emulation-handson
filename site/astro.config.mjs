@@ -154,6 +154,10 @@ export default defineConfig({
       locales: {
         root: { label: '日本語', lang: 'ja' },
       },
+      // ナビゲーションバーに OS（macOS / Windows / Linux）の選択欄を足す（src/components/ThemeSelect.astro）
+      components: {
+        ThemeSelect: './src/components/ThemeSelect.astro',
+      },
       social: [
         { icon: 'github', label: 'GitHub', href: repoUrl },
       ],

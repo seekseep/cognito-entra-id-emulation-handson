@@ -129,7 +129,7 @@ Cognito（Floci）が Keycloak のトークンエンドポイントでコード�
 
 - `token_url` が `keycloak:8080` になっているか（`localhost` だと Floci のコンテナ自身を指してしまう）
 - Keycloak のクライアントシークレットと、登録した `client_secret` が同じか
-- ほかのプログラム（別の Floci や LocalStack）が 4566 番を使っていないか（`lsof -nP -iTCP:4566 -sTCP:LISTEN`）
+- ほかのプログラム（別の Floci や LocalStack）が 4566 番を使っていないか（確かめ方は [道具をそろえる](../../00-setup/01-tools/LECTURE.md) の「同じポートを使うほかのプログラム」）
 
 ### `Identity provider claims request failed` と表示されます
 

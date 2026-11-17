@@ -1,27 +1,25 @@
 /**
- * `:::::platform` コンテナディレクティブを、Excel（VBA）／ Google スプレッドシート（GAS）の
- * 2 つのパネルに変換する remark プラグイン。
+ * `:::::platform` コンテナディレクティブを、OS（macOS / Windows / Linux）ごとのパネルに変換する remark プラグイン。
  *
- * この教材は Excel を主に書き、同じ手順をスプレッドシートでも進められるようにしている。
- * 手順やコードが環境で分かれるところだけをこのコンテナで囲む。
+ * 手順やコマンドが OS で分かれるところだけをこのコンテナで囲む。
  *
  * 使い方（Markdown）:
  *   :::::platform
- *   ::::excel
- *   Excel での手順・VBA のコード
+ *   ::::macos
+ *   macOS での手順
  *   ::::
- *   ::::sheets
- *   スプレッドシートでの手順・GAS のコード
+ *   ::::windows-linux
+ *   Windows（WSL2）と Linux で共通の手順（OS 名を - でつなぐと、どれを選んでいても出す）
  *   ::::
  *   :::::
  *
- * どちらを表示するかは、ナビゲーションバーの選択欄（src/components/ThemeSelect.astro）で決める。
- * ブロックごとの切り替えは無い。表示の出し分けは site/src/styles/platform.css。
- * 片方だけでもよい（Excel にしか無い操作は ::::excel だけ）。そのときは、どちらを選んでいても出す。
+ * どれを表示するかは、ナビゲーションバーの選択欄（src/components/ThemeSelect.astro）と
+ * `::platform-choice` のボタンで決め、localStorage に残す（src/scripts/platform-client.js）。
+ * 表示の出し分けは site/src/styles/platform.css。
  */
 
 const NAME = 'platform';
-const PANELS = [{ key: 'excel' }, { key: 'sheets' }];
+const OSES = ['macos', 'windows', 'linux'];
 
 function visit(node, callback) {
   if (!node || !Array.isArray(node.children)) return;
@@ -39,12 +37,13 @@ function el(hName, className, children, extraProps = {}) {
   };
 }
 
-// `::platform-choice` … 環境を選ぶ大きなボタン（進め方のページの冒頭に置く）。
+// `::platform-choice` … OS を選ぶ大きなボタン（進め方のページなどに置く）。
 // ナビゲーションバーの選択欄と同じ働きで、押すと platform-client.js が全ページを切り替える。
 const CHOICE = 'platform-choice';
 const CHOICES = [
-  { key: 'excel', name: 'Excel（VBA）', desc: 'Windows / Mac の Excel で、VBA のマクロを書く' },
-  { key: 'sheets', name: 'スプレッドシート（GAS）', desc: 'Google スプレッドシートで、Apps Script を書く' },
+  { key: 'macos', name: 'macOS', desc: 'Apple Silicon / Intel の Mac。ターミナルで進める' },
+  { key: 'windows', name: 'Windows', desc: 'Windows 10 / 11。WSL2 の Ubuntu の中で進める' },
+  { key: 'linux', name: 'Linux', desc: 'Ubuntu / Debian / Fedora など。ふだんのシェルで進める' },
 ];
 
 function choiceNode(node) {
@@ -55,8 +54,13 @@ function choiceNode(node) {
     ], { type: 'button', 'data-platform': c.key }),
   );
   node.type = 'platformChoice';
-  node.data = { hName: 'div', hProperties: { className: ['platform-choice', 'not-content'], role: 'group', 'aria-label': '教材の環境' } };
+  node.data = { hName: 'div', hProperties: { className: ['platform-choice', 'not-content'], role: 'group', 'aria-label': 'お使いの OS' } };
   node.children = options;
+}
+
+// `::::windows-linux` → ['windows', 'linux']。知らない名前は捨てる。
+function osesOf(name) {
+  return name.split('-').filter((n) => OSES.includes(n));
 }
 
 export default function remarkPlatform() {
@@ -68,32 +72,15 @@ export default function remarkPlatform() {
       }
       if (node.type !== 'containerDirective' || node.name !== NAME) return;
 
-      const found = PANELS.map((p) => ({
-        ...p,
-        node: node.children.find((c) => c.type === 'containerDirective' && c.name === p.key),
-      })).filter((p) => p.node);
-      if (found.length === 0) return;
-
-      // タブの中のコードには行番号を付ける（ec-line-numbers.mjs が meta の startLineNumber を読む）。
-      // `:::code` で offset を指定したものは、remark-code.mjs が先に meta を付けているのでそのまま。
-      for (const p of found) {
-        visit(p.node, (child) => {
-          if (child.type !== 'code') return;
-          if (/\bstartLineNumber=/.test(child.meta || '')) return;
-          child.meta = `${child.meta || ''} startLineNumber=1`.trim();
-        });
-      }
-
-      const panels = found.map((p) =>
-        el('div', ['platform__panel', `platform__panel--${p.key}`], p.node.children, {
-          'data-platform': p.key,
-        }),
-      );
+      const panels = node.children
+        .filter((c) => c.type === 'containerDirective' && osesOf(c.name).length > 0)
+        .map((c) =>
+          el('div', ['platform__panel', ...osesOf(c.name).map((os) => `platform__panel--${os}`)], c.children),
+        );
+      if (panels.length === 0) return;
 
       node.type = 'platformContainer';
-      // 片方しか無いときは、どちらを選んでいても出す（platform.css の platform--only-*）。
-      const only = found.length === 1 ? found[0].key : null;
-      node.data = { hName: 'div', hProperties: { className: ['platform', ...(only ? [`platform--only-${only}`] : [])] } };
+      node.data = { hName: 'div', hProperties: { className: ['platform'] } };
       node.children = panels;
     });
   };

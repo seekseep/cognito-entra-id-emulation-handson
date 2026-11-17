@@ -1,83 +1,76 @@
-// `:::::platform`（remark-platform.mjs）の Excel ／ スプレッドシート切り替え。
-// 切り替えの操作はナビゲーションバーの選択欄と、進め方のページの大きなボタンだけ。本文のブロックはタブを出さない。
-// 選んだ環境は <html data-platform="..."> に持ち、表示の出し分けは platform.css に任せる。
+// `:::::platform`（remark-platform.mjs）の OS の切り替え。
+// 切り替えの操作はナビゲーションバーの選択欄と `::platform-choice` のボタン。本文のブロックはタブを出さない。
+// 選んだ OS は localStorage に残し、<html data-os="..."> に持つ。表示の出し分けは platform.css に任せる。
 // <head> で読み込まれるので、属性だけは本文の描画前に付けてちらつきを防ぐ。
 (function () {
-  var KEY = 'handson-platform';
-  var DIR = { excel: 'vba/', sheets: 'gas/' };
+  var KEY = 'handson-os';
+  var OSES = ['macos', 'windows', 'linux'];
+
+  // まだ選んでいなければ、ブラウザの OS から推す（Windows のブラウザなら WSL2 の手順）
+  function detect() {
+    var ua = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || navigator.userAgent || '';
+    if (/mac|iphone|ipad/i.test(ua)) return 'macos';
+    if (/win/i.test(ua)) return 'windows';
+    if (/linux|x11|cros/i.test(ua)) return 'linux';
+    return 'macos';
+  }
 
   function load() {
     try {
-      return localStorage.getItem(KEY) === 'sheets' ? 'sheets' : 'excel';
+      var saved = localStorage.getItem(KEY);
+      if (OSES.indexOf(saved) >= 0) return saved;
     } catch (e) {
-      return 'excel';
+      // 読めない（プライベートウィンドウなど）ときは推した値を使う
     }
+    return detect();
   }
 
-  // `::codeview` のパネルも、選んだ環境のファイルを開いた状態にそろえる（もう一方のファイルは platform.css で一覧から隠す）。
-  // vba/SalesSummary.bas を開いていたら gas/SalesSummary.gs のように、同じ名前の相方を優先する。
-  function syncEditors(platform) {
-    document.querySelectorAll('.editor').forEach(function (editor) {
-      var active = editor.querySelector('.editor__file.is-active');
-      if (active && active.dataset.file.indexOf(DIR[platform]) === 0) return;
-      var files = Array.prototype.slice.call(editor.querySelectorAll('.editor__file'));
-      var inDir = files.filter(function (btn) {
-        return btn.dataset.file.indexOf(DIR[platform]) === 0;
-      });
-      if (inDir.length === 0) return;
-      var base = active ? baseName(active.dataset.file) : '';
-      var pair = inDir.filter(function (btn) {
-        return baseName(btn.dataset.file) === base;
-      })[0];
-      (pair || inDir[0]).click();
-    });
+  function normalize(value) {
+    return OSES.indexOf(value) >= 0 ? value : load();
   }
 
-  function baseName(file) {
-    return file.split('/').pop().replace(/\.[^.]+$/, '');
-  }
-
-  function apply(platform, save) {
-    document.documentElement.dataset.platform = platform;
+  function apply(os, save) {
+    document.documentElement.dataset.os = os;
     if (save) {
       try {
-        localStorage.setItem(KEY, platform);
+        localStorage.setItem(KEY, os);
       } catch (e) {
         // 保存できなくてもこのページ内の切り替えは効く。
       }
     }
-    syncEditors(platform);
-    syncControls(platform);
+    syncControls(os);
   }
 
-  // ナビゲーションバーの選択欄と、進め方のページの大きなボタン（::platform-choice）の表示をそろえる。
-  function syncControls(platform) {
+  // ナビゲーションバーの選択欄と、::platform-choice のボタンの表示をそろえる。
+  function syncControls(os) {
     document.querySelectorAll('handson-platform-select select').forEach(function (select) {
-      select.value = platform;
+      select.value = os;
     });
     document.querySelectorAll('.platform-choice__option').forEach(function (btn) {
-      btn.setAttribute('aria-pressed', btn.dataset.platform === platform ? 'true' : 'false');
+      btn.setAttribute('aria-pressed', btn.dataset.platform === os ? 'true' : 'false');
     });
   }
 
-  document.documentElement.dataset.platform = load();
+  document.documentElement.dataset.os = load();
 
   function setup() {
-    // 切り替えはナビゲーションバーの選択欄（src/components/ThemeSelect.astro）と、
-    // 進め方のページの大きなボタン（::platform-choice）で行う。
     document.querySelectorAll('.platform-choice__option').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        apply(btn.dataset.platform === 'sheets' ? 'sheets' : 'excel', true);
+        apply(normalize(btn.dataset.platform), true);
       });
     });
     document.querySelectorAll('handson-platform-select select').forEach(function (select) {
-      select.value = load();
       select.addEventListener('change', function () {
-        apply(select.value === 'sheets' ? 'sheets' : 'excel', true);
+        apply(normalize(select.value), true);
       });
     });
     apply(load(), false);
   }
+
+  // 別のタブで選び直したら、開いているほかのタブもそろえる
+  window.addEventListener('storage', function (event) {
+    if (event.key === KEY && OSES.indexOf(event.newValue) >= 0) apply(event.newValue, false);
+  });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setup);

@@ -1,6 +1,5 @@
-/* `:::::platform`（remark-platform.mjs）の Excel ／ スプレッドシートのパネル。
-   どちらを出すかは <html data-platform="excel|sheets">（ナビゲーションバーの選択欄と
-   platform-client.js）で決める。既定（未選択を含む）は Excel。
+/* `:::::platform`（remark-platform.mjs）の OS ごとのパネル。
+   どれを出すかは <html data-os="macos|windows|linux">（platform-client.js）で決める。
    枠や背景は付けず、本文の一部としてそのまま流す。 */
 
 .platform__panel > :first-child {
@@ -12,28 +11,21 @@
   margin-top: 1rem;
 }
 
-:root:not([data-platform='sheets']) .platform__panel--sheets,
-:root[data-platform='sheets'] .platform__panel--excel {
+.platform > .platform__panel + .platform__panel {
+  margin-top: 0;
+}
+
+/* 選んでいる OS のクラスを持たないパネルを隠す。data-os が無い間（スクリプトが動かない環境）は全部出す。 */
+:root[data-os='macos'] .platform__panel:not(.platform__panel--macos),
+:root[data-os='windows'] .platform__panel:not(.platform__panel--windows),
+:root[data-os='linux'] .platform__panel:not(.platform__panel--linux) {
   display: none;
 }
 
-/* 片方の環境にしか無い手順は、どちらを選んでいても出す。 */
-.platform--only-excel .platform__panel--excel,
-.platform--only-sheets .platform__panel--sheets {
-  display: block !important;
-}
-
-/* `::codeview` のパネルでは、選んでいる環境のファイルだけを一覧に出す。
-   開くファイルの切り替えは platform-client.js の syncEditors が受け持つ。 */
-:root:not([data-platform='sheets']) .editor__file[data-file^='gas/'],
-:root[data-platform='sheets'] .editor__file[data-file^='vba/'] {
-  display: none;
-}
-
-/* `::platform-choice`（進め方のページの冒頭）の、環境を選ぶ大きなボタン。 */
+/* `::platform-choice` の、OS を選ぶ大きなボタン。 */
 .platform-choice {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
   gap: 0.75rem;
   margin: 1.25rem 0 1.5rem;
 }
@@ -66,23 +58,19 @@
   font-size: var(--sl-text-sm);
 }
 
-/* 選んでいるほうを強調する（既定は Excel）。 */
-:root:not([data-platform='sheets']) .platform-choice__option--excel,
-:root[data-platform='sheets'] .platform-choice__option--sheets {
+/* 選んでいるものを強調する。 */
+:root[data-os='macos'] .platform-choice__option--macos,
+:root[data-os='windows'] .platform-choice__option--windows,
+:root[data-os='linux'] .platform-choice__option--linux {
   border-color: var(--sl-color-accent);
   background: color-mix(in srgb, var(--sl-color-accent) 10%, var(--sl-color-black));
 }
 
-:root:not([data-platform='sheets']) .platform-choice__option--excel .platform-choice__name::after,
-:root[data-platform='sheets'] .platform-choice__option--sheets .platform-choice__name::after {
+:root[data-os='macos'] .platform-choice__option--macos .platform-choice__name::after,
+:root[data-os='windows'] .platform-choice__option--windows .platform-choice__name::after,
+:root[data-os='linux'] .platform-choice__option--linux .platform-choice__name::after {
   content: '  ✓ 選択中';
   color: var(--sl-color-accent-high);
   font-size: var(--sl-text-sm);
   font-weight: 600;
-}
-
-/* 環境ごとのダウンロードボタン（remark-download / remark-editor）。選んでいる環境のほうだけを出す。 */
-:root:not([data-platform='sheets']) .platform-only--sheets,
-:root[data-platform='sheets'] .platform-only--excel {
-  display: none !important;
 }

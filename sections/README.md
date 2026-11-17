@@ -10,6 +10,10 @@ sidebar:
 
 教材は「セクション」と「レクチャー」の 2 段に分かれています。レクチャーのフォルダが、そのまま 1 つの動くサンプルです。
 
+最初に、お使いの OS を選んでください。選んだ OS はこのブラウザに保存され、OS で手順が分かれる所では、どのページでも選んだ OS の手順だけが表示されます（画面上部の選択欄で、いつでも変えられます）。
+
+::platform-choice
+
 ```text
 sections/
   00-setup/                     準備
@@ -43,13 +47,21 @@ Floci と Keycloak のデータはメモリにあり、コンテナを作り直�
 | 8443 | entra-local | 04 |
 
 :::warning[ほかのプログラムが同じポートを使っていないか]
-LocalStack・別の Floci・Docker Desktop のコンテナなどが同じポートを使っていると、エラーにならないまま、アクセスの一部がそちらに流れることがあります（`localhost` が IPv4 と IPv6 の両方に解決されるため）。始める前に確かめてください。
-
-```bash
-lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(4566|3000|8080|8443) '   # macOS
-ss -ltnp | grep -E ':(4566|3000|8080|8443) '                      # Linux / WSL2
-```
+LocalStack・別の Floci・Docker Desktop のコンテナなどが同じポートを使っていると、エラーにならないまま、アクセスの一部がそちらに流れることがあります（`localhost` が IPv4 と IPv6 の両方に解決されるため）。始める前に、次のコマンドで確かめてください。
 :::
+
+:::::platform
+::::macos
+```bash
+lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(4566|3000|8080|8443) '
+```
+::::
+::::windows-linux
+```bash
+ss -ltnp | grep -E ':(4566|3000|8080|8443) '
+```
+::::
+:::::
 
 ## 練習用のアカウント
 
