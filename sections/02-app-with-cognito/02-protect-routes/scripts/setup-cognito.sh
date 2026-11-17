@@ -36,3 +36,5 @@ COGNITO_USER_POOL_ID=$POOL_ID
 COGNITO_CLIENT_ID=$CLIENT_ID
 ENV
 echo "wrote .env (pool: $POOL_ID, user: carol / Passw0rd!)"
+# .env は API を起動したときにしか読まれない。古いプール ID のまま動き続けるのを防ぐため
+echo "API（npm run start:dev）を起動中なら、止めて起動し直してください"

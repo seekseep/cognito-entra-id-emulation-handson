@@ -44,6 +44,8 @@ npm run setup          # Floci を作り直したならやり直す
 npm run api:up         # podman compose --profile api up -d --build --wait
 ```
 
+`npm run setup` をやり直したら、`npm run api:up` ももう一度実行します。`.env` の値が変わっていればコンテナが作り直され、新しい User Pool を読み込みます。
+
 ホストで動かしている `npm run start:dev` は止めておいてください（同じ 3000 番を使います）。
 
 ### コンテナの中から見た Floci

@@ -118,6 +118,10 @@ curl -s -X POST localhost:3000/auth/login -H 'content-type: application/json' -d
 
 `npm run setup` を先に実行してください。Floci を作り直すと User Pool は消えるので、そのときも `npm run setup` をやり直します（プール ID が変わるので `.env` も書き直されます）。
 
+### setup をやり直したら、API が 500 や 401 を返すようになりました
+
+API を起動し直してください。`.env` は API を起動したときに一度だけ読まれ、`npm run start:dev` の自動再起動も `src/` の変更しか見ていません。起動し直すまで、API は消えた古い User Pool に問い合わせ続けます。ログインは 500（`API の Cognito の設定が正しくありません`）、`/me` はトークンの `iss` が合わずに 401 になります。
+
 ### パスワードの強さは API でも確かめるべきですか？
 
 この API では形（文字列かどうか）だけを見て、強さの判定は Cognito のパスワードポリシーに任せています。同じ規則を 2 か所に書くと、片方だけ変えてずれる原因になるからです。

@@ -14,6 +14,9 @@ const MAPPING: Record<string, [number, string]> = {
   CodeMismatchException: [HttpStatus.BAD_REQUEST, '確認コードが違います'],
   ExpiredCodeException: [HttpStatus.BAD_REQUEST, '確認コードの期限が切れています'],
   TooManyRequestsException: [HttpStatus.TOO_MANY_REQUESTS, '時間をおいて試してください'],
+  // User Pool やクライアントが無い。利用者のせいではなく API の設定の誤り（setup をやり直したのに
+  // API を起動し直していない、など）なので 500 にし、どこを見ればよいかだけ伝える
+  ResourceNotFoundException: [HttpStatus.INTERNAL_SERVER_ERROR, 'API の Cognito の設定が正しくありません'],
 };
 
 @Catch(CognitoIdentityProviderServiceException)

@@ -99,6 +99,10 @@ curl -s localhost:3000/admin/dashboard -H "authorization: Bearer $AT"
 
 :::faq
 
+### 正しいトークンなのに `/me` が 401 になります
+
+`npm run setup` をやり直したあとに API を起動し直していないと、API は古い User Pool の `iss` と鍵で確かめ続けるので、新しいプールのトークンは全部 401 になります。`npm run start:dev` を止めて起動し直してください（`.env` は起動したときにしか読まれません）。
+
 ### Guard をアプリ全体にかけないのはなぜですか？
 
 `/auth/login` のようにトークンを持たずに呼ぶ API もあるからです。ここでは保護したいコントローラにだけ `@UseGuards(CognitoJwtGuard, RolesGuard)` を付けています。全体にかけて、例外のハンドラだけ外す書き方もあります。
