@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "floci:up": "podman compose up -d --wait",
-    "floci:down": "podman compose down",
-    "floci:reset": "podman compose down && podman compose up -d --wait"
+    "floci:up": "${COMPOSE:-podman compose} up -d --wait",
+    "floci:down": "${COMPOSE:-podman compose} down",
+    "floci:reset": "${COMPOSE:-podman compose} down && ${COMPOSE:-podman compose} up -d --wait"
   }
 }

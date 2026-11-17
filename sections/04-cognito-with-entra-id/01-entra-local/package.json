@@ -4,12 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "up": "podman compose up -d --wait",
-    "down": "podman compose down",
+    "up": "${COMPOSE:-podman compose} up -d --wait",
+    "down": "${COMPOSE:-podman compose} down",
     "endpoints": "bash scripts/show-endpoints.sh",
     "register-app": "bash scripts/register-app.sh",
     "create-user": "bash scripts/create-user.sh",
     "preview-token": "bash scripts/preview-token.sh",
-    "reset": "podman compose down -v && podman compose up -d --wait"
+    "reset": "${COMPOSE:-podman compose} down -v && ${COMPOSE:-podman compose} up -d --wait"
   }
 }

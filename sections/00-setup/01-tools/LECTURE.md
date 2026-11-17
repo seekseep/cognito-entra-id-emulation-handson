@@ -130,7 +130,13 @@ node --version   # v24.x.x 以上
 
 ### Docker Desktop ではだめですか？
 
-だめではありません。`podman compose` を `docker compose` に、`podman` を `docker` に読み替えれば動きます。ただし本文の中のコンテナ名やネットワークの説明は Podman で確かめたものです。
+だめではありません。npm scripts は環境変数 `COMPOSE` があればそれを使うので、先に設定しておけば `npm run floci:up` などがそのまま Docker で動きます。
+
+```bash
+export COMPOSE="docker compose"
+```
+
+本文に出てくる `podman compose ...` や `podman ...` のコマンドは、`docker compose ...`・`docker ...` に読み替えてください。本文の中のコンテナ名やネットワークの説明は Podman で確かめたもので、Docker では通しで確かめていません。
 
 ### WSL2 の中で起動したのに、Windows のブラウザから `localhost:3000` が開けません
 

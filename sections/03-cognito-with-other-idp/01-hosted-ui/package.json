@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "floci:up": "podman compose up -d --wait",
-    "floci:down": "podman compose down",
+    "floci:up": "${COMPOSE:-podman compose} up -d --wait",
+    "floci:down": "${COMPOSE:-podman compose} down",
     "setup": "bash scripts/setup-cognito.sh",
     "build": "nest build",
     "start": "nest start",

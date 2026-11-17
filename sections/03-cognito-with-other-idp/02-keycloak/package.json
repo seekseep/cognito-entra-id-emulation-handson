@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "up": "podman compose up -d --wait",
-    "down": "podman compose down",
+    "up": "${COMPOSE:-podman compose} up -d --wait",
+    "down": "${COMPOSE:-podman compose} down",
     "endpoints": "bash scripts/show-endpoints.sh"
   }
 }
