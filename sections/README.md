@@ -41,7 +41,8 @@ sections/
 LocalStack・別の Floci・Docker Desktop のコンテナなどが同じポートを使っていると、エラーにならないまま、アクセスの一部がそちらに流れることがあります（`localhost` が IPv4 と IPv6 の両方に解決されるため）。始める前に確かめてください。
 
 ```bash
-lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(4566|3000|8080|8443) '
+lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(4566|3000|8080|8443) '   # macOS
+ss -ltnp | grep -E ':(4566|3000|8080|8443) '                      # Linux / WSL2
 ```
 :::
 
