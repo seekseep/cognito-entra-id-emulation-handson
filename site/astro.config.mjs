@@ -117,7 +117,7 @@ export default defineConfig({
     // starlight より前に登録して、callout 変換を asides より先に走らせる。
     calloutIntegration(),
     starlight({
-      title: 'Podman + moto で Cognito 認証を練習する',
+      title: 'Podman + Floci で Cognito 認証を練習する',
       description: 'Cognito・外部 IdP・Entra ID の認証を、Podman 上のエミュレータで手を動かして学ぶ',
       customCss: [
         './src/styles/readability.css',
