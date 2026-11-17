@@ -5,6 +5,16 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 ENTRA=http://localhost:8443
 
+# entra-local のデータはボリュームに残る。前に登録したアプリがまだあれば、それを使い続ける
+# （流すたびに同じ名前のアプリが増えないように）。新しく登録し直したいときは .entra.env を消す
+if [ -f .entra.env ]; then
+  source ./.entra.env
+  if curl -fsS -o /dev/null "$ENTRA/admin/api/apps/$ENTRA_CLIENT_ID" 2>/dev/null; then
+    echo "登録済みのアプリを使います（クライアント ID: ${ENTRA_CLIENT_ID}）。登録し直すなら .entra.env を消してから実行してください"
+    exit 0
+  fi
+fi
+
 # リダイレクト URI は Cognito（Floci）の idpresponse。本物なら https://<domain>.auth.<region>.amazoncognito.com/oauth2/idpresponse
 APP_ID=$(curl -fsS -X POST "$ENTRA/admin/api/apps" -H 'content-type: application/json' -d '{
   "displayName": "Cognito (Floci)",

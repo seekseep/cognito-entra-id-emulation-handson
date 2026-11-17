@@ -133,6 +133,6 @@ app B  sub= Syo-bk98TBcNpgrTTgzhMT_mm4CdgxcA35EeB-31tGs  oid= daa6ae20-6153-4193
 
 ### データを消したいときは？
 
-ユーザーやアプリ登録は、entra-local のデータボリュームに SQLite で残ります。`podman compose down -v` でボリュームごと消えます。
+ユーザーやアプリ登録は、entra-local のデータボリュームに SQLite で残ります。`npm run reset`（`podman compose down -v` してから起動し直す）でボリュームごと消えます。残っている間は、`npm run register-app` は登録済みのアプリを使い続け、`npm run create-user` は既にいるユーザーを表示するだけなので、手順を上から流し直しても止まりません。
 
 :::

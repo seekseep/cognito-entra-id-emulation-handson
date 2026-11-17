@@ -15,7 +15,8 @@
     "users": "bash scripts/list-users.sh",
     "register-app": "bash scripts/register-app.sh",
     "create-user": "bash scripts/create-user.sh",
-    "register-entra": "bash scripts/register-entra.sh"
+    "register-entra": "bash scripts/register-entra.sh",
+    "reset": "podman compose down -v && podman compose up -d --wait"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",

@@ -25,6 +25,10 @@ npm run register-entra             # entra-local を外部 IdP として登録
 npm run start:dev
 ```
 
+:::notice[2 回目以降に動かすとき]
+`npm run down` → `npm run up` のあと、Floci（Cognito）は空に戻りますが、entra-local のアプリ登録と taro はボリュームに残っています。上の手順をそのまま流して構いません。`register-app` は登録済みのアプリを使い続け、`create-user` は既にいるユーザーを表示するだけです。`setup` と `register-entra` で Cognito 側を作り直したら、API を起動し直してください。entra-local も含めてまっさらにしたいときは `npm run reset` を使います。
+:::
+
 <http://localhost:3000> の「EntraID でログイン」を押し、entra-local のサインイン画面で `taro@entralocal.dev` / `Passw0rd!` を入れます。戻ってきたら ID トークンを見てください。
 
 ```json
@@ -100,7 +104,7 @@ Cognito のカスタム属性は、一度作ると名前も型も変えられず
 
 ### entra-local のサインイン画面で「Invalid redirect URI」と出ます
 
-アプリの登録のリダイレクト URI と、Cognito（Floci）が送ってくる `redirect_uri`（`http://localhost:4566/cognito-idp/oauth2/idpresponse`）が 1 文字でも違うと拒否されます。`npm run register-app` をやり直してください（そのあと `.entra.env` が変わるので、`npm run setup` からやり直します）。
+アプリの登録のリダイレクト URI と、Cognito（Floci）が送ってくる `redirect_uri`（`http://localhost:4566/cognito-idp/oauth2/idpresponse`）が 1 文字でも違うと拒否されます。`.entra.env` を消してから `npm run register-app` で登録し直し、`npm run register-entra` で Cognito 側の登録も新しいクライアント ID とシークレットに合わせます。そのあと API を起動し直してください。
 
 ### Entra のアプリロールやグループで認可したいときは？
 

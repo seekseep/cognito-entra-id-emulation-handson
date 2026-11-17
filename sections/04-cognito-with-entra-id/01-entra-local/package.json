@@ -9,6 +9,7 @@
     "endpoints": "bash scripts/show-endpoints.sh",
     "register-app": "bash scripts/register-app.sh",
     "create-user": "bash scripts/create-user.sh",
-    "preview-token": "bash scripts/preview-token.sh"
+    "preview-token": "bash scripts/preview-token.sh",
+    "reset": "podman compose down -v && podman compose up -d --wait"
   }
 }
