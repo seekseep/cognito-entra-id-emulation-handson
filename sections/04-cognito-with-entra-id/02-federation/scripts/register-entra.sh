@@ -14,13 +14,17 @@ ISSUER=http://localhost:8443/$ENTRA_TENANT_ID/v2.0
 BROWSER=http://localhost:8443
 BACKEND=http://entra-local:8443
 
-aws cognito-idp create-identity-provider \
-  --user-pool-id "$POOL_ID" \
-  --provider-name EntraID \
-  --provider-type OIDC \
-  --provider-details "client_id=$ENTRA_CLIENT_ID,client_secret=$ENTRA_CLIENT_SECRET,authorize_scopes=openid email profile,oidc_issuer=$ISSUER,attributes_request_method=GET,authorize_url=$BROWSER/$ENTRA_TENANT_ID/oauth2/v2.0/authorize,token_url=$BACKEND/$ENTRA_TENANT_ID/oauth2/v2.0/token,attributes_url=$BACKEND/graph/oidc/userinfo,jwks_uri=$BACKEND/$ENTRA_TENANT_ID/discovery/v2.0/keys" \
-  --attribute-mapping email=email,name=name,preferred_username=preferred_username,custom:entra_oid=oid,username=sub \
-  > /dev/null
+DETAILS="client_id=$ENTRA_CLIENT_ID,client_secret=$ENTRA_CLIENT_SECRET,authorize_scopes=openid email profile,oidc_issuer=$ISSUER,attributes_request_method=GET,authorize_url=$BROWSER/$ENTRA_TENANT_ID/oauth2/v2.0/authorize,token_url=$BACKEND/$ENTRA_TENANT_ID/oauth2/v2.0/token,attributes_url=$BACKEND/graph/oidc/userinfo,jwks_uri=$BACKEND/$ENTRA_TENANT_ID/discovery/v2.0/keys"
+MAPPING="email=email,name=name,preferred_username=preferred_username,custom:entra_oid=oid,username=sub"
+
+# もう一度実行したときに重複で止まらないよう、登録済みなら作り直さずに設定を上書きする
+if aws cognito-idp describe-identity-provider --user-pool-id "$POOL_ID" --provider-name EntraID > /dev/null 2>&1; then
+  aws cognito-idp update-identity-provider --user-pool-id "$POOL_ID" --provider-name EntraID \
+    --provider-details "$DETAILS" --attribute-mapping "$MAPPING" > /dev/null
+else
+  aws cognito-idp create-identity-provider --user-pool-id "$POOL_ID" --provider-name EntraID --provider-type OIDC \
+    --provider-details "$DETAILS" --attribute-mapping "$MAPPING" > /dev/null
+fi
 
 # UpdateUserPoolClient は「渡さなかった設定を既定に戻す」。今の設定を全部渡し直し、IdP の一覧に EntraID を足す
 aws cognito-idp update-user-pool-client \

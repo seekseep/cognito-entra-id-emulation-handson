@@ -11,13 +11,17 @@ CLIENT_ID=$(grep '^COGNITO_CLIENT_ID=' .env | cut -d= -f2)
 BROWSER=http://localhost:8080/realms/practice/protocol/openid-connect
 BACKEND=http://keycloak:8080/realms/practice/protocol/openid-connect
 
-aws cognito-idp create-identity-provider \
-  --user-pool-id "$POOL_ID" \
-  --provider-name Keycloak \
-  --provider-type OIDC \
-  --provider-details "client_id=cognito,client_secret=cognito-local-secret,authorize_scopes=openid email profile,oidc_issuer=http://localhost:8080/realms/practice,attributes_request_method=GET,authorize_url=$BROWSER/auth,token_url=$BACKEND/token,attributes_url=$BACKEND/userinfo,jwks_uri=$BACKEND/certs" \
-  --attribute-mapping email=email,email_verified=email_verified,given_name=given_name,family_name=family_name,preferred_username=preferred_username,username=sub \
-  > /dev/null
+DETAILS="client_id=cognito,client_secret=cognito-local-secret,authorize_scopes=openid email profile,oidc_issuer=http://localhost:8080/realms/practice,attributes_request_method=GET,authorize_url=$BROWSER/auth,token_url=$BACKEND/token,attributes_url=$BACKEND/userinfo,jwks_uri=$BACKEND/certs"
+MAPPING="email=email,email_verified=email_verified,given_name=given_name,family_name=family_name,preferred_username=preferred_username,username=sub"
+
+# もう一度実行したときに重複で止まらないよう、登録済みなら作り直さずに設定を上書きする
+if aws cognito-idp describe-identity-provider --user-pool-id "$POOL_ID" --provider-name Keycloak > /dev/null 2>&1; then
+  aws cognito-idp update-identity-provider --user-pool-id "$POOL_ID" --provider-name Keycloak \
+    --provider-details "$DETAILS" --attribute-mapping "$MAPPING" > /dev/null
+else
+  aws cognito-idp create-identity-provider --user-pool-id "$POOL_ID" --provider-name Keycloak --provider-type OIDC \
+    --provider-details "$DETAILS" --attribute-mapping "$MAPPING" > /dev/null
+fi
 
 # UpdateUserPoolClient は「渡さなかった設定を既定に戻す」。今の設定を全部渡し直し、IdP の一覧に Keycloak を足す
 aws cognito-idp update-user-pool-client \
