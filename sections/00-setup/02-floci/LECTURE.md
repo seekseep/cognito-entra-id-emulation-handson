@@ -85,11 +85,11 @@ npm run floci:reset     # podman compose down && podman compose up -d --wait
 |---|---|
 | User Pool・App Client・グループ | 使える |
 | パスワード認証（`USER_PASSWORD_AUTH`）・初回のパスワード変更（`NEW_PASSWORD_REQUIRED`） | 使える |
-| サインアップと確認コード | 使える。確認メールは Floci の SES に届き、`http://localhost:4566/_aws/ses` で読める。違うコードは拒否される |
+| サインアップと確認コード | 使える。確認メールは Floci の SES に届き、`http://localhost:4566/_aws/ses` で読める。違うコードは、User Pool の `AutoVerifiedAttributes` に `email` があるときだけ拒否される。無いと、どんなコードでも確認が通る（[02-03](../../02-app-with-cognito/03-e2e-test/LECTURE.md) で見つけた） |
 | パスワードポリシー・`SECRET_HASH`・許可していない認証フローの拒否 | 本物と同じように拒否される |
 | `PreventUserExistenceErrors` | 受け付けるが保存されず、効かない。存在しないユーザーは常に `UserNotFoundException` |
 | discovery・JWKS | 使える。`iss` は `http://localhost:4566/<プール ID>` |
-| Hosted UI（ログイン画面）・`/oauth2/authorize`・`/oauth2/token` | 使える。PKCE も確かめる |
+| Hosted UI（ログイン画面）・`/oauth2/authorize`・`/oauth2/token`・`/oauth2/revoke` | 使える。PKCE も確かめる。ブラウザから呼ぶには `FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS` で CORS を許す |
 | 外部 IdP（OIDC）経由のログイン | 使える。登録のしかたに本物と違う点がある（[03-federation](../../03-cognito-with-other-idp/03-federation/LECTURE.md) で扱う） |
 | 外部 IdP（SAML）・Facebook・Apple | 使えない |
 

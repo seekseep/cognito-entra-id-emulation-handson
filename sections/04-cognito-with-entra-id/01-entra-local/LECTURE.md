@@ -61,7 +61,6 @@ environment:
 ```
 
 - `platform: linux/amd64` … amd64 向けのイメージしか無いため。Apple Silicon の Mac ではエミュレーションで動き、起動に少し時間がかかります
-
 - `TLS_ENABLED: "false"` … entra-local は既定で自己署名証明書の HTTPS で動きます。次のレクチャーで Floci がコンテナの中から entra-local を呼ぶとき、証明書を信頼させる手間を省くために HTTP にしています（本物の Entra は必ず HTTPS です）
 - `REQUIRE_PASSWORD: "true"` … 既定はアカウントを選ぶだけでサインインできます。本物に近づけるため、パスワードを求めます
 
