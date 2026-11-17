@@ -122,6 +122,29 @@ NestJS の API と、トークンを確かめる小さなスクリプトで使�
 node --version   # v24.x.x 以上
 ```
 
+## 当日より前にやっておくこと
+
+コンテナのイメージと npm のパッケージは、合わせて 2GB ほどになります。勉強会の会場で全員が同時に取得すると時間がかかるので、道具を入れたら、ネットワークのよい所で先に取得しておいてください。
+
+```bash
+# コンテナのイメージ（展開後で合わせて約 1.3GB）
+podman pull docker.io/floci/floci:2.4.0
+podman pull quay.io/keycloak/keycloak:26.8.2
+podman pull --platform linux/amd64 ghcr.io/cmaneu/entra-local:0.1.1
+podman pull docker.io/library/node:24-slim
+```
+
+リポジトリをクローンして進める場合は、npm のパッケージも全レクチャー分入れておけます（合わせて約 800MB）。
+
+```bash
+# リポジトリのルートで
+for d in sections/*/*/; do
+  [ -f "$d/package-lock.json" ] && (cd "$d" && npm ci)
+done
+```
+
+各レクチャーの ZIP をダウンロードして進める場合は、展開したあとに `npm install` すれば同じです。
+
 ## エディタとブラウザ
 
 エディタは何でも構いません。ブラウザの開発者ツール（`F12`）の **Network** タブで、ログインのリダイレクトやトークンのやり取りを追いかけます。
