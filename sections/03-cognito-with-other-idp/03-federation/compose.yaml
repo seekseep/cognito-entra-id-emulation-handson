@@ -21,9 +21,10 @@ services:
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
-      # Keycloak は呼ばれたホスト名でトークンの iss を変える。ブラウザは localhost、
-      # Floci はコンテナの中から host.containers.internal で呼ぶので、発行者の名前を固定しておく
+      # Keycloak は呼ばれたホスト名でトークンの iss を変える。ブラウザは localhost:8080、
+      # Floci はコンテナの中からサービス名 keycloak:8080 で呼ぶので、発行者の名前を localhost:8080 に固定する
       KC_HOSTNAME: http://localhost:8080
+      # token・userinfo などのサーバー同士の呼び出しは、呼ばれた名前（keycloak:8080）のまま受け付けて返す
       KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
     ports:
       - "127.0.0.1:8080:8080"
