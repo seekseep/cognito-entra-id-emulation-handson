@@ -68,10 +68,15 @@ const issuer = process.env.COGNITO_ISSUER
 `COGNITO_ENDPOINT` があれば Floci、無ければ本物の Cognito です。トークンの発行者（`iss`）は「エンドポイント/プール ID」の形で、Floci も本物も同じ組み立て方で決まります。`npm run setup` が書き出す `.env` はこうなります。
 
 ```bash
+AWS_REGION=ap-northeast-1
+AWS_ACCESS_KEY_ID=test
+AWS_SECRET_ACCESS_KEY=test
 COGNITO_ENDPOINT=http://localhost:4566
 COGNITO_USER_POOL_ID=ap-northeast-1_xxxxxxxxx
 COGNITO_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
+
+`AWS_ACCESS_KEY_ID`・`AWS_SECRET_ACCESS_KEY` の `test` は Floci 用のダミーです。AWS の SDK は認証情報が無いと動かないので入れていますが、Floci は値を確かめません。本物の Cognito に切り替えるときは消します（[04-frontend-and-container](../04-frontend-and-container/LECTURE.md) で扱います）。
 
 ## Cognito SDK を呼ぶ（AuthService）
 
