@@ -7,6 +7,7 @@ const MAPPING: Record<string, [number, string]> = {
   // ユーザーの有無を区別して返すと、登録済みのユーザー名を探られる。どちらも同じ 401 にする
   NotAuthorizedException: [HttpStatus.UNAUTHORIZED, 'ユーザー名かパスワードが違います'],
   UserNotFoundException: [HttpStatus.UNAUTHORIZED, 'ユーザー名かパスワードが違います'],
+  // 下の 2 つ（403・409）は「登録済み」だと分かってしまう。分かりやすさを優先して残している（本文の注意を参照）
   UserNotConfirmedException: [HttpStatus.FORBIDDEN, 'ユーザーの確認が済んでいません'],
   UsernameExistsException: [HttpStatus.CONFLICT, 'そのユーザー名は使われています'],
   InvalidPasswordException: [HttpStatus.BAD_REQUEST, 'パスワードがポリシーを満たしていません'],

@@ -99,9 +99,10 @@ SDK は Cognito のエラーを `NotAuthorizedException` などの名前付き�
 | Cognito の例外 | HTTP |
 |---|---|
 | `NotAuthorizedException`・`UserNotFoundException` | 401（どちらも同じ文言） |
-| `UserNotConfirmedException` | 403 |
-| `UsernameExistsException` | 409 |
+| `UserNotConfirmedException` | 403（登録済みだと分かる） |
+| `UsernameExistsException` | 409（登録済みだと分かる） |
 | `InvalidPasswordException`・`CodeMismatchException` など | 400 |
+| `ResourceNotFoundException`（User Pool やクライアントが無い） | 500 |
 | それ以外 | 502 |
 
 パスワード違いと、存在しないユーザーを **同じ 401・同じ文言** にしているのが大事なところです。分けて返すと「このユーザー名は登録されている」ことが外から分かってしまいます。例外の名前も応答には含めず、ログにだけ残します。
@@ -111,6 +112,15 @@ curl -s -X POST localhost:3000/auth/login -H 'content-type: application/json' -d
 curl -s -X POST localhost:3000/auth/login -H 'content-type: application/json' -d '{"username":"nobody","password":"wrong"}'
 # どちらも {"statusCode":401,"message":"ユーザー名かパスワードが違います"}
 ```
+
+:::warning[ログインを 401 にそろえても、サインアップでは存在が分かる]
+`POST /auth/signup` に既にあるユーザー名を送ると 409 が返るので、ログインとは別の入口から「登録されているか」を確かめられてしまいます。未確認のユーザーでのログインに返す 403 も同じです。Cognito の `PreventUserExistenceErrors` もサインアップには効きません。
+
+このハンズオンでは分かりやすさを優先して 409 を返しています。ユーザー名を探られたくないサービスでは、次のような対策を組み合わせます。
+
+- メールアドレスをユーザー名にし、サインアップの応答は登録済みでもいつも同じにする。登録済みの人には「既に登録されています」というメールを送る
+- サインアップ・ログインの API に回数制限をかける（API Gateway のスロットリングや AWS WAF のレートベースのルールなど）
+:::
 
 :::faq
 
