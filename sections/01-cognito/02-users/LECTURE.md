@@ -93,7 +93,13 @@ aws cognito-idp list-users --user-pool-id "$POOL_ID" \
   --query 'Users[].{Username:Username,Status:UserStatus}' --output table
 ```
 
-ここまでの操作は [scripts/create-users.sh](./scripts/create-users.sh) にまとめてあります（`npm run users`）。
+ここまでの操作は [scripts/create-users.sh](./scripts/create-users.sh) にまとめてあります（`npm run users`）。手で打つ代わりに使うか、やり直すときに使います。alice と bob を新しく作るので、上の手順を打ち終えたあとに実行すると `UsernameExistsException` で止まります。やり直すときは、User Pool から作り直してから実行してください。
+
+```bash
+npm run floci:reset   # Floci を作り直す（User Pool も消える）
+npm run setup         # User Pool と App Client を作り直す
+npm run users         # alice と bob を作る
+```
 
 :::faq
 
