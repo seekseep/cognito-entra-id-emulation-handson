@@ -42,4 +42,11 @@ export class AuthController {
     const { refreshToken } = requireStrings(body, ['refreshToken']);
     return this.auth.refresh(refreshToken);
   }
+
+  @Post('logout')
+  @HttpCode(200)
+  logout(@Body() body: unknown) {
+    const { refreshToken } = requireStrings(body, ['refreshToken']);
+    return this.auth.logout(refreshToken);
+  }
 }

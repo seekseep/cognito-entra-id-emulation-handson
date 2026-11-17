@@ -52,8 +52,9 @@ document.querySelector('#refresh').addEventListener('click', async () => {
   }
 });
 
-document.querySelector('#logout').addEventListener('click', () => {
+document.querySelector('#logout').addEventListener('click', async () => {
+  // 手元から消す前に、リフレッシュトークンを Cognito で取り消す（盗まれていても使えなくする）
+  if (tokens?.refreshToken) await call('POST', '/auth/logout', { refreshToken: tokens.refreshToken });
   tokens = null;
   sessionStorage.removeItem('tokens');
-  show('logout', '-', { message: 'トークンを捨てました' });
 });

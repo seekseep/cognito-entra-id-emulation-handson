@@ -85,6 +85,20 @@ environment:
 
 本物の Cognito のトークンエンドポイントは、最初から CORS に対応しています。
 
+## ログアウトとトークンの置き場所
+
+画面はもらったトークンを `sessionStorage` に置き、「ログアウト」で次の 3 つをします。
+
+1. `/oauth2/revoke` にリフレッシュトークンを送って取り消す
+2. 手元のトークンを消す
+3. Cognito の `/logout` に移り、Hosted UI 側のログイン状態（Cookie）も消す
+
+1 を省くと、トークンが盗まれていた場合、ログアウトしたあとも使われ続けます。リフレッシュトークンは既定で 30 日有効なので、その間ずっとアクセストークンを取り直せてしまいます。
+
+:::warning[本番でのトークンの置き場所]
+`sessionStorage` は、ページに XSS があると JavaScript から読まれてしまう場所です。この画面のようにブラウザが `/oauth2/token` を直接呼ぶ作りでは、httpOnly の Cookie に置くことはできません。本番では、トークンの交換をサーバー側で行い、ブラウザとは httpOnly の Cookie のセッションでやり取りする形（BFF: Backend for Frontend）を検討してください。
+:::
+
 ## API は変わらない
 
 API 側の Guard は、前のセクションの [CognitoJwtGuard](./src/auth/cognito-jwt.guard.ts) のままです。Hosted UI から出たトークンも、パスワード認証で出たトークンも、同じ User Pool・同じクライアントのアクセストークンだからです。変わったのは、`/auth/*`（パスワードを受け取る API）が無くなり、代わりに画面に設定を渡す `/config` が増えたことだけです。

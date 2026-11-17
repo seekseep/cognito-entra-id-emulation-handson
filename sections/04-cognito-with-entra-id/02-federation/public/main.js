@@ -110,7 +110,17 @@ async function callApi(path) {
   output.textContent = `GET ${path} → ${response.status}\n${JSON.stringify(await response.json(), null, 2)}`;
 }
 
-document.querySelector('#logout').addEventListener('click', () => {
+document.querySelector('#logout').addEventListener('click', async () => {
+  // 手元から消す前に、リフレッシュトークンを取り消す（盗まれていても使えなくする）。
+  // discovery には revocation_endpoint が載っていないので、authorize の URL から組み立てる
+  const tokens = JSON.parse(sessionStorage.getItem('tokens') ?? 'null');
+  if (tokens?.refresh_token) {
+    await fetch(discovery.authorization_endpoint.replace('/oauth2/authorize', '/oauth2/revoke'), {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ token: tokens.refresh_token, client_id: config.clientId }),
+    });
+  }
   sessionStorage.removeItem('tokens');
   // Hosted UI 側のログイン状態（Cookie）も消す。消さないと次のログインで画面が出ずに素通りする
   const url = new URL(discovery.authorization_endpoint.replace('/oauth2/authorize', '/logout'));

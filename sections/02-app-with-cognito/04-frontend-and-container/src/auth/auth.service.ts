@@ -5,6 +5,7 @@ import {
   CognitoIdentityProviderClient,
   ConfirmSignUpCommand,
   InitiateAuthCommand,
+  RevokeTokenCommand,
   SignUpCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 import cognitoConfig from '../config/cognito.config.js';
@@ -70,6 +71,13 @@ export class AuthService {
       }),
     );
     return this.toTokens(result.AuthenticationResult);
+  }
+
+  // リフレッシュトークンを取り消す。手元から消すだけでは、盗まれたトークンが期限（既定 30 日）まで使えてしまう。
+  // 取り消すと、そのリフレッシュトークンから発行したアクセストークンも Cognito への問い合わせでは無効になる
+  async logout(refreshToken: string) {
+    await this.client.send(new RevokeTokenCommand({ ClientId: this.config.clientId, Token: refreshToken }));
+    return { revoked: true };
   }
 
   private toTokens(result: { IdToken?: string; AccessToken?: string; RefreshToken?: string; ExpiresIn?: number } | undefined) {
