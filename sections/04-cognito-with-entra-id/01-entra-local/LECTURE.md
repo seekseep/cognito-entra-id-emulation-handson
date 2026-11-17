@@ -62,6 +62,9 @@ environment:
 
 - `platform: linux/amd64` … amd64 向けのイメージしか無いため。Apple Silicon の Mac ではエミュレーションで動き、起動に少し時間がかかります
 
+- `TLS_ENABLED: "false"` … entra-local は既定で自己署名証明書の HTTPS で動きます。次のレクチャーで Floci がコンテナの中から entra-local を呼ぶとき、証明書を信頼させる手間を省くために HTTP にしています（本物の Entra は必ず HTTPS です）
+- `REQUIRE_PASSWORD: "true"` … 既定はアカウントを選ぶだけでサインインできます。本物に近づけるため、パスワードを求めます
+
 :::notice[ARM のパソコンで動かすとき]
 Apple Silicon の Mac は、`podman machine` の仮想マシンに amd64 のエミュレーションが入っているので、そのまま動きます（手元では起動まで 10 秒ほど）。ARM の Linux（Raspberry Pi・ARM の VM など）や Windows on ARM の WSL2 では、エミュレーションを先に入れないと `exec format error` で起動しません。
 
@@ -72,8 +75,6 @@ sudo apt-get install -y qemu-user-static
 
 エミュレーションの下では起動もヘルスチェックも遅くなるので、compose.yaml のヘルスチェックは待ち時間を長め（`start_period: 60s`・`timeout: 15s`）にしてあります。それでも `container is unhealthy` で止まるときは、`podman compose logs entra-local` でログを見てください。
 :::
-- `TLS_ENABLED: "false"` … entra-local は既定で自己署名証明書の HTTPS で動きます。次のレクチャーで Floci がコンテナの中から entra-local を呼ぶとき、証明書を信頼させる手間を省くために HTTP にしています（本物の Entra は必ず HTTPS です）
-- `REQUIRE_PASSWORD: "true"` … 既定はアカウントを選ぶだけでサインインできます。本物に近づけるため、パスワードを求めます
 
 ## アプリを登録する
 
@@ -81,8 +82,10 @@ Entra では、Entra にログインを頼むアプリを **アプリの登録**
 
 ```bash
 npm run register-app
-# 登録しました（クライアント ID: ac93acfd-...）。シークレットは .entra.env にあります
+# 登録しました（クライアント ID: 542d7c9b-...）。シークレットは .entra.env にあります
 ```
+
+スクリプトの中では、entra-local の管理 API に次のように登録しています（スクリプトがやるので、自分で打つ必要はありません）。
 
 ```bash
 curl -X POST http://localhost:8443/admin/api/apps -H 'content-type: application/json' -d '{
@@ -104,19 +107,20 @@ npm run create-user taro '山田 太郎'      # taro@entralocal.dev / Passw0rd!
 npm run preview-token taro@entralocal.dev
 ```
 
-`preview-token` は、entra-local の管理 API で「このアプリに、このユーザーがサインインしたら出る ID トークン」を見せてくれます。
+`preview-token` は、entra-local の管理 API で「このアプリに、このユーザーがサインインしたら出る ID トークン」を見せてくれます（`claims` の部分）。
 
 ```json
-{
+"claims": {
   "iss": "http://localhost:8443/11111111-1111-1111-1111-111111111111/v2.0",
-  "sub": "zEgPhKC-BLNvZ36wxa31HxDQx7Wesj8qiwx6fYqqnKQ",
-  "aud": "ac93acfd-f6c9-464c-bbcd-d8d5a7aed94f",
+  "sub": "7AVwZdeJEDtlOYPBd5JlCISHoby578la6SIPMq3Q27Q",
+  "aud": "542d7c9b-2abd-4c55-9788-6dba155eaba0",
   "tid": "11111111-1111-1111-1111-111111111111",
-  "oid": "73b7fe3c-a909-4aed-8e90-2371f877e12d",
+  "oid": "82de800f-ad8c-42ac-bfef-bda7a2aa40ea",
   "name": "山田 太郎",
   "preferred_username": "taro@entralocal.dev",
   "email": "taro@entralocal.dev",
-  "ver": "2.0"
+  "ver": "2.0",
+  ...
 }
 ```
 
@@ -129,12 +133,22 @@ Entra 特有のクレーム:
 
 ### `sub` はアプリごとに変わる
 
-同じ taro で、別のアプリを登録して `preview-token` を見比べると、`sub` だけが違います。
+アプリをもう 1 つ登録して、同じ taro のトークンを見比べます。`register-app` は `.entra.env` を書き換えるので、今のアプリ（A）の控えを別の名前で残してから登録します。
+
+```bash
+cp .entra.env .entra.a.env          # アプリ A の控え
+rm .entra.env && npm run register-app   # アプリ B を登録（.entra.env は B になる）
+
+npm run preview-token taro@entralocal.dev | grep -E '"(aud|sub|oid)"'                       # B
+ENTRA_ENV=.entra.a.env npm run preview-token taro@entralocal.dev | grep -E '"(aud|sub|oid)"'  # A
+```
 
 ```text
-app A  sub= WXJyvd4dubz6kWvzEYotC2ypGzoWsBCQwocpHRGqKkA  oid= daa6ae20-6153-4193-a9f7-9f8cc48bbf34
-app B  sub= Syo-bk98TBcNpgrTTgzhMT_mm4CdgxcA35EeB-31tGs  oid= daa6ae20-6153-4193-a9f7-9f8cc48bbf34
+B  "sub": "uqTHzCX6JXcJFCb5-L3lRrPXqRtQHv0jVVFJHrRAA70"  "aud": "462a0ca8-..."  "oid": "82de800f-ad8c-42ac-bfef-bda7a2aa40ea"
+A  "sub": "7AVwZdeJEDtlOYPBd5JlCISHoby578la6SIPMq3Q27Q"  "aud": "542d7c9b-..."  "oid": "82de800f-ad8c-42ac-bfef-bda7a2aa40ea"
 ```
+
+`aud`（どのアプリ向けか）と一緒に `sub` も変わり、`oid` は同じです。
 
 アプリをまたいで「同じ人」を見分けたいなら `oid`（と `tid`）を使います。次のレクチャーで、`oid` を Cognito の属性に持ち込みます。
 

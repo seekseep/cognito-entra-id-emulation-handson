@@ -11,6 +11,7 @@ dist/
 .cognito.env
 .tokens.json
 .entra.env
+.entra.*.env
 
 # secrets
 *.pem
