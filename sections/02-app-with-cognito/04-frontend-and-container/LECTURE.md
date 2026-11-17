@@ -100,7 +100,7 @@ npm run api:up
 
 ## 本番の Cognito に切り替える
 
-コードは変えません。`.env` をこうするだけです。
+コードは変えません。ホストで動かす（`npm run start:dev`）なら、`.env` をこうするだけです。
 
 ```bash
 AWS_REGION=ap-northeast-1
@@ -112,6 +112,10 @@ COGNITO_CLIENT_ID=本物のクライアント ID
 - `iss` は `https://cognito-idp.ap-northeast-1.amazonaws.com/<プール ID>`、JWKS はその後ろの `/.well-known/jwks.json` になり、設定が自動で組み立てます
 - `AWS_ACCESS_KEY_ID` などのダミーのキーは消します。この API が呼ぶ `SignUp`・`ConfirmSignUp`・`InitiateAuth` は、IAM の認証情報なしでクライアント ID だけで呼べる API です
 - 本物の App Client でも `ALLOW_USER_PASSWORD_AUTH` を許しておく必要があります
+
+:::warning[コンテナで動かすときは compose.yaml も変える]
+compose.yaml の `api` サービスの `environment:` にある `COGNITO_ENDPOINT`・`COGNITO_ISSUER`・`COGNITO_JWKS_URL` の 3 行は、Floci に向けるためのものです。`environment:` に書いた値は `.env`（`env_file:`）より優先されるので、`.env` だけを本物に書き換えても、API は Floci に話しかけ続けます。本物に向けるときは、この 3 行も消してください。本番の compose ファイルを別に分けておくのも手です。
+:::
 
 :::faq
 
