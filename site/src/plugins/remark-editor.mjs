@@ -138,7 +138,18 @@ export default function remarkEditor() {
       );
 
       const headerChildren = [el('span', ['editor__title'], [text(attrs.title || DEFAULT_TITLE)])];
-      if (zipUrl) headerChildren.push(downloadButton(zipUrl));
+      // 右側のボタン（ダウンロード・フルスクリーン）。フルスクリーンの切り替えは editor-client.js
+      const actions = [];
+      if (zipUrl) actions.push(downloadButton(zipUrl));
+      actions.push(
+        el('button', ['editor__fullscreen'], [el('span', ['editor__fullscreen-label'], [text('全画面')])], {
+          type: 'button',
+          title: '全画面で見る',
+          'aria-label': '全画面で見る',
+          'aria-pressed': 'false',
+        }),
+      );
+      headerChildren.push(el('span', ['editor__actions'], actions));
 
       const header = el('div', ['editor__header'], headerChildren);
       const body = el('div', ['editor__body'], [

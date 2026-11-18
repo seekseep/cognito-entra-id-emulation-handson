@@ -262,3 +262,107 @@
   font-size: var(--sl-text-sm);
   color: var(--sl-color-gray-3);
 }
+
+/* ツリー表示のアイコン。フォルダとファイルを見分けられるようにする（色は文字色に合わせる） */
+.editor__dir,
+.editor--tree .editor__file {
+  --tree-icon-folder: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z'/%3E%3C/svg%3E");
+  --tree-icon-file: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'/%3E%3Cpath d='M14 2v4a2 2 0 0 0 2 2h4'/%3E%3C/svg%3E");
+}
+.editor__dir {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.editor__dir::before,
+.editor--tree .editor__file::before {
+  content: '';
+  flex: none;
+  width: 1em;
+  height: 1em;
+  background-color: currentColor;
+  -webkit-mask: var(--tree-icon) center / contain no-repeat;
+  mask: var(--tree-icon) center / contain no-repeat;
+}
+.editor__dir::before {
+  --tree-icon: var(--tree-icon-folder);
+  color: var(--sl-color-accent);
+}
+.editor--tree .editor__file::before {
+  --tree-icon: var(--tree-icon-file);
+  opacity: 0.7;
+}
+/* アイコン・名前・印の 3 つを並べる。名前の後ろを伸ばして、印を右端に寄せる */
+.editor--tree .editor__file {
+  justify-content: flex-start;
+  gap: 0.35rem;
+}
+.editor--tree .editor__file .file-badge {
+  margin-left: auto;
+}
+
+/* ヘッダ右側のボタン（ダウンロード・全画面） */
+.editor__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+.editor__fullscreen {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--sl-color-gray-4);
+  border-radius: 0.4rem;
+  background: var(--sl-color-black);
+  color: var(--sl-color-white);
+  font-size: var(--sl-text-sm);
+  cursor: pointer;
+}
+.editor__fullscreen:hover {
+  border-color: var(--sl-color-accent);
+}
+.editor__fullscreen::before {
+  content: '';
+  width: 1em;
+  height: 1em;
+  background-color: currentColor;
+  -webkit-mask: var(--fs-icon) center / contain no-repeat;
+  mask: var(--fs-icon) center / contain no-repeat;
+  --fs-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 3H5a2 2 0 0 0-2 2v3'/%3E%3Cpath d='M21 8V5a2 2 0 0 0-2-2h-3'/%3E%3Cpath d='M3 16v3a2 2 0 0 0 2 2h3'/%3E%3Cpath d='M16 21h3a2 2 0 0 0 2-2v-3'/%3E%3C/svg%3E");
+}
+.editor.is-fullscreen .editor__fullscreen::before,
+.editor:fullscreen .editor__fullscreen::before {
+  --fs-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 3v3a2 2 0 0 1-2 2H3'/%3E%3Cpath d='M21 8h-3a2 2 0 0 1-2-2V3'/%3E%3Cpath d='M3 16h3a2 2 0 0 1 2 2v3'/%3E%3Cpath d='M16 21v-3a2 2 0 0 1 2-2h3'/%3E%3C/svg%3E");
+}
+
+/* 全画面のとき。Fullscreen API の :fullscreen と、使えないときの .is-fullscreen の両方 */
+.editor:fullscreen,
+.editor.is-fullscreen {
+  margin: 0;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+}
+.editor.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+.editor:fullscreen .editor__body,
+.editor.is-fullscreen .editor__body {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+}
+.editor:fullscreen .editor__files,
+.editor:fullscreen .editor__code,
+.editor.is-fullscreen .editor__files,
+.editor.is-fullscreen .editor__code {
+  overflow-y: auto;
+}
