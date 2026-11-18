@@ -136,10 +136,13 @@ export default function remarkEditor() {
             if (shownDirs.has(dir)) continue;
             shownDirs.add(dir);
             fileButtons.push(
-              el('div', ['editor__dir'], [icon('folder'), el('span', ['editor__name'], [text(parts[d - 1])])], {
-                style: `--depth:${d - 1}`,
-                title: dir,
-              }),
+              // フォルダの行はボタン。押すと中を開け閉めする（editor-client.js）
+              el(
+                'button',
+                ['editor__dir'],
+                [icon('chevron'), icon('folder'), el('span', ['editor__name'], [text(parts[d - 1])])],
+                { type: 'button', 'data-dir': dir, 'aria-expanded': 'true', style: `--depth:${d - 1}`, title: dir },
+              ),
             );
           }
         }

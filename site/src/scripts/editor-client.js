@@ -1,5 +1,6 @@
 // 簡易エディタ UI（remark-editor.mjs が生成する `.editor`）の挙動。
 // - 左のファイルボタンを押すと、対応するコードペインだけを表示する
+// - ツリーのフォルダを押すと、その中を開け閉めする
 // - ヘッダの「全画面」ボタンで、エディタだけを画面いっぱいに広げる
 //   Fullscreen API を使い、使えないとき（iPhone の Safari など）は position: fixed で代わりにする
 // - 本文の抜粋（handson-excerpts.mjs が生成する `.excerpt`）に、ファイルでの行番号を振り、
@@ -12,6 +13,23 @@
     });
     editor.querySelectorAll('.editor__pane').forEach(function (pane) {
       pane.classList.toggle('is-active', pane.dataset.file === file);
+    });
+  }
+
+  // ---- フォルダの開け閉め ----
+
+  // 閉じたフォルダの中にある行（フォルダ・ファイル）を隠す
+  function applyFolds(editor) {
+    var closed = [];
+    editor.querySelectorAll('.editor__dir[aria-expanded="false"]').forEach(function (dir) {
+      closed.push(dir.dataset.dir + '/');
+    });
+    editor.querySelectorAll('.editor__dir, .editor__file').forEach(function (row) {
+      var path = row.dataset.dir || row.dataset.file || '';
+      var inside = closed.some(function (prefix) {
+        return path.indexOf(prefix) === 0;
+      });
+      row.classList.toggle('is-folded', inside);
     });
   }
 
@@ -125,6 +143,13 @@
       editor.querySelectorAll('.editor__file').forEach(function (btn) {
         btn.addEventListener('click', function () {
           activate(editor, btn.dataset.file);
+        });
+      });
+      editor.querySelectorAll('.editor__dir').forEach(function (dir) {
+        dir.addEventListener('click', function () {
+          var open = dir.getAttribute('aria-expanded') !== 'false';
+          dir.setAttribute('aria-expanded', open ? 'false' : 'true');
+          applyFolds(editor);
         });
       });
       var fs = editor.querySelector('.editor__fullscreen');

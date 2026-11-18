@@ -100,25 +100,62 @@
   color: #fff;
 }
 
-/* ツリー表示（tree="true"）。フォルダの見出しとファイルを、深さ（--depth）だけ字下げして並べる。 */
+/* ツリー表示（tree="true"）。フォルダとファイルを、深さ（--depth）だけ字下げして並べる。
+   フォルダには開け閉めの山形が付くので、その分（1.1rem）だけ左に出して、同じ深さのアイコンをそろえる。 */
 .editor--tree .editor__file,
 .editor__dir {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  padding-left: calc(0.6rem + var(--depth, 0) * 0.9rem);
+  padding-left: calc(1.7rem + var(--depth, 0) * 0.9rem);
 }
 
 .editor__dir {
+  appearance: none;
+  width: 100%;
   margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
   padding-top: 0.35rem;
   padding-bottom: 0.35rem;
+  padding-left: calc(0.6rem + var(--depth, 0) * 0.9rem);
   padding-right: 0.9rem;
   color: var(--sl-color-gray-3);
   font-family: var(--sl-font-mono, monospace);
   font-size: var(--sl-text-xs);
   white-space: nowrap;
-  cursor: default;
+  cursor: pointer;
+}
+
+.editor__dir:hover {
+  background-color: var(--sl-color-gray-5);
+  color: var(--sl-color-white);
+}
+
+.editor__dir:focus-visible {
+  outline: 2px solid var(--sl-color-accent-high);
+  outline-offset: -2px;
+}
+
+/* 閉じたフォルダの中の行 */
+.editor__files .is-folded {
+  display: none;
+}
+
+/* 開け閉めの山形（Lucide の chevron-down）。閉じているときは右を向く */
+.editor__icon.editor__icon--chevron {
+  width: 0.9rem;
+  height: 0.9rem;
+  margin-right: -0.2rem;
+  opacity: 0.7;
+  transition: transform 0.15s;
+  --editor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+.editor__dir[aria-expanded='false'] .editor__icon--chevron {
+  transform: rotate(-90deg);
 }
 
 .editor--tree .editor__file {
