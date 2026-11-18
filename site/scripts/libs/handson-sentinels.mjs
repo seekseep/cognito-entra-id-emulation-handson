@@ -3,10 +3,11 @@
  * sentinels.mjs の expandSentinels から呼ばれる。
  *
  *   ::changes             … このレクチャーで足す・変えるファイルの表（役割は project/lectures.json の about）
- *   ::file{path="..."}    … そのファイルの全文をそのまま置く（コピーして使う前提）。
- *                           前のレクチャーから変えたファイルは、足した行に印を付ける
+ *   ::file{path="..."}    … 「`path` を作成する／変更する／削除する」の見出しと、そのファイルの全文を置く
+ *                           （コピーして使う前提）。前のレクチャーから変えたファイルは、足した行に印を付ける。
+ *                           見出しのレベルは、直前の見出しより 1 つ深くする
  *   ::codeview            … このレクチャーを終えた handson/ 全体をエディタで見せる（ページの最後に置く）。
- *                           ファイル一覧に「新規」「変更」を付け、足したファイルを最初に開く
+ *                           ファイル一覧に「作成」「変更」を付け、足したファイルを最初に開く
  *   ::timeline            … どのレクチャーで、どのファイルが増えるかの一覧（レクチャー以外のページでも使える）
  */
 
@@ -16,7 +17,7 @@ const CHANGES_RE = /^::changes\s*$/;
 const FILE_RE = /^::file\{path="([^"]+)"\}\s*$/;
 const TIMELINE_RE = /^::timeline\s*$/;
 
-export const STATUS_LABEL = { added: '新規', changed: '変更' };
+export const STATUS_LABEL = { added: '作成', changed: '変更', removed: '削除' };
 
 /** エディタと折りたたみで使うコードの言語。 */
 export function langOf(rel) {
@@ -54,15 +55,16 @@ function badge(status) {
   return status ? `<span class="file-badge file-badge--${status}">${STATUS_LABEL[status]}</span>` : '';
 }
 
-function statusOf(rel, { added, changed }) {
+function statusOf(rel, { added, changed, removed }) {
   if (added.has(rel)) return 'added';
   if (changed.has(rel)) return 'changed';
+  if (removed?.has(rel)) return 'removed';
   return null;
 }
 
 async function buildChanges(id, info) {
   const { files } = await loadManifest();
-  const rows = [...info.added, ...info.changed].map((rel) => {
+  const rows = [...info.added, ...info.changed, ...info.removed].map((rel) => {
     const status = statusOf(rel, info);
     return `<tr><td>${badge(status)}</td><td><code>${escapeHtml(rel)}</code></td><td>${escapeHtml(files[rel]?.about ?? '')}</td></tr>`;
   });
@@ -74,18 +76,25 @@ async function buildChanges(id, info) {
   );
 }
 
-function buildFile(rel, info, about) {
-  const text = info.current.get(rel);
+function buildFile(rel, info, about, depth) {
   const status = statusOf(rel, info);
+  // 見出しは「`path` を作成する」の形。前のレクチャーから変わっていないファイルは「確かめる」
+  const verb = { added: '作成する', changed: '変更する', removed: '削除する' }[status] ?? '確かめる';
+  const heading = `${'#'.repeat(depth)} \`${rel}\` を${verb}`;
+  const aboutLine = about ? `<p class="file-heading"><span class="file-heading__about">${escapeHtml(about)}</span></p>` : '';
+  if (status === 'removed') return [heading, '', aboutLine].join('\n');
+  const text = info.current.get(rel);
   const marks = status === 'changed' ? addedLines(info.previous.get(rel), text) : [];
   const meta = [`title="${rel}"`];
   if (marks.length) meta.push(`ins=${ranges(marks)}`);
   const fence = fenceFor(text);
   const hint = status === 'changed' ? '<span class="file-heading__hint">色の付いた行が、このレクチャーで足す行です</span>' : '';
-  // コピーして使う前提なので、折りたたまずに全文をそのまま見せる。上にファイル名・新規／変更・役割を 1 行で添える
+  // コピーして使う前提なので、折りたたまずに全文をそのまま見せる。見出しの下に役割を 1 行で添える
+  const notes = about || hint ? `<p class="file-heading">${about ? `<span class="file-heading__about">${escapeHtml(about)}</span>` : ''}${hint}</p>` : '';
   return [
-    `<p class="file-heading"><code>${escapeHtml(rel)}</code>${badge(status)}<span class="file-heading__about">${escapeHtml(about ?? '')}</span>${hint}</p>`,
+    heading,
     '',
+    ...(notes ? [notes, ''] : []),
     `${fence}${langOf(rel)} ${meta.join(' ')}`,
     text.replace(/\n+$/, ''),
     fence,
@@ -145,7 +154,18 @@ export async function expandHandsonSentinels(body, { id, where }) {
   const info = id ? await changesOf(id) : null;
   const { files } = await loadManifest();
   const out = [];
+  // ::file の見出しのレベルを決めるため、直前の見出しの深さを覚えておく（コードフェンスの中の # は数えない）
+  let lastDepth = 2;
+  let fence = null;
   for (const line of body.split('\n')) {
+    const f = line.match(/^(`{3,}|~{3,})/);
+    if (f) {
+      if (!fence) fence = f[1];
+      else if (line.startsWith(fence)) fence = null;
+    } else if (!fence) {
+      const h = line.match(/^(#{1,6})\s/);
+      if (h) lastDepth = h[1].length;
+    }
     if (TIMELINE_RE.test(line)) {
       out.push(await buildTimeline());
       continue;
@@ -166,8 +186,10 @@ export async function expandHandsonSentinels(body, { id, where }) {
         continue;
       }
       const rel = file[1];
-      if (!info.current.has(rel)) throw new Error(`[handson] ${where}: ::file{path="${rel}"} は、このレクチャーの ${SNAPSHOT_DIRNAME}/ にありません`);
-      out.push(buildFile(rel, info, files[rel]?.about));
+      if (!info.current.has(rel) && !info.removed.has(rel)) {
+        throw new Error(`[handson] ${where}: ::file{path="${rel}"} は、このレクチャーの ${SNAPSHOT_DIRNAME}/ にありません`);
+      }
+      out.push(buildFile(rel, info, files[rel]?.about, Math.min(lastDepth + 1, 6)));
       continue;
     }
     out.push(line);

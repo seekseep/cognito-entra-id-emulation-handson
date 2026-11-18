@@ -27,7 +27,7 @@ const NAME = 'editor';
 const FILE_META_RE = /data-file="([^"]*)"/;
 // 積み上げ方式で、このレクチャーで足した（added）・変えた（changed）ファイルに付く印
 const STATUS_META_RE = /data-status="(added|changed)"/;
-const STATUS_LABEL = { added: '新規', changed: '変更' };
+const STATUS_LABEL = { added: '作成', changed: '変更' };
 const DEFAULT_TITLE = 'このステップの完成例';
 
 // 一覧に出す名前。Office マクロ系の vba/ ・ gas/ は、どちらの環境かを本文で選んでいるので出さない。

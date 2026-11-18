@@ -419,6 +419,11 @@ html.has-editor-fullscreen .main-pane {
   color: var(--sl-color-orange-high);
   border: 1px solid var(--sl-color-orange);
 }
+.file-badge--removed {
+  background-color: var(--sl-color-red-low);
+  color: var(--sl-color-red-high);
+  border: 1px solid var(--sl-color-red);
+}
 .file-changes td:first-child {
   white-space: nowrap;
 }
@@ -426,13 +431,13 @@ html.has-editor-fullscreen .main-pane {
   font-family: var(--sl-font-mono, monospace);
 }
 
-/* ::file — ファイルの全文の上に置く見出し（ファイル名・新規／変更・役割） */
+/* ::file — 「`path` を作成する」の見出しの下に置く、役割と色の付いた行の説明 */
 .file-heading {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 0.25rem 0.5rem;
-  margin: 1.5rem 0 -0.25rem;
+  margin: 0.5rem 0 -0.25rem;
 }
 .file-heading .file-badge {
   margin-left: 0;
