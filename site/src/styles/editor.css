@@ -614,3 +614,29 @@ html.has-editor-fullscreen .main-pane {
   color: var(--sl-color-gray-4);
   user-select: none;
 }
+
+/* ::file のファイル全文（handson-sentinels.mjs の .file-code）にも行番号を振る */
+.file-code > .expressive-code {
+  margin-top: 0;
+}
+
+.file-code .expressive-code code {
+  counter-reset: file-ln;
+}
+
+.file-code .ec-line {
+  counter-increment: file-ln;
+}
+
+.file-code .expressive-code .ec-line.ec-line > .code::before {
+  position: static;
+  padding: 0;
+  background: none;
+  content: counter(file-ln);
+  display: inline-block;
+  min-width: 3ch;
+  margin-right: 1.25ch;
+  text-align: right;
+  color: var(--sl-color-gray-4);
+  user-select: none;
+}

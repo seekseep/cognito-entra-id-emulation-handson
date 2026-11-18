@@ -98,9 +98,14 @@ function buildFile(rel, info, about, depth) {
     heading,
     '',
     ...(notes ? [notes, ''] : []),
+    // 行番号を出すため、<div class="file-code"> で包む（番号は editor.css のカウンタで振る）
+    '<div class="file-code">',
+    '',
     `${fence}${langOf(rel)} ${meta.join(' ')}`,
     text.replace(/\n+$/, ''),
     fence,
+    '',
+    '</div>',
   ].join('\n');
 }
 
