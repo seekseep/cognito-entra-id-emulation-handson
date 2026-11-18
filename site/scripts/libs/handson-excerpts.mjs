@@ -15,9 +15,10 @@
  *
  * 出力（remark に渡す Markdown。HTML ブロックとコードフェンスの組み合わせ）
  *   <div class="excerpt" data-lines="20,21,,23">  … 抜粋の各行の、ファイルでの行番号（省いた印の行は空）
- *     <p class="excerpt__bar">ファイル名・何行目・「全体を確認する」ボタン</p>
+ *     <p class="excerpt__bar">ファイル名・何行目</p>
  *     抜粋のフェンス（そのまま）
  *     <div class="excerpt__full" hidden>ファイル全体のフェンス（抜粋の範囲に mark）</div>
+ *     <button class="excerpt__toggle">全体を確認する</button>  … コードの枠の下の端に付く帯。押すと、抜粋がその場でファイル全体に広がる
  *   </div>
  * 行番号を振る・開け閉めするのは site/src/scripts/editor-client.js、見た目は editor.css。
  */
@@ -132,7 +133,7 @@ function render({ rel, numbers, open, inner, close, lang, fullText }) {
   return [
     `<div class="excerpt" data-file="${escapeHtml(rel)}" data-lines="${numbers.map((n) => n ?? '').join(',')}">`,
     '',
-    `<p class="excerpt__bar"><code class="excerpt__file">${escapeHtml(rel)}</code><span class="excerpt__range">${range}</span><button class="excerpt__toggle" type="button" aria-expanded="false">全体を確認する</button></p>`,
+    `<p class="excerpt__bar"><code class="excerpt__file">${escapeHtml(rel)}</code><span class="excerpt__range">${range}</span></p>`,
     '',
     open,
     ...inner,
@@ -145,6 +146,9 @@ function render({ rel, numbers, open, inner, close, lang, fullText }) {
     fullFence,
     '',
     '</div>',
+    '',
+    // <button> だけだと Markdown が <p> で包むので、<div> の中に置く
+    `<div class="excerpt__foot"><button class="excerpt__toggle" type="button" aria-expanded="false"><span class="excerpt__toggle-label">全体を確認する</span></button></div>`,
     '',
     '</div>',
   ];

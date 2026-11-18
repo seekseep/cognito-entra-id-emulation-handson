@@ -3,7 +3,7 @@
 // - ヘッダの「全画面」ボタンで、エディタだけを画面いっぱいに広げる
 //   Fullscreen API を使い、使えないとき（iPhone の Safari など）は position: fixed で代わりにする
 // - 本文の抜粋（handson-excerpts.mjs が生成する `.excerpt`）に、ファイルでの行番号を振り、
-//   「全体を確認する」でファイル全体を開いて、抜粋の所までスクロールする
+//   「全体を確認する」で抜粋をその場でファイル全体に広げ、抜粋の所までスクロールする
 // `.editor` が無いページでは何もしない。全ページの <head> に inline 注入される。
 (function () {
   function activate(editor, file) {
@@ -97,11 +97,15 @@
     var btn = excerpt.querySelector('.excerpt__toggle');
     var full = excerpt.querySelector('.excerpt__full');
     if (!btn || !full) return;
+    var label = btn.querySelector('.excerpt__toggle-label') || btn;
     btn.addEventListener('click', function () {
+      // 抜粋と、ファイル全体を入れ替える（抜粋がその場で広がる）
       var open = full.hidden;
       full.hidden = !open;
+      if (code) code.hidden = open;
+      excerpt.classList.toggle('is-open', open);
       btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      btn.textContent = open ? '全体を閉じる' : '全体を確認する';
+      label.textContent = open ? '抜粋に戻す' : '全体を確認する';
       if (!open) return;
       // 抜粋の所（色の付いた行）が見えるよう、全体の枠の中だけをスクロールする
       var mark = full.querySelector('.ec-line.mark');
