@@ -12,6 +12,8 @@
  *   - 各コードフェンスからファイル名を読み取り（meta は消して Expressive Code の枠を出さない）
  *   - 左のファイル切り替えボタン、右のコードペインを組み立てる
  *   - ヘッダに ZIP ダウンロードボタンを付ける
+ * tree="true" のときは、フォルダとファイルにアイコンを付けてツリーのように並べる。
+ * ヘッダには「全画面」ボタンを付ける（押したときの挙動は editor-client.js）。
  * タブ切り替えの挙動は site/src/scripts/editor-client.js（全ページに inline 注入）。
  * 装飾は site/src/styles/editor.css。
  *
@@ -78,6 +80,24 @@ function singleButton(zipUrl, extraClass) {
   };
 }
 
+/** ツリーの行の頭に置くアイコン（絵は editor.css の mask で描く） */
+function icon(kind) {
+  return el('span', ['editor__icon', `editor__icon--${kind}`], [], { 'aria-hidden': 'true' });
+}
+
+/** ヘッダの「全画面」ボタン。押したときの挙動は editor-client.js */
+function fullscreenButton() {
+  return el(
+    'button',
+    ['editor__fullscreen'],
+    [
+      el('span', ['editor__fullscreen-icon'], [], { 'aria-hidden': 'true' }),
+      el('span', ['editor__fullscreen-label'], [text('全画面')]),
+    ],
+    { type: 'button', 'aria-pressed': 'false', title: '全画面で開く' },
+  );
+}
+
 export default function remarkEditor() {
   return (tree) => {
     visit(tree, (node) => {
@@ -115,12 +135,18 @@ export default function remarkEditor() {
             const dir = parts.slice(0, d).join('/');
             if (shownDirs.has(dir)) continue;
             shownDirs.add(dir);
-            fileButtons.push(el('div', ['editor__dir'], [text(`${parts[d - 1]}/`)], { style: `--depth:${d - 1}` }));
+            fileButtons.push(
+              el('div', ['editor__dir'], [icon('folder'), el('span', ['editor__name'], [text(parts[d - 1])])], {
+                style: `--depth:${d - 1}`,
+                title: dir,
+              }),
+            );
           }
         }
         fileButtons.push(
           el('button', ['editor__file', ...(i === activeIndex ? ['is-active'] : [])], [
-            text(tree ? parts.at(-1) : displayName(f.name)),
+            ...(tree ? [icon('file')] : []),
+            el('span', ['editor__name'], [text(tree ? parts.at(-1) : displayName(f.name))]),
             ...(f.status ? [el('span', ['file-badge', `file-badge--${f.status}`], [text(STATUS_LABEL[f.status])])] : []),
           ], {
             type: 'button',
@@ -137,21 +163,14 @@ export default function remarkEditor() {
         }),
       );
 
-      const headerChildren = [el('span', ['editor__title'], [text(attrs.title || DEFAULT_TITLE)])];
-      // 右側のボタン（ダウンロード・フルスクリーン）。フルスクリーンの切り替えは editor-client.js
       const actions = [];
       if (zipUrl) actions.push(downloadButton(zipUrl));
-      actions.push(
-        el('button', ['editor__fullscreen'], [el('span', ['editor__fullscreen-label'], [text('全画面')])], {
-          type: 'button',
-          title: '全画面で見る',
-          'aria-label': '全画面で見る',
-          'aria-pressed': 'false',
-        }),
-      );
-      headerChildren.push(el('span', ['editor__actions'], actions));
+      actions.push(fullscreenButton());
 
-      const header = el('div', ['editor__header'], headerChildren);
+      const header = el('div', ['editor__header'], [
+        el('span', ['editor__title'], [text(attrs.title || DEFAULT_TITLE)]),
+        el('span', ['editor__actions'], actions),
+      ]);
       const body = el('div', ['editor__body'], [
         el('div', ['editor__files'], fileButtons),
         el('div', ['editor__code'], panes),

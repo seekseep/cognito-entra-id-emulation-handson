@@ -38,6 +38,19 @@
   --flag-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z'/%3E%3Cline x1='4' y1='22' x2='4' y2='15'/%3E%3C/svg%3E");
 }
 
+/* ヘッダの右側（ダウンロードと全画面のボタン）。 */
+.editor__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 0 auto;
+}
+
+.editor__actions > * {
+  margin-top: 0;
+}
+
 /* ヘッダ内のダウンロードボタンはコンパクトに。 */
 .editor__header .download-button {
   margin: 0;
@@ -87,6 +100,154 @@
   color: #fff;
 }
 
+/* ツリー表示（tree="true"）。フォルダの見出しとファイルを、深さ（--depth）だけ字下げして並べる。 */
+.editor--tree .editor__file,
+.editor__dir {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-left: calc(0.6rem + var(--depth, 0) * 0.9rem);
+}
+
+.editor__dir {
+  margin: 0;
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+  padding-right: 0.9rem;
+  color: var(--sl-color-gray-3);
+  font-family: var(--sl-font-mono, monospace);
+  font-size: var(--sl-text-xs);
+  white-space: nowrap;
+  cursor: default;
+}
+
+.editor--tree .editor__file {
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+}
+
+.editor__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.editor--tree .editor__file .file-badge {
+  margin-left: auto;
+}
+
+/* フォルダ・ファイルのアイコン（Lucide の folder / file）。currentColor で塗るため mask で描く。 */
+.editor__icon {
+  flex: none;
+  width: 1.1em;
+  height: 1.1em;
+  margin: 0;
+  background-color: currentColor;
+  -webkit-mask: var(--editor-icon) center / contain no-repeat;
+  mask: var(--editor-icon) center / contain no-repeat;
+}
+
+.editor__icon--folder {
+  color: var(--sl-color-accent-high);
+  --editor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z'/%3E%3C/svg%3E");
+}
+
+.editor__icon--file {
+  opacity: 0.75;
+  --editor-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'/%3E%3Cpath d='M14 2v4a2 2 0 0 0 2 2h4'/%3E%3C/svg%3E");
+}
+
+.editor__file.is-active .editor__icon--file {
+  opacity: 1;
+}
+
+/* 「全画面」ボタン。 */
+.editor__fullscreen {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.4rem 0.75rem;
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-white);
+  background: var(--sl-color-black);
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.4rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.editor__fullscreen:hover {
+  background: var(--sl-color-gray-5);
+}
+
+.editor__fullscreen:focus-visible {
+  outline: 2px solid var(--sl-color-accent-high);
+  outline-offset: 2px;
+}
+
+/* Lucide の maximize / minimize */
+.editor__fullscreen-icon {
+  flex: none;
+  width: 1.1em;
+  height: 1.1em;
+  margin: 0;
+  background-color: currentColor;
+  -webkit-mask: var(--fullscreen-icon) center / contain no-repeat;
+  mask: var(--fullscreen-icon) center / contain no-repeat;
+  --fullscreen-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 3H5a2 2 0 0 0-2 2v3'/%3E%3Cpath d='M21 8V5a2 2 0 0 0-2-2h-3'/%3E%3Cpath d='M3 16v3a2 2 0 0 0 2 2h3'/%3E%3Cpath d='M16 21h3a2 2 0 0 0 2-2v-3'/%3E%3C/svg%3E");
+}
+
+.editor.is-fullscreen .editor__fullscreen-icon {
+  --fullscreen-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 3v3a2 2 0 0 1-2 2H3'/%3E%3Cpath d='M21 8h-3a2 2 0 0 1-2-2V3'/%3E%3Cpath d='M3 16h3a2 2 0 0 1 2 2v3'/%3E%3Cpath d='M16 21v-3a2 2 0 0 1 2-2h3'/%3E%3C/svg%3E");
+}
+
+.editor__fullscreen-icon,
+.editor__fullscreen-label {
+  margin-top: 0;
+}
+
+/* 全画面のとき。Fullscreen API（:fullscreen）でも、代わりの position: fixed でも同じ見た目にする。
+   ファイル一覧とコードは、それぞれの中でスクロールする。 */
+.editor.is-fullscreen {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.editor.is-fallback-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  height: 100vh;
+  height: 100dvh;
+}
+
+html.has-editor-fullscreen {
+  overflow: hidden;
+}
+
+/* Starlight の .main-pane は isolation: isolate で重なり順を閉じ込めるので、
+   そのままではヘッダや目次バーがエディタの上に来る。代わりの全画面のあいだだけ外す */
+html.has-editor-fullscreen .main-pane {
+  isolation: auto;
+}
+
+.editor.is-fullscreen .editor__body {
+  flex: 1;
+  min-height: 0;
+  grid-template-columns: minmax(200px, 300px) 1fr;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.editor.is-fullscreen .editor__files,
+.editor.is-fullscreen .editor__code {
+  overflow: auto;
+}
+
 /* 右: コード */
 .editor__code {
   min-width: 0; /* グリッド内で横スクロールを許可する */
@@ -121,7 +282,7 @@
 /* 行番号。EC は各行を <div class="ec-line"><div class="code">…</div></div> で出力するので、
    カウンタで行番号を振り、コード先頭にガター風の番号を差し込む。 */
 .editor__pane .expressive-code code {
-  counter-reset: ededitor__codeitor-ln;
+  counter-reset: editor-ln;
   padding-top: 0;
 }
 
@@ -149,6 +310,29 @@
     flex-wrap: wrap;
     border-right: 0;
     border-bottom: 1px solid var(--sl-color-gray-5);
+  }
+  /* ツリーは横に並べると形が崩れるので、縦のまま高さを抑えてスクロールさせる */
+  .editor--tree .editor__files {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    max-height: 14rem;
+    overflow-y: auto;
+  }
+  .editor.is-fullscreen .editor__body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .editor.is-fullscreen .editor__files {
+    max-height: 35vh;
+  }
+  /* 狭い画面ではアイコンだけにする（文言は読み上げ用に残す） */
+  .editor__fullscreen-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 
@@ -261,108 +445,4 @@
   flex-basis: 100%;
   font-size: var(--sl-text-sm);
   color: var(--sl-color-gray-3);
-}
-
-/* ツリー表示のアイコン。フォルダとファイルを見分けられるようにする（色は文字色に合わせる） */
-.editor__dir,
-.editor--tree .editor__file {
-  --tree-icon-folder: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z'/%3E%3C/svg%3E");
-  --tree-icon-file: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'/%3E%3Cpath d='M14 2v4a2 2 0 0 0 2 2h4'/%3E%3C/svg%3E");
-}
-.editor__dir {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-.editor__dir::before,
-.editor--tree .editor__file::before {
-  content: '';
-  flex: none;
-  width: 1em;
-  height: 1em;
-  background-color: currentColor;
-  -webkit-mask: var(--tree-icon) center / contain no-repeat;
-  mask: var(--tree-icon) center / contain no-repeat;
-}
-.editor__dir::before {
-  --tree-icon: var(--tree-icon-folder);
-  color: var(--sl-color-accent);
-}
-.editor--tree .editor__file::before {
-  --tree-icon: var(--tree-icon-file);
-  opacity: 0.7;
-}
-/* アイコン・名前・印の 3 つを並べる。名前の後ろを伸ばして、印を右端に寄せる */
-.editor--tree .editor__file {
-  justify-content: flex-start;
-  gap: 0.35rem;
-}
-.editor--tree .editor__file .file-badge {
-  margin-left: auto;
-}
-
-/* ヘッダ右側のボタン（ダウンロード・全画面） */
-.editor__actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-left: auto;
-}
-.editor__fullscreen {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin: 0;
-  padding: 0.4rem 0.75rem;
-  border: 1px solid var(--sl-color-gray-4);
-  border-radius: 0.4rem;
-  background: var(--sl-color-black);
-  color: var(--sl-color-white);
-  font-size: var(--sl-text-sm);
-  cursor: pointer;
-}
-.editor__fullscreen:hover {
-  border-color: var(--sl-color-accent);
-}
-.editor__fullscreen::before {
-  content: '';
-  width: 1em;
-  height: 1em;
-  background-color: currentColor;
-  -webkit-mask: var(--fs-icon) center / contain no-repeat;
-  mask: var(--fs-icon) center / contain no-repeat;
-  --fs-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 3H5a2 2 0 0 0-2 2v3'/%3E%3Cpath d='M21 8V5a2 2 0 0 0-2-2h-3'/%3E%3Cpath d='M3 16v3a2 2 0 0 0 2 2h3'/%3E%3Cpath d='M16 21h3a2 2 0 0 0 2-2v-3'/%3E%3C/svg%3E");
-}
-.editor.is-fullscreen .editor__fullscreen::before,
-.editor:fullscreen .editor__fullscreen::before {
-  --fs-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 3v3a2 2 0 0 1-2 2H3'/%3E%3Cpath d='M21 8h-3a2 2 0 0 1-2-2V3'/%3E%3Cpath d='M3 16h3a2 2 0 0 1 2 2v3'/%3E%3Cpath d='M16 21v-3a2 2 0 0 1 2-2h3'/%3E%3C/svg%3E");
-}
-
-/* 全画面のとき。Fullscreen API の :fullscreen と、使えないときの .is-fullscreen の両方 */
-.editor:fullscreen,
-.editor.is-fullscreen {
-  margin: 0;
-  border-radius: 0;
-  display: flex;
-  flex-direction: column;
-  width: 100vw;
-  height: 100vh;
-  height: 100dvh;
-}
-.editor.is-fullscreen {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-}
-.editor:fullscreen .editor__body,
-.editor.is-fullscreen .editor__body {
-  flex: 1;
-  min-height: 0;
-  max-height: none;
-}
-.editor:fullscreen .editor__files,
-.editor:fullscreen .editor__code,
-.editor.is-fullscreen .editor__files,
-.editor.is-fullscreen .editor__code {
-  overflow-y: auto;
 }
