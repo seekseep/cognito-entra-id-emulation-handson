@@ -15,7 +15,7 @@ docs: true
 
 増えるファイルは 3 つのまとまりに分かれます。
 
-- **NestJS を動かすための設定**（`tsconfig.json`・`tsconfig.build.json`・`nest-cli.json`）… どの NestJS のプロジェクトにもある土台で、中身を覚える必要はありません。開いてコピーします
+- **NestJS を動かすための設定**（`tsconfig.json`・`tsconfig.build.json`・`nest-cli.json`）… どの NestJS のプロジェクトにもある土台で、中身を覚える必要はありません。そのままコピーします
 - **API 本体**（`src/`）… このレクチャーの本題です。上から順に作ります
 - **API に User Pool を教える仕組み**（`scripts/write-api-env.sh`・`.env.example`）… 01 で作った User Pool とクライアントを、API が読む `.env` に書き出します
 
@@ -41,7 +41,7 @@ npm install @nestjs/common @nestjs/core @nestjs/platform-express @nestjs/config 
 npm install -D @nestjs/cli @nestjs/schematics typescript @types/node @types/express source-map-support
 ```
 
-TypeScript と NestJS の CLI の設定ファイルを 3 つ置きます。中身は NestJS の標準の構成そのままなので、開いてコピーしてください。
+TypeScript と NestJS の CLI の設定ファイルを 3 つ置きます。中身は NestJS の標準の構成そのままなので、そのままコピーしてください。
 
 ::file{path="tsconfig.json"}
 

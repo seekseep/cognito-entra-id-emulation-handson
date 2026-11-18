@@ -3,7 +3,7 @@
  * sentinels.mjs の expandSentinels から呼ばれる。
  *
  *   ::changes             … このレクチャーで足す・変えるファイルの表（役割は project/lectures.json の about）
- *   ::file{path="..."}    … そのファイルの全文を、開いて読める折りたたみ（<details>）で置く。
+ *   ::file{path="..."}    … そのファイルの全文をそのまま置く（コピーして使う前提）。
  *                           前のレクチャーから変えたファイルは、足した行に印を付ける
  *   ::codeview            … このレクチャーを終えた handson/ 全体をエディタで見せる（ページの最後に置く）。
  *                           ファイル一覧に「新規」「変更」を付け、足したファイルを最初に開く
@@ -81,17 +81,14 @@ function buildFile(rel, info, about) {
   const meta = [`title="${rel}"`];
   if (marks.length) meta.push(`ins=${ranges(marks)}`);
   const fence = fenceFor(text);
-  const hint = status === 'changed' ? '<span class="file-disclosure__hint">色の付いた行が、このレクチャーで足す行です</span>' : '';
+  const hint = status === 'changed' ? '<span class="file-heading__hint">色の付いた行が、このレクチャーで足す行です</span>' : '';
+  // コピーして使う前提なので、折りたたまずに全文をそのまま見せる。上にファイル名・新規／変更・役割を 1 行で添える
   return [
-    `<details class="file-disclosure"><summary><code>${escapeHtml(rel)}</code>${badge(status)}<span class="file-disclosure__about">${escapeHtml(about ?? '')}</span></summary>`,
-    '',
-    hint,
+    `<p class="file-heading"><code>${escapeHtml(rel)}</code>${badge(status)}<span class="file-heading__about">${escapeHtml(about ?? '')}</span>${hint}</p>`,
     '',
     `${fence}${langOf(rel)} ${meta.join(' ')}`,
     text.replace(/\n+$/, ''),
     fence,
-    '',
-    '</details>',
   ].join('\n');
 }
 

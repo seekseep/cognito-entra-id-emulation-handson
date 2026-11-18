@@ -19,7 +19,7 @@ Cognito にログインを任せてもらう側の IdP として、[Keycloak](ht
 
 ::file{path="compose.yaml"}
 
-Keycloak に読み込ませる realm（ユーザーとクライアントの定義）を `keycloak/realm-practice.json` に置きます。長いので、開いてコピーしてください。
+Keycloak に読み込ませる realm（ユーザーとクライアントの定義）を `keycloak/realm-practice.json` に置きます。長いので、そのままコピーしてください。
 
 ::file{path="keycloak/realm-practice.json"}
 
