@@ -9,6 +9,8 @@ Amazon Cognito の認証を、AWS アカウントも Entra テナントも使わ
 
 ユーザーを作ってトークンを読むところから始めて、NestJS の API を守り、最後は「Cognito が Keycloak や Entra ID にログインを任せる」フェデレーションまで、ローカルで最後まで通します。
 
+手元では **`handson/` という 1 つのフォルダ** を、レクチャーごとに少しずつ育てていきます。User Pool を作るスクリプト 1 つから始まり、API・画面・Keycloak・Entra ID と、どのファイルをいつ足すかを追いながら進めます。
+
 ![全体の構成](./sections/00-setup/02-floci/images/01-overview.svg)
 
 | セクション | 使うコンテナ | ローカルで完結すること | 本物が要ること |
@@ -46,9 +48,22 @@ entra-local で Entra ID を手元に再現し、アプリの登録・シーク�
 
 ## 始め方
 
-1. このリポジトリをクローンする
-2. [道具をそろえる](./sections/00-setup/01-tools/LECTURE.md)
-3. [進め方](./sections/README.md) を読んで、最初のレクチャーに進む
+1. [道具をそろえる](./sections/00-setup/01-tools/LECTURE.md)
+2. [進め方](./sections/README.md) を読む
+3. [Floci を起動する](./sections/00-setup/02-floci/LECTURE.md) で `handson/` をダウンロードして、最初のレクチャーに進む
+
+## リポジトリの構成
+
+```text
+project/                 04 を終えた状態の handson/（ここが元。ファイルの中の @since で、いつ足す行かを書く）
+  lectures.json          どのファイルがどのレクチャーで増えるか
+sections/<sec>/<lec>/
+  LECTURE.md             教材の本文
+  handson/               そのレクチャーを終えた状態（project/ から生成。直接編集しない）
+site/                    解説サイト（sections/ を取り込む）
+```
+
+`project/` を直したら、`cd site && pnpm run build-snapshots` で各レクチャーの `handson/` を作り直します。
 
 ## 過去のハンズオン
 

@@ -9,17 +9,23 @@ docs: true
 
 トークンの中身は誰でも書き換えられます。API が受け取ったトークンを信じてよいかは、**署名** で判断します。Cognito がどの鍵で署名したかは JWKS（公開鍵の一覧）で公開されています。この鍵でトークンを確かめ、書き換えたトークンが弾かれることを見ます。最後にリフレッシュトークンでトークンを更新します。
 
-:::download
-[サンプルコードをダウンロード](./project.zip)
-:::
+このレクチャーで足すファイルは次のとおりです。署名を確かめるスクリプトのために、初めて npm のパッケージ（jose）を入れます。
+
+::changes
 
 ## 準備
 
+`handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `npm run setup` で前のレクチャーを終えた状態を作り直します。
+
 ```bash
-npm install
-npm run floci:up
-npm run setup              # User Pool・App Client・alice・bob・admin グループ
+npm run up
+npm run setup              # 前のレクチャーまでに作ったものを作り直す
 source ./env.sh && source ./.cognito.env
+```
+
+トークンを 1 組もらっておきます。
+
+```bash
 npm run login alice 'Passw0rd!'
 ```
 
@@ -48,11 +54,32 @@ curl -s "$AWS_ENDPOINT_URL/$POOL_ID/.well-known/jwks.json"
 
 ## 署名を確かめる
 
-[scripts/verify-jwt.mjs](./scripts/verify-jwt.mjs) は、[jose](https://github.com/panva/jose) を使って次の 3 つを確かめます。
+JWT の検証は自分で書かず、[jose](https://github.com/panva/jose) を使います。`npm install` で入れると、`package.json` に `dependencies` が増えます。
+
+```bash
+npm install jose
+```
+
+**`scripts/verify-jwt.mjs`** を作ります。次の 3 つを確かめます。
 
 1. JWKS の鍵で署名が正しいか
 2. `iss` が自分の User Pool か
 3. `exp` を過ぎていないか
+
+要点は、**`iss` を自分の User Pool から組み立て、そこから discovery → `jwks_uri` の順に鍵の在りかを知る** ことです。トークンの中に書かれた `iss` を信じて鍵を取りに行くことはしません。
+
+```js
+const issuer = `${env.AWS_ENDPOINT_URL}/${env.POOL_ID}`;
+const discovery = await (await fetch(`${issuer}/.well-known/openid-configuration`)).json();
+const jwks = createRemoteJWKSet(new URL(discovery.jwks_uri));
+const { payload } = await jwtVerify(token, jwks, { issuer });
+```
+
+::file{path="scripts/verify-jwt.mjs"}
+
+`package.json` に `verify` を足します（`dependencies` は `npm install` が足したものです）。
+
+::file{path="package.json"}
 
 ```bash
 npm run verify "$(node -e "console.log(require('./.tokens.json').AccessToken)")"
@@ -87,6 +114,10 @@ POOL_ID=$OTHER npm run verify "$(node -e "console.log(require('./.tokens.json').
 Floci は User Pool ごとに別の鍵を使います（本物も同じです）。別の User Pool の鍵では確かめられません。
 
 ## トークンを更新する
+
+**`scripts/refresh.sh`** は、`.tokens.json` のリフレッシュトークンを `REFRESH_TOKEN_AUTH` で送ります。`package.json` の `refresh` は、上で `verify` と一緒に足してあります。
+
+::file{path="scripts/refresh.sh"}
 
 ```bash
 npm run refresh
@@ -131,6 +162,14 @@ Cognito に問い合わせれば「取り消し済み」と分かりますが、
 | 外部 IdP（OIDC）の登録 | discovery を読みに行かないので、エンドポイントを全部明示する | `oidc_issuer` だけでよく、discovery が届かないと登録を拒否する | [03-03](../../03-cognito-with-other-idp/03-federation/LECTURE.md) |
 
 それ以外の、このセクションで試したこと（パスワードポリシー、確認コードの照合、`SECRET_HASH`、許可していない認証フロー、グループ、署名、更新、サインアウト）は本物と同じ振る舞いでした。
+
+## setup.sh はそのまま
+
+このレクチャーでは、Floci に残るもの（User Pool・ユーザー・グループ）を新しく作っていません。作ったのは手元の道具だけなので、`setup.sh` に足す行はありません。
+
+## このレクチャーを終えた handson/
+
+::codeview
 
 :::faq
 

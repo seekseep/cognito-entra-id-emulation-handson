@@ -28,15 +28,29 @@ Cognito に OIDC で登録する練習には十分です。
 entra-local は、管理 API に認証が無く、シードのユーザーとパスワードが公開されている「わざと緩い」道具です。自分のパソコンの中だけで使い、本物のパスワードを入れないでください。compose でも `127.0.0.1` にだけ公開しています。
 :::
 
-:::download
-[サンプルコードをダウンロード](./project.zip)
-:::
+このレクチャーで足す・変えるファイルは次のとおりです。03-02 の Keycloak と同じく、`compose.yaml` にサービスを 1 つ足し、操作を小さなスクリプトにしていきます。
+
+::changes
+
+## entra-local を足す
+
+`compose.yaml` に `entra-local` サービスと、データを残すボリュームを足します。設定の意味は下で説明します。
+
+::file{path="compose.yaml"}
+
+discovery から登録に使う値を抜き出す **`scripts/entra-endpoints.sh`** を作り、`package.json` に `entra:` で始まるコマンドを足します（このレクチャーで作るスクリプトの分を、まとめて足しておきます）。
+
+::file{path="scripts/entra-endpoints.sh"}
+
+::file{path="package.json"}
 
 ## 起動する
 
+`npm run up` で、Floci と Keycloak はそのまま、entra-local が新しく起動します。
+
 ```bash
-npm run up          # Floci と entra-local
-npm run endpoints
+npm run up
+npm run entra:endpoints
 ```
 
 ```text
@@ -49,7 +63,7 @@ jwks_uri                 http://localhost:8443/11111111-1111-1111-1111-111111111
 
 `11111111-...` が **テナント ID** です。本物の Entra でも、URL の途中にテナント ID が入り、`/v2.0` で終わる issuer になります。管理ポータルは <http://localhost:8443/> で開けます。
 
-[compose.yaml](./compose.yaml) の entra-local の設定:
+`compose.yaml` の entra-local の設定:
 
 ```yaml
 image: ghcr.io/cmaneu/entra-local:0.1.1
@@ -81,14 +95,7 @@ sudo apt-get install -y qemu-user-static
 
 ## アプリを登録する
 
-Entra では、Entra にログインを頼むアプリを **アプリの登録** として登録し、クライアント ID とシークレットをもらいます。ここでは「Cognito」を 1 つのアプリとして登録します（[scripts/register-app.sh](./scripts/register-app.sh)）。
-
-```bash
-npm run register-app
-# 登録しました（クライアント ID: 542d7c9b-...）。シークレットは .entra.env にあります
-```
-
-スクリプトの中では、entra-local の管理 API に次のように登録しています（スクリプトがやるので、自分で打つ必要はありません）。
+Entra では、Entra にログインを頼むアプリを **アプリの登録** として登録し、クライアント ID とシークレットをもらいます。ここでは「Cognito」を 1 つのアプリとして登録します。本物の Entra ならポータルの画面で操作するところを、entra-local の管理 API に送ります。中心はこのリクエストです。
 
 ```bash
 curl -X POST http://localhost:8443/admin/api/apps -H 'content-type: application/json' -d '{
@@ -101,16 +108,33 @@ curl -X POST http://localhost:8443/admin/api/apps -H 'content-type: application/
 - `isConfidential: true` … サーバー（Cognito）がシークレットを持つアプリ
 - リダイレクト URI … Keycloak のときと同じく、Cognito の **idpresponse**
 
-シークレットの値は、作ったときに一度だけ返ります（本物の Entra と同じです）。スクリプトはそれを `.entra.env` に控えています。このファイルはリポジトリに入れません。
+シークレットの値は、作ったときに一度だけ返ります（本物の Entra と同じです）。登録とシークレットの発行をまとめた **`scripts/entra-register-app.sh`** を作り、クライアント ID とシークレットを **`.entra.env`** に控えます。entra-local のデータはボリュームに残るので、もう一度流しても、登録済みのアプリがあればそれを使い続けるようにしてあります。
+
+::file{path="scripts/entra-register-app.sh"}
+
+`.entra.env` にはシークレットが入るので、`.gitignore` に足します（下の「`sub` はアプリごとに変わる」で作る控えの `.entra.a.env` なども入れないよう、`.entra.*.env` も足します）。
+
+::file{path=".gitignore"}
+
+```bash
+npm run entra:register-app
+# 登録しました（クライアント ID: 542d7c9b-...）。シークレットは .entra.env にあります
+```
 
 ## ユーザーを作って、トークンの中身を見る
 
+ユーザーを作る **`scripts/entra-create-user.sh`** と、トークンの中身を見る **`scripts/entra-preview-token.sh`** を作ります。`entra-preview-token.sh` は、entra-local の管理 API で「このアプリに、このユーザーがサインインしたら出る ID トークン」を見せてくれます。
+
+::file{path="scripts/entra-create-user.sh"}
+
+::file{path="scripts/entra-preview-token.sh"}
+
 ```bash
-npm run create-user taro '山田 太郎'      # taro@entralocal.dev / Passw0rd!
-npm run preview-token taro@entralocal.dev
+npm run entra:create-user taro '山田 太郎'      # taro@entralocal.dev / Passw0rd!
+npm run entra:preview-token taro@entralocal.dev
 ```
 
-`preview-token` は、entra-local の管理 API で「このアプリに、このユーザーがサインインしたら出る ID トークン」を見せてくれます（`claims` の部分）。
+`claims` の部分がトークンの中身です。
 
 ```json
 "claims": {
@@ -136,14 +160,14 @@ Entra 特有のクレーム:
 
 ### `sub` はアプリごとに変わる
 
-アプリをもう 1 つ登録して、同じ taro のトークンを見比べます。`register-app` は `.entra.env` を書き換えるので、今のアプリ（A）の控えを別の名前で残してから登録します。
+アプリをもう 1 つ登録して、同じ taro のトークンを見比べます。`entra:register-app` は `.entra.env` を書き換えるので、今のアプリ（A）の控えを別の名前で残してから登録します。
 
 ```bash
 cp .entra.env .entra.a.env          # アプリ A の控え
-rm .entra.env && npm run register-app   # アプリ B を登録（.entra.env は B になる）
+rm .entra.env && npm run entra:register-app   # アプリ B を登録（.entra.env は B になる）
 
-npm run preview-token taro@entralocal.dev | grep -E '"(aud|sub|oid)"'                       # B
-ENTRA_ENV=.entra.a.env npm run preview-token taro@entralocal.dev | grep -E '"(aud|sub|oid)"'  # A
+npm run entra:preview-token taro@entralocal.dev | grep -E '"(aud|sub|oid)"'                       # B
+ENTRA_ENV=.entra.a.env npm run entra:preview-token taro@entralocal.dev | grep -E '"(aud|sub|oid)"'  # A
 ```
 
 ```text
@@ -155,6 +179,16 @@ A  "sub": "7AVwZdeJEDtlOYPBd5JlCISHoby578la6SIPMq3Q27Q"  "aud": "542d7c9b-..."  
 
 アプリをまたいで「同じ人」を見分けたいなら `oid`（と `tid`）を使います。次のレクチャーで、`oid` を Cognito の属性に持ち込みます。
 
+## setup.sh に足す
+
+アプリの登録と taro は entra-local のボリュームに残るので、Floci を作り直しても消えません。それでも、ボリュームまで消したとき（`podman compose down -v`）に戻せるよう、`setup.sh` に足しておきます。どちらのスクリプトも、既にあれば作らずに使うので、何度流しても構いません。
+
+::file{path="scripts/setup.sh"}
+
+## このレクチャーを終えた handson/
+
+::codeview
+
 :::faq
 
 ### HTTPS のまま使えませんか？
@@ -163,6 +197,6 @@ A  "sub": "7AVwZdeJEDtlOYPBd5JlCISHoby578la6SIPMq3Q27Q"  "aud": "542d7c9b-..."  
 
 ### データを消したいときは？
 
-ユーザーやアプリ登録は、entra-local のデータボリュームに SQLite で残ります。`npm run reset`（`podman compose down -v` してから起動し直す）でボリュームごと消えます。残っている間は、`npm run register-app` は登録済みのアプリを使い続け、`npm run create-user` は既にいるユーザーを表示するだけなので、手順を上から流し直しても止まりません。
+ユーザーやアプリ登録は、entra-local のデータボリュームに SQLite で残ります。`npm run reset` では消えません。消すときは `podman compose down -v` でボリュームごと消し、`npm run up`・`npm run setup` で作り直します。残っている間は、`npm run entra:register-app` は登録済みのアプリを使い続け、`npm run entra:create-user` は既にいるユーザーを表示するだけなので、手順を上から流し直しても止まりません。
 
 :::

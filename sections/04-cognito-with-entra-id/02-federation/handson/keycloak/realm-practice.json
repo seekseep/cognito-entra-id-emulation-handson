@@ -1,0 +1,40 @@
+{
+  "realm": "practice",
+  "enabled": true,
+  "displayName": "練習用 realm",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "users": [
+    {
+      "username": "kate",
+      "email": "kate@example.com",
+      "emailVerified": true,
+      "firstName": "Kate",
+      "lastName": "Keycloak",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "Passw0rd!", "temporary": false }]
+    },
+    {
+      "username": "ken",
+      "email": "ken@example.com",
+      "emailVerified": true,
+      "firstName": "Ken",
+      "lastName": "Keycloak",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "Passw0rd!", "temporary": false }]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "cognito",
+      "name": "Cognito から使うクライアント",
+      "description": "Cognito（Floci）がこの realm にログインを任せるときに名乗るクライアント",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "cognito-local-secret",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": ["http://localhost:4566/cognito-idp/oauth2/idpresponse"]
+    }
+  ]
+}

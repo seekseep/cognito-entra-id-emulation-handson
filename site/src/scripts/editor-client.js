@@ -13,6 +13,12 @@
 
   function setup() {
     document.querySelectorAll('.editor').forEach(function (editor) {
+      // 最初に開いているファイルが一覧の下のほうにあっても見えるよう、一覧だけをスクロールしておく（ページは動かさない）
+      var active = editor.querySelector('.editor__file.is-active');
+      var list = editor.querySelector('.editor__files');
+      if (active && list && list.scrollHeight > list.clientHeight) {
+        list.scrollTop = Math.max(0, active.offsetTop - list.offsetTop - list.clientHeight / 3);
+      }
       editor.querySelectorAll('.editor__file').forEach(function (btn) {
         btn.addEventListener('click', function () {
           activate(editor, btn.dataset.file);

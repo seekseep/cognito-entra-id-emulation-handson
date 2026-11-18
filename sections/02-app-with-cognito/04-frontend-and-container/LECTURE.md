@@ -9,29 +9,69 @@ docs: true
 
 最小の画面を付けて、ブラウザからサインアップ・ログイン・API の呼び出しをします。後半では API もコンテナに入れて動かし、そのときに起きる **`iss` のずれ** を直します。最後に、本番の Cognito に切り替えるときに何を変えればよいかを確かめます。
 
-:::download
-[サンプルコードをダウンロード](./project.zip)
-:::
+このレクチャーで足す・変えるファイルは次のとおりです。前半で画面（`public/`）、後半でコンテナ（`Containerfile`・`compose.yaml`）を足します。
+
+::changes
+
+## 準備
+
+`handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `npm run setup` で前のレクチャーを終えた状態を作り直します。
+
+```bash
+npm run up
+npm run setup              # 前のレクチャーまでに作ったものを作り直す
+source ./env.sh && source ./.cognito.env
+```
+
+## 画面を配る
+
+画面は `public/` に置いた HTML と JavaScript だけにし、NestJS の `ServeStaticModule` で API と同じオリジンから配ります。同じオリジンなので、CORS の設定は要りません。
+
+```bash
+npm install @nestjs/serve-static
+```
+
+`AppModule` に `ServeStaticModule` を足します。
+
+::file{path="src/app.module.ts"}
+
+## 画面を作る
+
+**`public/index.html`** はサインアップ・確認・ログインの 3 つのフォームと、API を呼ぶボタンだけの画面です。
+
+::file{path="public/index.html"}
+
+**`public/main.js`** は、フォームの値を `fetch` で `/auth/*` に送り、返ってきたトークンを `sessionStorage` に置きます。`GET /me` などを呼ぶときは、アクセストークンを `Authorization: Bearer ...` に付けます。
+
+```js
+const headers = { 'content-type': 'application/json' };
+if (tokens?.accessToken) headers.authorization = `Bearer ${tokens.accessToken}`;
+```
+
+::file{path="public/main.js"}
+
+## ログアウトでトークンを取り消す
+
+「ログアウト」は、手元のトークンを消す前に `POST /auth/logout` を呼び、リフレッシュトークンを Cognito で取り消します（`RevokeToken`）。消すだけにすると、もしトークンが盗まれていた場合、ログアウトしたあとも使われ続けます。`AuthService` と `AuthController` に 1 つずつ足します。
+
+::file{path="src/auth/auth.service.ts"}
+
+::file{path="src/auth/auth.controller.ts"}
 
 ## 画面から使う
 
 ```bash
-npm install
-npm run floci:up
-npm run setup
 npm run start:dev
 ```
 
-<http://localhost:3000> を開きます。画面は [public/index.html](./public/index.html) と [public/main.js](./public/main.js) だけで、`fetch` で API を呼んでいます。NestJS の `ServeStaticModule` が `public/` を同じオリジンで配るので、CORS の設定は要りません。
+<http://localhost:3000> を開きます。
 
 1. サインアップする
 2. <http://localhost:4566/_aws/ses> で確認コードを読み、確認する
 3. ログインして `GET /me` を押す
-4. `GET /admin/dashboard` は 403。`npm run make-admin <username>` のあと、ログインし直すと 200
+4. `GET /admin/dashboard` は 403。`npm run make-admin <username>` のあと、ログインし直すと 200（alice は最初から 200 です）
 
 開発者ツールの Network タブで、`/auth/login` の応答にトークンが入っていること、`/me` の要求に `Authorization: Bearer ...` が付いていることを確かめてください。
-
-「ログアウト」は、手元のトークンを消す前に `POST /auth/logout` を呼び、リフレッシュトークンを Cognito で取り消します（`RevokeToken`）。消すだけにすると、もしトークンが盗まれていた場合、ログアウトしたあとも使われ続けます。
 
 :::warning[トークンの置き場所]
 この画面はトークンを `sessionStorage` に置いています。ページに XSS があると JavaScript から読まれてしまう場所です。いちばん危ないのは **リフレッシュトークン** で、既定で 30 日有効なので、一度盗まれると期限までアクセストークンを取り直され続けます（アクセストークンは 1 時間で切れます）。
@@ -41,10 +81,21 @@ npm run start:dev
 
 ## API をコンテナで動かす
 
-[Containerfile](./Containerfile) は、ビルド用と実行用の 2 段に分けたイメージです。[compose.yaml](./compose.yaml) の `api` サービスは `profiles: ["api"]` にしてあり、指定したときだけ起動します。
+**`Containerfile`** は、ビルド用と実行用の 2 段に分けたイメージです。1 段目で TypeScript をビルドし、2 段目には実行に要るもの（本番の依存・`dist/`・`public/`）だけを入れます。イメージに入れないものは **`.containerignore`** に書きます。手元の `.env` をイメージに焼き込まないためです。
+
+::file{path="Containerfile"}
+
+::file{path=".containerignore"}
+
+`compose.yaml` に `api` サービスを足します。`profiles: ["api"]` にしてあり、指定したときだけ起動します（ふだんの `npm run up` では Floci だけが起動します）。`package.json` には、API のコンテナを起動・停止するコマンドを足し、`down` が API のコンテナも止めるようにします。
+
+::file{path="compose.yaml"}
+
+::file{path="package.json"}
+
+`Containerfile` の `npm ci` は `package-lock.json` を使います。`npm install` をしていれば、`handson/` にできています。
 
 ```bash
-npm run setup          # Floci を作り直したならやり直す
 npm run api:up         # podman compose --profile api up -d --build --wait
 ```
 
@@ -52,11 +103,11 @@ npm run api:up         # podman compose --profile api up -d --build --wait
 
 ホストで動かしている `npm run start:dev` は止めておいてください（同じ 3000 番を使います）。
 
-API のコンテナを止めてホストの `npm run start:dev` に戻るときは `npm run api:down` を使います。`npm run floci:down` も API のコンテナまでまとめて止めるので、次のレクチャーに進むときはこれで構いません。
+API のコンテナを止めてホストの `npm run start:dev` に戻るときは `npm run api:down` を使います。`npm run down` も API のコンテナまでまとめて止めます。
 
 ### コンテナの中から見た Floci
 
-コンテナの中の `localhost` はそのコンテナ自身です。API のコンテナから Floci には、compose のサービス名 `floci` で届きます。そこで [compose.yaml](./compose.yaml) の `api` サービスでは、エンドポイントを差し替えています。
+コンテナの中の `localhost` はそのコンテナ自身です。API のコンテナから Floci には、compose のサービス名 `floci` で届きます。そこで `compose.yaml` の `api` サービスでは、エンドポイントを差し替えています。
 
 ```yaml
 environment:
@@ -84,8 +135,8 @@ podman compose --profile api logs api | grep トークン
 
 トークンの中を見てみます。画面の「ログイン」の結果に出ている `accessToken` をコピーし、真ん中の部分を開きます。
 
-```bash
-AT='eyJ...'   # コピーしたアクセストークン
+```bash "{コピーしたアクセストークン}"
+AT='{コピーしたアクセストークン}'
 node -e "console.log(JSON.parse(Buffer.from(process.argv[1].split('.')[1], 'base64url')).iss)" "$AT"
 # http://localhost:4566/ap-northeast-1_f06ce8963
 ```
@@ -106,11 +157,11 @@ npm run api:up
 
 コードは変えません。ホストで動かす（`npm run start:dev`）なら、`.env` をこうするだけです。
 
-```bash
+```bash "{本物の User Pool の ID}" "{本物のクライアント ID}"
 AWS_REGION=ap-northeast-1
 # COGNITO_ENDPOINT は書かない（SDK が本物の Cognito に向く）
-COGNITO_USER_POOL_ID=ap-northeast-1_本物のプール ID
-COGNITO_CLIENT_ID=本物のクライアント ID
+COGNITO_USER_POOL_ID={本物の User Pool の ID}
+COGNITO_CLIENT_ID={本物のクライアント ID}
 ```
 
 - `iss` は `https://cognito-idp.ap-northeast-1.amazonaws.com/<プール ID>`、JWKS はその後ろの `/.well-known/jwks.json` になり、設定が自動で組み立てます
@@ -120,6 +171,12 @@ COGNITO_CLIENT_ID=本物のクライアント ID
 :::warning[コンテナで動かすときは compose.yaml も変える]
 compose.yaml の `api` サービスの `environment:` にある `COGNITO_ENDPOINT`・`COGNITO_ISSUER`・`COGNITO_JWKS_URL` の 3 行は、Floci に向けるためのものです。`environment:` に書いた値は `.env`（`env_file:`）より優先されるので、`.env` だけを本物に書き換えても、API は Floci に話しかけ続けます。本物に向けるときは、この 3 行も消してください。本番の compose ファイルを別に分けておくのも手です。
 :::
+
+## このレクチャーを終えた handson/
+
+このレクチャーでも、Floci に残すものは増えていないので、`setup.sh` はそのままです。
+
+::codeview
 
 :::faq
 

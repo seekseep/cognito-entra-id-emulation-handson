@@ -12,8 +12,9 @@
     "sync-lectures": "node scripts/sync-lectures.mjs",
     "build-downloads": "node scripts/build-downloads.mjs",
     "build-previews": "node scripts/build-previews.mjs",
-    "predev": "node scripts/build-previews.mjs && node scripts/sync-lectures.mjs && node scripts/build-downloads.mjs",
-    "prebuild": "node scripts/build-previews.mjs && node scripts/sync-lectures.mjs && node scripts/build-downloads.mjs"
+    "predev": "node scripts/build-snapshots.mjs && node scripts/build-previews.mjs && node scripts/sync-lectures.mjs && node scripts/build-downloads.mjs",
+    "prebuild": "node scripts/build-snapshots.mjs && node scripts/build-previews.mjs && node scripts/sync-lectures.mjs && node scripts/build-downloads.mjs",
+    "build-snapshots": "node scripts/build-snapshots.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^7.3.9",

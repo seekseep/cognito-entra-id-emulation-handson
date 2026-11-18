@@ -1,0 +1,11 @@
+{
+  "name": "handson",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "up": "${COMPOSE:-podman compose} up -d --wait",
+    "down": "${COMPOSE:-podman compose} down",
+    "reset": "npm run down && npm run up"
+  }
+}

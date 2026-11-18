@@ -27,13 +27,11 @@
  *     - Shift_JIS（CP932）＋ CRLF にする。日本語版 Windows の VBE は .bas を CP932 として
  *       読むので、UTF-8 のままだとインポートした日本語が文字化けする
  *
- * ── B. project 方式（`<lec>/package.json` を持つ。Cloudflare 系 / Docker+Postgres 系）
- *   中身: git 管理下のファイル (libs/git.mjs) だけ。
- *     これにより node_modules/ .wrangler/ dist/ .dev.vars .env *.pem/*.key、
- *     各自コピー用の wrangler.jsonc など .gitignore 済みのものは自動で除外される。
- *   そのうえで教材ファイル (LECTURE.md, images/, demos/) だけ明示的に除外する。
- *   ZIP 内のルートフォルダは `<lec>/`（展開時に名前付きフォルダができる）。
- *   git 管理外（git init 前）では ls-files が失敗するので、警告して飛ばす。
+ * ── B. 積み上げ方式（project/ から作る `<lec>/handson/` を持つ）
+ *   中身: そのレクチャーを終えた時点の handson/（libs/snapshots.mjs が project/ から作るもの）。
+ *   手元で動かしたときにできた node_modules・.env などは入れない（作り直したファイルだけを入れる）。
+ *   ZIP 内のルートフォルダは常に `handson/`。受講者は最初に 1 度だけダウンロードし、
+ *   あとは自分でファイルを足していく。途中のレクチャーの ZIP は、追いつくための控え。
  *
  * ダウンロード URL の規約 (<sec>-<lec>.zip) は libs/naming.mjs に集約し、
  * sync-lectures.mjs のリンク生成と共有している。
@@ -47,7 +45,6 @@ import { ZipArchive } from 'archiver';
 import iconv from 'iconv-lite';
 
 import { walkFiles } from './libs/fs-walk.mjs';
-import { lsFiles } from './libs/git.mjs';
 import {
   assetsZipBasenameFor,
   exampleDirOf,
@@ -57,18 +54,10 @@ import {
   zipBasenameFor,
 } from './libs/naming.mjs';
 import { DOWNLOADS_DIR, ROOT } from './libs/paths.mjs';
+import { SNAPSHOT_DIRNAME, buildSnapshot, lectureIdOf } from './libs/snapshots.mjs';
 
 const IGNORE_DIRS = new Set(['node_modules', '.git']);
 const IGNORE_NAMES = new Set(['.DS_Store']);
-
-// 教材ファイル。project 方式の ZIP には含めない。
-function isLectureAsset(relToLecture) {
-  return (
-    relToLecture === 'LECTURE.md' ||
-    relToLecture.startsWith('images/') ||
-    relToLecture.startsWith('demos/')
-  );
-}
 
 /** VBE に読ませる形式へ変換する（.bas のみ）。それ以外のファイルは null（そのまま入れる）。 */
 async function convertForImport(absPath) {
@@ -186,31 +175,21 @@ async function zipExampleAssets(lectureRel) {
 }
 
 // ---------------------------------------------------------------------------
-// B. project 方式
+// B. 積み上げ方式
 // ---------------------------------------------------------------------------
 
-async function findProjectLectures(exclude) {
-  // package.json を持つ sections/<sec>/<lec> を、git 管理下のファイルから拾う。
-  // git 管理外（init 前）だと ls-files が失敗する。project 方式は git 追跡が前提なので、
-  // そのときは警告して飛ばす（example 方式・Office マクロ系は git が無くても配れる）。
-  let files;
-  try {
-    files = await lsFiles(ROOT, 'sections/*/*/package.json');
-  } catch {
-    console.warn('[build-downloads] not a git repository; skipping project-style lectures (package.json)');
-    return [];
-  }
-  const dirs = files.map((p) => path.posix.dirname(p));
-  return [...new Set(dirs)].filter((d) => !exclude.has(d)).sort();
+async function findHandsonLectures() {
+  const found = [];
+  for await (const abs of glob(`sections/*/*/${SNAPSHOT_DIRNAME}`, { cwd: ROOT })) found.push(path.posix.dirname(abs.split(path.sep).join('/')));
+  return found.sort();
 }
 
-function zipProject(lectureRel, files) {
+async function zipHandson(lectureRel) {
   const { sec, lec } = parseLectureRel(lectureRel);
+  const snapshot = await buildSnapshot(lectureIdOf(sec, lec));
+  const absDir = path.join(ROOT, ...lectureRel.split('/'), SNAPSHOT_DIRNAME);
   const outPath = path.join(DOWNLOADS_DIR, zipBasenameFor(sec, lec));
-  const included = files
-    .map((fileRel) => path.posix.relative(lectureRel, fileRel))
-    .filter((rel) => !isLectureAsset(rel));
-  return zipFiles(path.join(ROOT, ...lectureRel.split('/')), included, outPath, lec);
+  return zipFiles(absDir, [...snapshot.keys()], outPath, SNAPSHOT_DIRNAME);
 }
 
 async function main() {
@@ -234,17 +213,15 @@ async function main() {
     }
   }
 
-  // example 方式で出したレクチャーは project 方式で二重に出さない。
-  const projectLectures = await findProjectLectures(new Set(exampleLectures));
-  for (const lectureRel of projectLectures) {
+  const handsonLectures = await findHandsonLectures();
+  for (const lectureRel of handsonLectures) {
     const { sec, lec } = parseLectureRel(lectureRel);
-    const files = await lsFiles(ROOT, lectureRel);
-    const count = await zipProject(lectureRel, files);
-    console.log(`[build-downloads] ${lectureRel} -> site/public/downloads/${zipBasenameFor(sec, lec)} (${count}/${files.length} files)`);
+    const count = await zipHandson(lectureRel);
+    console.log(`[build-downloads] ${lectureRel}/${SNAPSHOT_DIRNAME} -> site/public/downloads/${zipBasenameFor(sec, lec)} (${count} files)`);
   }
 
-  if (exampleLectures.length === 0 && projectLectures.length === 0) {
-    console.warn('[build-downloads] no lectures found (sections/*/*/example/ or sections/*/*/package.json)');
+  if (exampleLectures.length === 0 && handsonLectures.length === 0) {
+    console.warn('[build-downloads] no lectures found (sections/*/*/example/ or sections/*/*/handson/)');
   }
 
   console.log('[build-downloads] done');

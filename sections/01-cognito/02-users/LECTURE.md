@@ -9,15 +9,17 @@ docs: true
 
 Cognito のユーザーの作り方は 2 通りあります。**管理者が作る**か、**ユーザーが自分でサインアップする**かです。どちらも、すぐにはログインできず、途中に 1 段階はさまります。その段階を実際に通ってみます。
 
-:::download
-[サンプルコードをダウンロード](./project.zip)
-:::
+このレクチャーで足すファイルは次のとおりです。
+
+::changes
 
 ## 準備
 
+`handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `npm run setup` で前のレクチャーを終えた状態（User Pool と App Client）を作り直します。
+
 ```bash
-npm run floci:up
-npm run setup              # 前のレクチャーの User Pool と App Client を作る
+npm run up
+npm run setup              # 前のレクチャーまでに作ったものを作り直す
 source ./env.sh && source ./.cognito.env
 ```
 
@@ -46,8 +48,8 @@ aws cognito-idp initiate-auth \
 
 `NEW_PASSWORD_REQUIRED` は「新しいパスワードを決めてください」という意味です。返ってきた `Session` を付けて、新しいパスワードで答えます。
 
-```bash
-SESSION=...   # 上の出力の Session
+```bash "{直前の結果で出た Session}"
+SESSION={直前の結果で出た Session}
 aws cognito-idp respond-to-auth-challenge \
   --client-id "$CLIENT_ID" \
   --challenge-name NEW_PASSWORD_REQUIRED \
@@ -79,7 +81,13 @@ curl -s http://localhost:4566/_aws/ses | head -c 600
 # ... "Subject":"Your verification code","Body":{"text_part":"Your verification code is 821375." ...
 ```
 
-6 桁のコードを抜き出す [scripts/read-code.sh](./scripts/read-code.sh) も用意しています。
+6 桁のコードを抜き出すスクリプト **`scripts/read-code.sh`** を作ります。SES にたまったメールの一覧（JSON）から、宛先が一致する最新のメールを選び、本文から 6 桁の数字を取り出します。
+
+::file{path="scripts/read-code.sh"}
+
+`package.json` に `read-code` を足すと、`npm run -s read-code <メール>` で呼べます（`-s` は npm 自身の表示を消して、コードだけを出す指定です）。
+
+::file{path="package.json"}
 
 ```bash
 CODE=$(npm run -s read-code bob@example.com)
@@ -93,13 +101,31 @@ aws cognito-idp list-users --user-pool-id "$POOL_ID" \
   --query 'Users[].{Username:Username,Status:UserStatus}' --output table
 ```
 
-ここまでの操作は [scripts/create-users.sh](./scripts/create-users.sh) にまとめてあります（`npm run users`）。手で打つ代わりに使うか、やり直すときに使います。alice と bob を新しく作るので、上の手順を打ち終えたあとに実行すると `UsernameExistsException` で止まります。やり直すときは、User Pool から作り直してから実行してください。
+## スクリプトにする
+
+ここまでの手順を **`scripts/create-users.sh`** にまとめます。手で打ったコマンドを上から並べたものです。違うのは 2 か所だけです。
+
+- `initiate-auth` の `Session` を `--query Session --output text` で変数に受け、`respond-to-auth-challenge` に渡す
+- 確認コードを `bash scripts/read-code.sh` で読み、`confirm-sign-up` に渡す
+
+::file{path="scripts/create-users.sh"}
+
+`setup.sh` に 1 行足します。これで `npm run setup` が、User Pool を作ってから alice と bob を作るようになります。
+
+::file{path="scripts/setup.sh"}
+
+Floci を作り直して、確かめます。
 
 ```bash
-npm run floci:reset   # Floci を作り直す（User Pool も消える）
-npm run setup         # User Pool と App Client を作り直す
-npm run users         # alice と bob を作る
+npm run reset
+npm run setup
 ```
+
+最後に alice と bob が `CONFIRMED` で並べば完成です。
+
+## このレクチャーを終えた handson/
+
+::codeview
 
 :::faq
 

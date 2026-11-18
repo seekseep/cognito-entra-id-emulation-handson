@@ -14,12 +14,31 @@ docs: true
 Floci の Cognito は、User Pool・ユーザー・パスワード認証・グループ・JWKS に加えて、**Hosted UI（ログイン画面）と `/oauth2/authorize`・`/oauth2/token`** も持っています。このおかげで「Cognito が外部の IdP（Keycloak や Entra ID）にログインを任せる」流れまで、ローカルで最後まで通せます。
 
 :::download
-[サンプルコードをダウンロード](./project.zip)
+[handson フォルダをダウンロード](./project.zip)
+:::
+
+## 作業用のフォルダを用意する
+
+このハンズオンでは、**`handson/` という 1 つのフォルダに、レクチャーごとにファイルを足していきます**。ダウンロードするのは、ここの 1 回だけです。展開して、好きな場所に置いてください。
+
+```bash
+unzip 00-setup-02-floci.zip     # handson/ ができる
+cd handson
+```
+
+最初の `handson/` に入っているのは、次の 4 つだけです。
+
+::changes
+
+ここから、User Pool を作るスクリプト（01）、NestJS の API（02）、Keycloak（03）、Entra ID（04）と、少しずつ増えていきます。各レクチャーの最初に「このレクチャーで足すファイル」の表、最後に「このレクチャーを終えた `handson/`」のエディタを置いてあります。何をいつ足したかを見れば、そのファイルが何のためにあるのかが分かるようにしてあります。
+
+:::notice[途中から始める・追いつく]
+各レクチャーの最後のエディタにある「コードをダウンロード」は、そのレクチャーを終えた状態の `handson/` です。手元のファイルが壊れたときや、途中のレクチャーから始めるときに使ってください。
 :::
 
 ## 起動する
 
-このレクチャーのフォルダには、Floci だけを起動する [compose.yaml](./compose.yaml) があります。
+[compose.yaml](./handson/compose.yaml) は、Floci だけを起動します。
 
 ```yaml
 services:
@@ -35,30 +54,28 @@ services:
 - ポートは **4566** です。`127.0.0.1:` を付けて、自分のパソコンからだけ届くようにしています。Floci は認証なしで API を受け付けるので、ほかのマシンから触られないようにするためです
 - ヘルスチェックは `/_floci/health` を叩きます。イメージに `curl` も `grep` も入っていないので、bash の `/dev/tcp` で HTTP を手書きしています
 
+::file{path="compose.yaml"}
+
+コンテナの起動と停止は、[package.json](./handson/package.json) の npm scripts にまとめてあります。
+
 ```bash
-cd sections/00-setup/02-floci
-npm run floci:up        # podman compose up -d --wait
+npm run up        # podman compose up -d --wait
 curl -s http://localhost:4566/_floci/health | head -c 120
 ```
 
 `--wait` はヘルスチェックが通るまで待ってから戻ります。`Container ... Healthy` と出れば準備完了です。
 
+::file{path="package.json"}
+
 ## aws CLI を Floci に向ける
 
-aws CLI と AWS SDK は、環境変数 `AWS_ENDPOINT_URL` があればそこに話しかけます。各レクチャーに同じ [env.sh](./env.sh) を置いてあるので、ターミナルを開いたら最初に読み込みます。
+aws CLI と AWS SDK は、環境変数 `AWS_ENDPOINT_URL` があればそこに話しかけます。その設定を [env.sh](./handson/env.sh) にまとめてあるので、ターミナルを開いたら最初に読み込みます。
 
 ```bash
 source ./env.sh
-cat ./env.sh
 ```
 
-```bash
-export AWS_ENDPOINT_URL=http://localhost:4566
-export AWS_ACCESS_KEY_ID=test
-export AWS_SECRET_ACCESS_KEY=test
-export AWS_REGION=ap-northeast-1
-export AWS_PAGER=""
-```
+::file{path="env.sh"}
 
 Floci はキーの中身を確かめないので、ダミーの `test` で構いません。**本物の AWS のキーを入れないでください**（向き先を間違えたときに本物を触ってしまいます）。
 
@@ -72,10 +89,10 @@ aws cognito-idp list-user-pools --max-results 10
 Floci は既定でデータをメモリに持ちます。コンテナを作り直すと、User Pool もユーザーも消えます。やり直したいときは作り直すのがいちばん早いです。
 
 ```bash
-npm run floci:reset     # podman compose down && podman compose up -d --wait
+npm run reset     # npm run down && npm run up
 ```
 
-レクチャーごとに `npm run setup` で必要な User Pool を作り直せるようにしてあるので、消えても困りません。
+次のレクチャーから、作ったものを作り直すスクリプト（`scripts/setup.sh`）を 1 行ずつ育てていきます。消えても `npm run setup` で、前のレクチャーを終えた状態に戻せます。
 
 ## Floci の Cognito で使えるもの・使えないもの
 
@@ -93,9 +110,13 @@ npm run floci:reset     # podman compose down && podman compose up -d --wait
 | 外部 IdP（OIDC）経由のログイン | 使える。登録のしかたに本物と違う点がある（[03-federation](../../03-cognito-with-other-idp/03-federation/LECTURE.md) で扱う） |
 | 外部 IdP（SAML）・Facebook・Apple | 使えない |
 
+## このレクチャーを終えた handson/
+
+::codeview
+
 :::faq
 
-### `npm run floci:up` が `exit status 1` で終わります
+### `npm run up` が `exit status 1` で終わります
 
 ヘルスチェックが通らなかったときの表示です。`podman compose ps` で状態を、`podman compose logs floci` でログを見てください。ポート 4566 をほかのプログラム（LocalStack や別の Floci など）が使っていると起動できません。
 

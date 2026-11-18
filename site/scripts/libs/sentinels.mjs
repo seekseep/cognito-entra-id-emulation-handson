@@ -39,6 +39,8 @@ import { walkFiles } from './fs-walk.mjs';
 import { ROOT } from './paths.mjs';
 import { assetsDownloadUrlFor, downloadUrlFor, previewUrlFor } from './naming.mjs';
 import { expandSheetSentinels } from './sheets.mjs';
+import { buildHandsonEditor, expandHandsonSentinels } from './handson-sentinels.mjs';
+import { changesOf, hasSnapshot, lectureIdOf } from './snapshots.mjs';
 
 const CODEVIEW_RE = /^::codeview(?:\[([^\]]*)\])?(?:\{([^}]*)\})?\s*$/;
 const PREVIEW_RE = /^::preview(?:\[([^\]]*)\])?(?:\{([^}]*)\})?\s*$/;
@@ -186,7 +188,10 @@ export async function expandSentinels(body, { lectureAbsDir, sec, lec, base, whe
   const inLecture = Boolean(sec && lec);
   const where = inLecture ? `sections/${sec}/${lec}` : (label || 'docs');
   // レクチャー以外では、センチネルが1つも無ければ何もしない。
-  if (!inLecture && !/^::(codeview|preview|assets|::sheetdemo|sheetcode)\b/m.test(body)) return body;
+  if (!inLecture && !/^::(codeview|preview|assets|::sheetdemo|sheetcode|timeline)\b/m.test(body)) return body;
+  // 積み上げ方式（handson/）のレクチャーなら、そのレクチャー ID。::changes / ::file / ::codeview が使う
+  const handsonId = inLecture && (await hasSnapshot(lectureIdOf(sec, lec))) ? lectureIdOf(sec, lec) : null;
+  body = await expandHandsonSentinels(body, { id: handsonId, where });
   const exampleAbs = inLecture ? path.join(lectureAbsDir, EXAMPLE_DIR) : null;
   // `::::sheetdemo` / `::sheetcode`（スプレッドシート表示）は sheets.mjs で展開する。
   // レクチャー以外（概要ページなど）では、src="<sec>/<lec>" で指したレクチャーのブックを使う。
@@ -207,6 +212,15 @@ export async function expandSentinels(body, { lectureAbsDir, sec, lec, base, whe
         continue;
       }
       const attrs = parseAttrs(cv[2]);
+      if (handsonId && !attrs.path) {
+        out.push(
+          buildHandsonEditor(await changesOf(handsonId), {
+            zipUrl: downloadUrlFor(base, sec, lec),
+            title: cv[1] ? cv[1].trim() : 'このレクチャーを終えた handson/',
+          }),
+        );
+        continue;
+      }
       const rel = normalizeCodePath(attrs.path);
       if (!rel) {
         console.warn(`[sentinels] ::codeview has an invalid path="${attrs.path}" in ${where} (skipped)`);

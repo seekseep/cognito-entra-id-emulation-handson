@@ -9,55 +9,72 @@ docs: true
 
 前のセクションで aws CLI から打っていた操作を、NestJS の API にします。`POST /auth/signup`・`/auth/confirm`・`/auth/login`・`/auth/refresh` の 4 つです。Cognito の SDK は **エンドポイントを差し替えるだけで Floci に向く** ので、コードは本番の Cognito に向けるときとまったく同じです。
 
-:::download
-[サンプルコードをダウンロード](./project.zip)
-:::
+このレクチャーで、`handson/` は aws CLI の練習場から **API のプロジェクト** になります。足すファイルが一気に増えるので、先に全体を見ておきます。
 
-## 動かす
+::changes
+
+増えるファイルは 3 つのまとまりに分かれます。
+
+- **NestJS を動かすための設定**（`tsconfig.json`・`tsconfig.build.json`・`nest-cli.json`）… どの NestJS のプロジェクトにもある土台で、中身を覚える必要はありません。開いてコピーします
+- **API 本体**（`src/`）… このレクチャーの本題です。上から順に作ります
+- **API に User Pool を教える仕組み**（`scripts/write-api-env.sh`・`.env.example`）… 01 で作った User Pool とクライアントを、API が読む `.env` に書き出します
+
+新しい User Pool は作りません。**01 で作った User Pool と App Client を、そのまま API から使います**。
+
+## 準備
+
+`handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `npm run setup` で前のレクチャーを終えた状態を作り直します。
 
 ```bash
-npm install
-npm run floci:up
-npm run setup          # User Pool・App Client・admin グループを作り、.env を書き出す
-npm run start:dev      # http://localhost:3000
+npm run up
+npm run setup              # 前のレクチャーまでに作ったものを作り直す
+source ./env.sh && source ./.cognito.env
 ```
 
-別のターミナルから呼んでみます。
+## NestJS を入れる
+
+API に要るパッケージと、開発の道具を入れます。
 
 ```bash
-curl -s -X POST localhost:3000/auth/signup -H 'content-type: application/json' \
-  -d '{"username":"carol","email":"carol@example.com","password":"Passw0rd!"}'
-# {"userSub":"...","confirmed":false}
-
-curl -s localhost:4566/_aws/ses | grep -o 'code is [0-9]*' | tail -1   # 確認コードを読む
-curl -s -X POST localhost:3000/auth/confirm -H 'content-type: application/json' \
-  -d '{"username":"carol","code":"123456"}'                            # 読んだコードに置き換える
-
-curl -s -X POST localhost:3000/auth/login -H 'content-type: application/json' \
-  -d '{"username":"carol","password":"Passw0rd!"}'
-# {"idToken":"eyJ...","accessToken":"eyJ...","refreshToken":"...","expiresIn":3600}
+npm install @nestjs/common @nestjs/core @nestjs/platform-express @nestjs/config \
+  @aws-sdk/client-cognito-identity-provider reflect-metadata rxjs
+npm install -D @nestjs/cli @nestjs/schematics typescript @types/node @types/express source-map-support
 ```
 
-## 構成
+TypeScript と NestJS の CLI の設定ファイルを 3 つ置きます。中身は NestJS の標準の構成そのままなので、開いてコピーしてください。
+
+::file{path="tsconfig.json"}
+
+::file{path="tsconfig.build.json"}
+
+::file{path="nest-cli.json"}
+
+`package.json` には、起動とビルドのコマンド（`start:dev` など）と、あとで使う `write-env` を足します。ビルドした `dist/` と、手元の値を入れる `.env` は `.gitignore` に足します。
+
+::file{path="package.json"}
+
+::file{path=".gitignore"}
+
+## API 本体を作る
+
+作る順に並べると、こうなります。
 
 ```text
 src/
-  main.ts                     起動
-  app.module.ts               ConfigModule と AuthModule を組み立てる
-  config/cognito.config.ts    環境変数 → 設定
-  auth/
-    auth.module.ts
-    auth.controller.ts        /auth/* の 4 つ
-    auth.service.ts           Cognito SDK を呼ぶ
-    cognito-error.filter.ts   Cognito の例外 → HTTP のステータス
-scripts/setup-cognito.sh      Floci に User Pool を作って .env を書く
+  config/cognito.config.ts    1. 環境変数 → 設定
+  auth/auth.service.ts        2. Cognito SDK を呼ぶ
+  auth/cognito-error.filter.ts 3. Cognito の例外 → HTTP のステータス
+  auth/auth.controller.ts     4. /auth/* の 4 つ
+  auth/auth.module.ts         5. 2〜4 をまとめる
+  app.module.ts               6. ConfigModule と AuthModule を組み立てる
+  main.ts                     7. 起動
 ```
 
-NestJS は TypeScript で書いています（NestJS 12 の標準の構成）。
+NestJS は TypeScript で書きます（NestJS 12 の標準の構成）。
 
 ## 設定（ConfigModule）
 
-[src/config/cognito.config.ts](./src/config/cognito.config.ts) は、環境変数から設定を組み立てます。
+[src/config/cognito.config.ts](./handson/src/config/cognito.config.ts) は、環境変数から設定を組み立てます。
 
 ```ts
 const endpoint = process.env.COGNITO_ENDPOINT || undefined;
@@ -65,7 +82,17 @@ const issuer = process.env.COGNITO_ISSUER
   ?? `${endpoint ?? `https://cognito-idp.${region}.amazonaws.com`}/${userPoolId}`;
 ```
 
-`COGNITO_ENDPOINT` があれば Floci、無ければ本物の Cognito です。トークンの発行者（`iss`）は「エンドポイント/プール ID」の形で、Floci も本物も同じ組み立て方で決まります。`npm run setup` が書き出す `.env` はこうなります。
+`COGNITO_ENDPOINT` があれば Floci、無ければ本物の Cognito です。トークンの発行者（`iss`）は「エンドポイント/プール ID」の形で、Floci も本物も同じ組み立て方で決まります。`iss` と `jwksUrl` は次のレクチャーでトークンを確かめるときに使います。
+
+::file{path="src/config/cognito.config.ts"}
+
+API が読む `.env` は、手で書かずにスクリプトで作ります。**`scripts/write-api-env.sh`** が `.cognito.env`（01 で作った User Pool とクライアントの ID）を読み、`.env` を書き出します。見本として `.env.example` も置いておきます。
+
+::file{path="scripts/write-api-env.sh"}
+
+::file{path=".env.example"}
+
+書き出される `.env` はこうなります。
 
 ```bash
 AWS_REGION=ap-northeast-1
@@ -78,9 +105,17 @@ COGNITO_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxx
 
 `AWS_ACCESS_KEY_ID`・`AWS_SECRET_ACCESS_KEY` の `test` は Floci 用のダミーです。この API が呼ぶ `SignUp`・`InitiateAuth` などは認証情報なしで呼べますが、`AdminAddUserToGroup` のような管理者向けの呼び出しには認証情報が要るので、形だけ入れています。Floci は値を確かめません。本物の Cognito に切り替えるときは消します（[04-frontend-and-container](../04-frontend-and-container/LECTURE.md) で扱います）。
 
+`setup.sh` の最後に 1 行足して、`npm run setup` のたびに `.env` も書き直されるようにします。Floci を作り直すとプール ID が変わるので、`.env` もそれに合わせる必要があるからです。
+
+::file{path="scripts/setup.sh"}
+
+```bash
+npm run write-env      # いまの User Pool で .env を書き出す
+```
+
 ## Cognito SDK を呼ぶ（AuthService）
 
-[src/auth/auth.service.ts](./src/auth/auth.service.ts) で、SDK のクライアントを作るときに `endpoint` を渡します。
+[src/auth/auth.service.ts](./handson/src/auth/auth.service.ts) で、SDK のクライアントを作るときに `endpoint` を渡します。
 
 ```ts
 this.client = new CognitoIdentityProviderClient({
@@ -97,9 +132,11 @@ if (result.ChallengeName) {
 }
 ```
 
+::file{path="src/auth/auth.service.ts"}
+
 ## Cognito のエラーを HTTP にする
 
-SDK は Cognito のエラーを `NotAuthorizedException` などの名前付きの例外で投げます。そのままでは 500 になってしまうので、[src/auth/cognito-error.filter.ts](./src/auth/cognito-error.filter.ts) の例外フィルターで HTTP のステータスに変えます。
+SDK は Cognito のエラーを `NotAuthorizedException` などの名前付きの例外で投げます。そのままでは 500 になってしまうので、[src/auth/cognito-error.filter.ts](./handson/src/auth/cognito-error.filter.ts) の例外フィルターで HTTP のステータスに変えます。
 
 | Cognito の例外 | HTTP |
 |---|---|
@@ -111,6 +148,58 @@ SDK は Cognito のエラーを `NotAuthorizedException` などの名前付き�
 | それ以外 | 502 |
 
 パスワード違いと、存在しないユーザーを **同じ 401・同じ文言** にしているのが大事なところです。分けて返すと「このユーザー名は登録されている」ことが外から分かってしまいます。例外の名前も応答には含めず、ログにだけ残します。
+
+::file{path="src/auth/cognito-error.filter.ts"}
+
+## /auth/* を受ける
+
+[src/auth/auth.controller.ts](./handson/src/auth/auth.controller.ts) は、リクエストの本文が文字列で来ているかだけを確かめて、`AuthService` に渡します。
+
+::file{path="src/auth/auth.controller.ts"}
+
+3 つを `AuthModule` にまとめ、例外フィルターをアプリ全体にかけます（`APP_FILTER`）。
+
+::file{path="src/auth/auth.module.ts"}
+
+`AppModule` で設定（`ConfigModule`）と `AuthModule` を組み立て、`main.ts` で起動します。
+
+::file{path="src/app.module.ts"}
+
+::file{path="src/main.ts"}
+
+## 動かす
+
+```bash
+npm run start:dev      # http://localhost:3000
+```
+
+別のターミナルから、サインアップ → 確認 → ログインと呼んでみます。
+
+```bash "{直前の結果で出た 6 桁の確認コード}"
+curl -s -X POST localhost:3000/auth/signup -H 'content-type: application/json' \
+  -d '{"username":"carol","email":"carol@example.com","password":"Passw0rd!"}'
+# {"userSub":"...","confirmed":false}
+
+npm run -s read-code carol@example.com   # 01-02 で作った道具で確認コードを読む
+# 123456
+
+export CODE={直前の結果で出た 6 桁の確認コード}
+curl -s -X POST localhost:3000/auth/confirm -H 'content-type: application/json' \
+  -d "{\"username\":\"carol\",\"code\":\"$CODE\"}"
+
+curl -s -X POST localhost:3000/auth/login -H 'content-type: application/json' \
+  -d '{"username":"carol","password":"Passw0rd!"}'
+# {"idToken":"eyJ...","accessToken":"eyJ...","refreshToken":"...","expiresIn":3600}
+```
+
+01 で作った alice と bob も、同じ User Pool にいるのでログインできます。
+
+```bash
+curl -s -X POST localhost:3000/auth/login -H 'content-type: application/json' \
+  -d '{"username":"bob","password":"Passw0rd!"}'
+```
+
+エラーの返り方も確かめます。
 
 ```bash
 curl -s -X POST localhost:3000/auth/login -H 'content-type: application/json' -d '{"username":"carol","password":"wrong"}'
@@ -127,11 +216,17 @@ curl -s -X POST localhost:3000/auth/login -H 'content-type: application/json' -d
 - サインアップ・ログインの API に回数制限をかける（API Gateway のスロットリングや AWS WAF のレートベースのルールなど）
 :::
 
+carol は手で作ったユーザーなので、`setup.sh` には足しません（`npm run setup` で作り直されるのは alice と bob です）。
+
+## このレクチャーを終えた handson/
+
+::codeview
+
 :::faq
 
 ### `.env` が無いと言われて起動しません
 
-`npm run setup` を先に実行してください。Floci を作り直すと User Pool は消えるので、そのときも `npm run setup` をやり直します（プール ID が変わるので `.env` も書き直されます）。
+`npm run write-env`（または `npm run setup`）を先に実行してください。Floci を作り直すと User Pool は消えるので、そのときは `npm run setup` をやり直します（プール ID が変わるので `.env` も書き直されます）。
 
 ### setup をやり直したら、API が 500 や 401 を返すようになりました
 

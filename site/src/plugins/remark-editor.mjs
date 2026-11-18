@@ -23,6 +23,9 @@ import { platformZips } from './lib/platform-zip.mjs';
 
 const NAME = 'editor';
 const FILE_META_RE = /data-file="([^"]*)"/;
+// 積み上げ方式で、このレクチャーで足した（added）・変えた（changed）ファイルに付く印
+const STATUS_META_RE = /data-status="(added|changed)"/;
+const STATUS_LABEL = { added: '新規', changed: '変更' };
 const DEFAULT_TITLE = 'このステップの完成例';
 
 // 一覧に出す名前。Office マクロ系の vba/ ・ gas/ は、どちらの環境かを本文で選んでいるので出さない。
@@ -90,20 +93,43 @@ export default function remarkEditor() {
       codeNodes.forEach((code, i) => {
         const m = (code.meta || '').match(FILE_META_RE);
         const name = m ? m[1] : code.lang || `file${i}`;
-        code.meta = null; // Expressive Code にファイル名枠を出させない
-        files.push({ name, code });
+        const status = (code.meta || '').match(STATUS_META_RE)?.[1];
+        // Expressive Code にファイル名枠を出させない。足した行の印（ins=）だけは残す
+        code.meta = (code.meta || '').replace(FILE_META_RE, '').replace(STATUS_META_RE, '').trim() || null;
+        files.push({ name, code, status });
       });
 
       // デフォルトで開くファイル（open 属性で指定）。無ければ先頭。
       let activeIndex = attrs.open ? files.findIndex((f) => f.name === attrs.open) : -1;
       if (activeIndex === -1) activeIndex = 0;
 
-      const fileButtons = files.map((f, i) =>
-        el('button', ['editor__file', ...(i === activeIndex ? ['is-active'] : [])], [text(displayName(f.name))], {
-          type: 'button',
-          'data-file': f.name,
-        }),
-      );
+      // tree="true" のとき（積み上げ方式の handson/ 全体）は、フォルダの見出しを挟んでツリーのように並べる。
+      // ファイルは並び順のまま渡ってくる（フォルダが先、同じフォルダの中は名前順）
+      const tree = attrs.tree === 'true';
+      const fileButtons = [];
+      const shownDirs = new Set();
+      files.forEach((f, i) => {
+        const parts = f.name.split('/');
+        if (tree) {
+          for (let d = 1; d < parts.length; d++) {
+            const dir = parts.slice(0, d).join('/');
+            if (shownDirs.has(dir)) continue;
+            shownDirs.add(dir);
+            fileButtons.push(el('div', ['editor__dir'], [text(`${parts[d - 1]}/`)], { style: `--depth:${d - 1}` }));
+          }
+        }
+        fileButtons.push(
+          el('button', ['editor__file', ...(i === activeIndex ? ['is-active'] : [])], [
+            text(tree ? parts.at(-1) : displayName(f.name)),
+            ...(f.status ? [el('span', ['file-badge', `file-badge--${f.status}`], [text(STATUS_LABEL[f.status])])] : []),
+          ], {
+            type: 'button',
+            'data-file': f.name,
+            title: f.name,
+            ...(tree ? { style: `--depth:${parts.length - 1}` } : {}),
+          }),
+        );
+      });
 
       const panes = files.map((f, i) =>
         el('div', ['editor__pane', ...(i === activeIndex ? ['is-active'] : [])], [f.code], {
@@ -121,7 +147,7 @@ export default function remarkEditor() {
       ]);
 
       node.type = 'editorContainer';
-      node.data = { hName: 'section', hProperties: { className: ['editor'] } };
+      node.data = { hName: 'section', hProperties: { className: ['editor', ...(tree ? ['editor--tree'] : [])] } };
       node.children = [header, body];
     });
   };

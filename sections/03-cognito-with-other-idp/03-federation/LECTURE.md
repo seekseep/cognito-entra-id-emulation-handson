@@ -9,36 +9,19 @@ docs: true
 
 Keycloak を Cognito の **外部 IdP** として登録し、「Keycloak でログイン」ボタンから Keycloak のユーザーでアプリに入れるようにします。アプリが受け取るのは、Keycloak のトークンではなく **Cognito のトークン** です。だから API は前のレクチャーのまま、何も変えずに動きます。
 
-:::download
-[サンプルコードをダウンロード](./project.zip)
-:::
+このレクチャーで足す・変えるファイルは次のとおりです。API と画面には手を入れません。03-01 でボタンを IdP の一覧から作るようにしておいたので、Cognito に Keycloak を登録するだけで「Keycloak でログイン」のボタンが出ます。
 
-## 動かす
+::changes
+
+## 準備
+
+`handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `npm run setup` で前のレクチャーを終えた状態を作り直します。
 
 ```bash
-npm install
-npm run up                  # Floci と Keycloak
-npm run setup               # User Pool・Hosted UI 用のクライアント・alice
-npm run register-keycloak   # Keycloak を外部 IdP として登録する
-npm run start:dev
+npm run up
+npm run setup              # 前のレクチャーまでに作ったものを作り直す（Keycloak も起動している）
+source ./env.sh && source ./.cognito.env
 ```
-
-<http://localhost:3000> に「Keycloak でログイン」のボタンが増えています。押すと Keycloak のログイン画面に移るので、`kate` / `Passw0rd!` でサインインします。画面に戻ってきたら、ID トークンを見てください。
-
-```json
-{
-  "cognito:username": "Keycloak_1f4ba046-07b3-4adf-94bd-bc3a813c870e",
-  "email": "kate@example.com",
-  "identities": "[{\"userId\":\"3a0d6721-c5e8-4445-ad05-a120ed6fdf26\",\"providerName\":\"Keycloak\",\"providerType\":\"OIDC\", ...}]",
-  "iss": "http://localhost:4566/ap-northeast-1_adbe51972"
-}
-```
-
-`iss` は Cognito（Floci）です。Keycloak のユーザーが、Cognito の User Pool の中に `Keycloak_...` という名前で作られています。`identities` の `userId` が、Keycloak での kate の `sub` です。
-
-:::notice[ユーザー名の後ろの値は、本物と Floci で違う]
-本物の Cognito は、ユーザー名を `Keycloak_<Keycloak の sub>` にします（`identities` の `userId` と同じ値）。Floci はユーザー名の後ろに別の UUID を付けるので、上のように `cognito:username` と `userId` の値が食い違います。`make-admin` などでユーザー名を使うときは、ID トークンから組み立てず、`npm run users` の Username をそのまま使ってください。
-:::
 
 ## 何が起きているか
 
@@ -58,7 +41,7 @@ npm run start:dev
 
 ## 外部 IdP を登録する
 
-[scripts/register-keycloak.sh](./scripts/register-keycloak.sh) の中心はこの 1 コマンドです。
+**`scripts/register-keycloak.sh`** を作ります。中心はこの 1 コマンドです。
 
 ```bash
 aws cognito-idp create-identity-provider \
@@ -93,22 +76,64 @@ aws cognito-idp create-identity-provider \
 
 ### クライアントで Keycloak を選べるようにする
 
+IdP を登録しただけでは、アプリのクライアントからは選べません。クライアントの `--supported-identity-providers` に Keycloak を足す必要があります。03-01 で作った `update-client.sh` は、User Pool に登録してある IdP を全部並べるので、**登録したあとにもう一度流すだけ** です。続けて `write-api-env.sh` を流すと、`.env` の `COGNITO_IDENTITY_PROVIDERS` に Keycloak が入り、画面にボタンが出ます。
+
+`register-keycloak.sh` は、この 2 つを最後に呼びます。
+
+::file{path="scripts/register-keycloak.sh"}
+
+`package.json` に `register-keycloak` を足し、`setup.sh` にも 1 行足します。
+
+::file{path="package.json"}
+
+::file{path="scripts/setup.sh"}
+
+## 動かす
+
 ```bash
-aws cognito-idp update-user-pool-client ... --supported-identity-providers COGNITO Keycloak ...
+npm run register-keycloak
+npm run start:dev          # 起動していたら、止めて起動し直す（.env を読み直すため）
 ```
 
-:::warning[UpdateUserPoolClient は全部を渡し直す]
-`update-user-pool-client` は「渡さなかった設定を既定値に戻す」API です。IdP を足すつもりで `--supported-identity-providers` だけを渡すと、戻り先や OAuth の設定が消えます。スクリプトでは今の設定を全部渡し直しています。本物の Cognito も同じです。
+<http://localhost:3000> に「Keycloak でログイン」のボタンが増えています。押すと Keycloak のログイン画面に移るので、`kate` / `Passw0rd!` でサインインします。画面に戻ってきたら、ID トークンを見てください。
+
+```json
+{
+  "cognito:username": "Keycloak_1f4ba046-07b3-4adf-94bd-bc3a813c870e",
+  "email": "kate@example.com",
+  "identities": "[{\"userId\":\"3a0d6721-c5e8-4445-ad05-a120ed6fdf26\",\"providerName\":\"Keycloak\",\"providerType\":\"OIDC\", ...}]",
+  "iss": "http://localhost:4566/ap-northeast-1_adbe51972"
+}
+```
+
+`iss` は Cognito（Floci）です。Keycloak のユーザーが、Cognito の User Pool の中に `Keycloak_...` という名前で作られています。`identities` の `userId` が、Keycloak での kate の `sub` です。
+
+:::notice[ユーザー名の後ろの値は、本物と Floci で違う]
+本物の Cognito は、ユーザー名を `Keycloak_<Keycloak の sub>` にします（`identities` の `userId` と同じ値）。Floci はユーザー名の後ろに別の UUID を付けるので、上のように `cognito:username` と `userId` の値が食い違います。`make-admin` などでユーザー名を使うときは、ID トークンから組み立てず、`npm run users` の Username をそのまま使ってください。
 :::
+
 
 ## Keycloak のユーザーを管理者にする
 
+User Pool のユーザーを一覧する **`scripts/list-users.sh`** を作り、`npm run users` で呼べるようにします（`package.json` には上で足してあります）。`make-admin.sh` にも、外部 IdP のユーザー名の形をコメントで書き足しておきます。
+
+::file{path="scripts/list-users.sh"}
+
+::file{path="scripts/make-admin.sh"}
+
 ```bash
 npm run users
-npm run make-admin Keycloak_50a2c065-919d-400d-8da6-bfe889ca04b5   # 自分の出力に置き換える
+# Keycloak_50a2c065-919d-400d-8da6-bfe889ca04b5 ...
+```
+
+```bash "{直前の結果で出た Keycloak_ で始まるユーザー名}"
+export FEDERATED_USER={直前の結果で出た Keycloak_ で始まるユーザー名}
+npm run make-admin "$FEDERATED_USER"
 ```
 
 ログインし直すと `GET /admin/dashboard` が 200 になります。Keycloak 側の役割（ロール）は、自動では Cognito のグループになりません。Cognito のグループを Cognito 側で付けるか、属性として持ち込んで（カスタム属性 + マッピング）、アプリや Lambda で扱います。
+
+Keycloak のユーザーを admin にしたのは確かめるための操作なので、`setup.sh` には足しません。kate は、Keycloak でログインしたときに Cognito に作られるユーザーです。Floci を作り直したら、もう一度ログインすれば作られます。
 
 ## コラム: アプリが Keycloak に直結する場合と比べる
 
@@ -120,6 +145,10 @@ Cognito を挟まず、アプリが Keycloak に直接ログインしにいく�
 | IdP を増やす | Cognito に登録するだけ。API は変えない | API の検証を IdP ごとに増やす |
 | ユーザーの台帳 | Cognito の User Pool にまとまる | IdP ごとに分かれる |
 | 自前のパスワードユーザーとの混在 | そのまま混ぜられる | 別に作る |
+
+## このレクチャーを終えた handson/
+
+::codeview
 
 :::faq
 

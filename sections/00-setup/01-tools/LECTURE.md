@@ -106,7 +106,7 @@ podman compose version                                       # Docker Compose ve
 | 渡す先 | 特徴 |
 |---|---|
 | docker-compose（v2） | Docker 公式の実装。`--wait` や `profiles` など、このハンズオンで使う機能が全部そろう。**こちらを使ってください** |
-| podman-compose | Python で書かれた Podman 向けの実装。古い版（Ubuntu 24.04 の apt で入る 1.0 系など）は `--wait` を知らず、`npm run floci:up` が `unrecognized arguments: --wait` で止まる |
+| podman-compose | Python で書かれた Podman 向けの実装。古い版（Ubuntu 24.04 の apt で入る 1.0 系など）は `--wait` を知らず、`npm run up` が `unrecognized arguments: --wait` で止まる |
 
 `podman compose version` が `Docker Compose version v2...` と出れば docker-compose が使われています。`podman-compose version ...` と出る場合は、上の手順で docker-compose を入れてください。両方入っているときは docker-compose が優先されます。
 
@@ -183,7 +183,7 @@ node --version   # v24.x.x 以上
 
 ## 当日より前にやっておくこと
 
-コンテナのイメージと npm のパッケージは、合わせて 2GB ほどになります。勉強会の会場で全員が同時に取得すると時間がかかるので、道具を入れたら、ネットワークのよい所で先に取得しておいてください。
+コンテナのイメージと npm のパッケージは、合わせて 1.5GB ほどになります。勉強会の会場で全員が同時に取得すると時間がかかるので、道具を入れたら、ネットワークのよい所で先に取得しておいてください。
 
 ```bash
 # コンテナのイメージ（展開後で合わせて約 1.3GB）
@@ -193,16 +193,7 @@ podman pull --platform linux/amd64 ghcr.io/cmaneu/entra-local:0.1.1
 podman pull docker.io/library/node:24-slim
 ```
 
-リポジトリをクローンして進める場合は、npm のパッケージも全レクチャー分入れておけます（合わせて約 800MB）。
-
-```bash
-# リポジトリのルートで
-for d in sections/*/*/; do
-  [ -f "$d/package-lock.json" ] && (cd "$d" && npm ci)
-done
-```
-
-各レクチャーの ZIP をダウンロードして進める場合は、展開したあとに `npm install` すれば同じです。
+npm のパッケージ（約 140MB）は、01-04 と 02 で `handson/` に入れていきます。会場のネットワークが心配なら、最後のレクチャー（[04-02](../../04-cognito-with-entra-id/02-federation/LECTURE.md)）のページの一番下にある「コードをダウンロード」で完成形の `handson/` を取り、一度 `npm install` しておいてください。npm のキャッシュに残るので、当日の `npm install` が速くなります（試したフォルダは消して構いません）。
 
 ## エディタとブラウザ
 
@@ -212,7 +203,7 @@ done
 
 ### Docker Desktop ではだめですか？
 
-だめではありません。npm scripts は環境変数 `COMPOSE` があればそれを使うので、先に設定しておけば `npm run floci:up` などがそのまま Docker で動きます。
+だめではありません。npm scripts は環境変数 `COMPOSE` があればそれを使うので、先に設定しておけば `npm run up` などがそのまま Docker で動きます。
 
 ```bash
 export COMPOSE="docker compose"

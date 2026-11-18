@@ -9,15 +9,17 @@ docs: true
 
 ログインに成功すると、Cognito は 3 つのトークンを返します。中身を開いて、それぞれ何のためのものかを確かめます。後半では **グループ** を作り、トークンにグループが載ることを確かめます。
 
-:::download
-[サンプルコードをダウンロード](./project.zip)
-:::
+このレクチャーで足すファイルは次のとおりです。ログインとトークンを読むための小さな道具が 2 つと、グループを作るスクリプトです。
+
+::changes
 
 ## 準備
 
+`handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `npm run setup` で前のレクチャーを終えた状態を作り直します。
+
 ```bash
-npm run floci:up
-npm run setup              # User Pool・App Client・alice・bob を作る
+npm run up
+npm run setup              # 前のレクチャーまでに作ったものを作り直す
 source ./env.sh && source ./.cognito.env
 ```
 
@@ -33,14 +35,28 @@ ID トークンとアクセストークンは **JWT** です。`.` で区切っ�
 
 ## トークンを開く
 
-alice でログインし、結果を `.tokens.json` に保存します。
+ログインのたびに長いコマンドを打たなくて済むよう、道具を 2 つ作ります。
+
+1 つ目は **`scripts/login.sh`** です。`initiate-auth` でログインし、返ってきたトークン一式（`AuthenticationResult`）を **`.tokens.json`** に保存します。ユーザー名とパスワードは引数（`$1`・`$2`）で受けます。
+
+::file{path="scripts/login.sh"}
+
+2 つ目は **`scripts/decode-jwt.mjs`** です。JWT を `.` で 3 つに分け、前の 2 つを base64url から戻して表示します。署名は確かめません（読むだけです）。
+
+::file{path="scripts/decode-jwt.mjs"}
+
+`package.json` に `login` と `decode` を足し、`.tokens.json` を `.gitignore` に足します（トークンは手元にだけ置くものです）。
+
+::file{path="package.json"}
+
+::file{path=".gitignore"}
+
+alice でログインし、ID トークンを開きます。
 
 ```bash
 npm run login alice 'Passw0rd!'
 node -e "console.log(require('./.tokens.json').IdToken)" | npm run -s decode
 ```
-
-[scripts/decode-jwt.mjs](./scripts/decode-jwt.mjs) は、ヘッダーとペイロードを読むだけの小さなスクリプトです（署名は確かめません）。
 
 ```json
 header: { "alg": "RS256", "typ": "JWT", "kid": "ap-northeast-1_1644239d1" }
@@ -94,6 +110,23 @@ ID トークンにもアクセストークンにも `"cognito:groups": ["admin"]
 :::notice[グループの変更が効くのは、次のトークンから]
 グループを変えても、すでに配ったトークンの中身は変わりません。トークンは「発行したときの情報」の写しだからです。新しいグループが効くのは、ログインし直すかトークンを更新したあとです。
 :::
+
+## スクリプトにする
+
+グループを作って alice を入れる 2 つのコマンドを **`scripts/create-groups.sh`** にし、`setup.sh` に 1 行足します。
+
+::file{path="scripts/create-groups.sh"}
+
+::file{path="scripts/setup.sh"}
+
+```bash
+npm run reset
+npm run setup     # 最後に alice のグループ（["admin"]）が出る
+```
+
+## このレクチャーを終えた handson/
+
+::codeview
 
 :::faq
 

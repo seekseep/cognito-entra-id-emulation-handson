@@ -9,33 +9,39 @@ docs: true
 
 ログインして受け取ったアクセストークンを、API が確かめるようにします。トークンが無い・正しくないなら **401**、本人だが権限が足りないなら **403** を返します。NestJS では、この判定を **Guard** に書きます。
 
-:::download
-[サンプルコードをダウンロード](./project.zip)
-:::
+このレクチャーで足すファイルは次のとおりです。Guard とデコレーターは小さなファイルに分けて作り、`UsersController` で組み合わせます。
 
-## 動かす
+::changes
 
-```bash
-npm install
-npm run floci:up
-npm run setup
-npm run start:dev
-```
+## 準備
 
-`npm run setup` は、前のレクチャーを終えた状態として、確認済みの carol（パスワード `Passw0rd!`）まで作ります。別のターミナルで carol としてログインし、アクセストークンを `AT` に入れます。
+`handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `npm run setup` で前のレクチャーを終えた状態を作り直します。
 
 ```bash
-AT=$(curl -s -X POST localhost:3000/auth/login -H 'content-type: application/json' \
-  -d '{"username":"carol","password":"Passw0rd!"}' | node -e "process.stdin.on('data',d=>console.log(JSON.parse(d).accessToken))")
-curl -s localhost:3000/me -H "authorization: Bearer $AT"
-# {"sub":"...","username":"carol","groups":[]}
-curl -s localhost:3000/admin/dashboard -H "authorization: Bearer $AT"
-# {"message":"admin グループの利用者だけが使えます","error":"Forbidden","statusCode":403}
+npm run up
+npm run setup              # 前のレクチャーまでに作ったものを作り直す
+source ./env.sh && source ./.cognito.env
+npm run start:dev          # 別のターミナルで。setup をやり直したら起動し直す
 ```
+
+## 守る API を先に決める
+
+トークンが無いと呼べない API を 2 つ作ります。
+
+| API | 誰が呼べるか |
+|---|---|
+| `GET /me` | ログインしている人なら誰でも。自分の情報を返す |
+| `GET /admin/dashboard` | admin グループの人だけ |
+
+コントローラーは、こう書きたい、という形から先に作ります。`@UseGuards` で 2 つの Guard をかけ、`@CurrentUser()` で利用者を受け取り、`@Roles()` で使えるグループを書きます。
+
+::file{path="src/users/users.controller.ts"}
+
+ここから、この 3 つ（`CognitoJwtGuard`・`@CurrentUser()`・`@Roles()` と `RolesGuard`）を作っていきます。
 
 ## CognitoJwtGuard
 
-[src/auth/cognito-jwt.guard.ts](./src/auth/cognito-jwt.guard.ts) は、前のセクションの `verify-jwt.mjs` と同じことを API の中でやります。
+**`src/auth/cognito-jwt.guard.ts`** は、01-04 の `verify-jwt.mjs` と同じことを API の中でやります。鍵の在りか（`jwksUrl`）と発行者（`issuer`）は、02-01 で作った `cognito.config.ts` から受け取ります。
 
 ```ts
 ({ payload } = await jwtVerify(token, this.jwks, { issuer: this.config.issuer }));
@@ -49,29 +55,61 @@ if (payload.client_id !== this.config.clientId) { /* 401 */ }
 - `token_use` が `access` … ID トークンを送られても受け付けない。ID トークンは「誰か」を伝えるためのもので、API を呼ぶ許可ではありません
 - `client_id` が自分のクライアント … 同じ User Pool の別のアプリ向けに出たトークンを受け付けない。Cognito のアクセストークンには `aud` が無いので、代わりにこれを見ます
 
-確かめた結果は `request.user` に入れ、[@CurrentUser()](./src/auth/current-user.decorator.ts) でハンドラから受け取ります。
+::file{path="src/auth/cognito-jwt.guard.ts"}
 
-```ts
-@Get('me')
-me(@CurrentUser() user: CognitoUser) {
-  return user;
-}
-```
+確かめた結果は `request.user` に入れ、**`@CurrentUser()`** でハンドラから受け取ります。
+
+::file{path="src/auth/current-user.decorator.ts"}
 
 ## グループで認可する
 
-[@Roles()](./src/auth/roles.decorator.ts) で「このハンドラを使えるグループ」を書き、[RolesGuard](./src/auth/roles.guard.ts) がトークンの `cognito:groups` と照らし合わせます。
+**`@Roles()`** で「このハンドラを使えるグループ」を書き、**`RolesGuard`** がトークンの `cognito:groups` と照らし合わせます。
 
-```ts
-@Get('admin/dashboard')
-@Roles(['admin'])
-dashboard(@CurrentUser() user: CognitoUser) { ... }
-```
+::file{path="src/auth/roles.decorator.ts"}
 
-carol を admin グループに入れて、もう一度試します。
+::file{path="src/auth/roles.guard.ts"}
+
+## 組み立てる
+
+Guard を `AuthModule` の部品として登録し、ほかのモジュールから使えるように `exports` に足します。
+
+::file{path="src/auth/auth.module.ts"}
+
+`UsersController` を `UsersModule` にまとめ、`AppModule` に足します。
+
+::file{path="src/users/users.module.ts"}
+
+::file{path="src/app.module.ts"}
+
+## 動かす
+
+`npm run start:dev` は `src/` の変更を見て自動で起動し直しています。止めていたら起動します。別のターミナルで bob としてログインし、アクセストークンを `AT` に入れます。
 
 ```bash
-npm run make-admin carol
+AT=$(curl -s -X POST localhost:3000/auth/login -H 'content-type: application/json' \
+  -d '{"username":"bob","password":"Passw0rd!"}' | node -e "process.stdin.on('data',d=>console.log(JSON.parse(d).accessToken))")
+curl -s localhost:3000/me -H "authorization: Bearer $AT"
+# {"sub":"...","username":"bob","groups":[]}
+curl -s localhost:3000/admin/dashboard -H "authorization: Bearer $AT"
+# {"message":"admin グループの利用者だけが使えます","error":"Forbidden","statusCode":403}
+curl -s localhost:3000/me
+# {"message":"Authorization: Bearer <アクセストークン> が必要です","error":"Unauthorized","statusCode":401}
+```
+
+bob は admin グループではないので 403 です（01-03 で admin に入れたのは alice だけです）。
+
+## ユーザーを admin に入れる
+
+ユーザーを admin グループに入れる **`scripts/make-admin.sh`** を作り、`package.json` に `make-admin` を足します。01-03 で手で打った `admin-add-user-to-group` を、ユーザー名を引数で受けるようにしたものです。
+
+::file{path="scripts/make-admin.sh"}
+
+::file{path="package.json"}
+
+bob を admin グループに入れて、もう一度試します。
+
+```bash
+npm run make-admin bob
 curl -s localhost:3000/admin/dashboard -H "authorization: Bearer $AT"   # まだ 403
 ```
 
@@ -79,9 +117,9 @@ curl -s localhost:3000/admin/dashboard -H "authorization: Bearer $AT"   # まだ
 
 ```bash
 AT=$(curl -s -X POST localhost:3000/auth/login -H 'content-type: application/json' \
-  -d '{"username":"carol","password":"Passw0rd!"}' | node -e "process.stdin.on('data',d=>console.log(JSON.parse(d).accessToken))")
+  -d '{"username":"bob","password":"Passw0rd!"}' | node -e "process.stdin.on('data',d=>console.log(JSON.parse(d).accessToken))")
 curl -s localhost:3000/admin/dashboard -H "authorization: Bearer $AT"
-# {"message":"ようこそ、管理者の carol さん"}
+# {"message":"ようこそ、管理者の bob さん"}
 ```
 
 グループの変更は、次に発行されたトークンから効きます。
@@ -96,6 +134,12 @@ curl -s localhost:3000/admin/dashboard -H "authorization: Bearer $AT"
 | 本人だが admin グループではない | 403 |
 
 401 は「あなたが誰か分からない」、403 は「あなたが誰かは分かったが、それはできない」です。
+
+bob を admin に入れたのは確かめるための操作なので、`setup.sh` には足しません。このレクチャーは API のコードを足しただけで、Floci に残すものは増えていません。
+
+## このレクチャーを終えた handson/
+
+::codeview
 
 :::faq
 

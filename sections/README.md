@@ -8,34 +8,49 @@ sidebar:
 
 # 進め方
 
-教材は「セクション」と「レクチャー」の 2 段に分かれています。レクチャーのフォルダが、そのまま 1 つの動くサンプルです。
+教材は「セクション」と「レクチャー」の 2 段に分かれています。手元では **`handson/` という 1 つのフォルダ** に、レクチャーごとにファイルを足していきます。
 
 最初に、お使いの OS を選んでください。選んだ OS はこのブラウザに保存され、OS で手順が分かれる所では、どのページでも選んだ OS の手順だけが表示されます（画面上部の選択欄で、いつでも変えられます）。
 
 ::platform-choice
 
+## 1 つのフォルダを育てる
+
+ダウンロードするのは、[Floci を起動する](./00-setup/02-floci/LECTURE.md) で配る `handson/` の 1 回だけです。最初は 4 つのファイルしかありません。そこから次のように育てていきます。
+
 ```text
-sections/
-  00-setup/                     準備
-  01-cognito/                   Cognito 単体（aws CLI）
-  02-app-with-cognito/          NestJS API から使う
-  03-cognito-with-other-idp/    Hosted UI と Keycloak
-  04-cognito-with-entra-id/     Entra ID（entra-local）
+00 準備           compose.yaml・package.json・env.sh（Floci を起動するだけ）
+01 Cognito 単体   scripts/ に aws CLI のスクリプトが増える
+02 NestJS API     src/・test/・public/ が増え、API のプロジェクトになる
+03 Keycloak       compose.yaml に Keycloak、画面に「Hosted UI でログイン」が増える
+04 Entra ID       compose.yaml に entra-local、Entra を登録するスクリプトが増える
 ```
+
+どのレクチャーで、どのファイルを足し・変えるかの一覧です。ファイルがいつ増えるかを見ると、そのファイルが何のためにあるのかが分かります。
+
+::timeline
 
 ## 1 つのレクチャーの進め方
 
-1. レクチャーのフォルダに移動する（ページの「サンプルコードをダウンロード」からでも、このリポジトリのフォルダでも構いません）
-2. 本文の最初の「動かす」（または「準備」）のコマンドを、上から順に打つ
-3. 本文に沿って手を動かす
+1. 最初の「このレクチャーで足すファイル」の表で、何が増えるかを見る
+2. 本文に沿って、まずコマンドを手で打って確かめる
+3. 確かめたことをファイルにする。本文には要点だけを載せ、ファイルの全文は折りたたみに入れてあります。開いて、写すかコピーして作ってください
+4. 最後に、そのレクチャーを終えた `handson/` をエディタで見比べる。足した・変えたファイルには「新規」「変更」の印、変えた行には色が付いています
 
-「動かす」のコマンドは、多くのレクチャーで次の形です。
+手元のファイルが壊れたときや、途中のレクチャーから始めるときは、各レクチャーの最後のエディタの「コードをダウンロード」で、そのレクチャーを終えた `handson/` を取れます。
 
-- `npm install` … `package.json` に依存があるレクチャーだけ
-- `npm run floci:up`（または `npm run up`） … コンテナを起動する
-- `npm run setup` … 「前のレクチャーを終えた状態」を作る。最初のレクチャー（00-setup/02-floci）や、コンテナを用意するだけのレクチャー（03-02・04-01）には無い。02-03 はテストが自分で用意するので使わない
+## コンテナと setup
 
-Floci と Keycloak のデータはメモリにあり、コンテナを作り直すと消えます。entra-local（04）だけはボリュームに残り、`npm run down` では消えません（消すときは `npm run reset`）。レクチャーを移るときは、前のレクチャーのコンテナを止めてから（`npm run floci:down` / `npm run down`）次を起動してください。同じポートを使うので、2 つ同時には動きません。
+| コマンド | すること |
+|---|---|
+| `npm run up` | `compose.yaml` にあるコンテナを全部起動する（Floci、03 からは Keycloak、04 からは entra-local も） |
+| `npm run down` | 止める |
+| `npm run reset` | 止めて起動し直す。Floci と Keycloak のデータは消える |
+| `npm run setup` | `scripts/setup.sh` を流し、ここまでのレクチャーで Floci に作ったもの（User Pool・ユーザー・グループ・IdP の登録）を作り直す |
+
+Floci と Keycloak のデータはメモリにあり、コンテナを止めると消えます。そのため 01-01 で `scripts/setup.sh` を作り、レクチャーを終えるたびに 1 行ずつ足していきます。パソコンを再起動したあとなどは、`npm run up` → `npm run setup` で、前のレクチャーを終えた状態に戻せます。`setup` をやり直したら、API（`npm run start:dev`）も起動し直してください（`.env` は起動したときにしか読まれません）。
+
+entra-local（04）のデータだけはボリュームに残り、`npm run reset` でも消えません（消すときは `podman compose down -v`）。
 
 ## 使うポート
 
@@ -67,14 +82,11 @@ ss -ltnp | grep -E ':(4566|3000|8080|8443) '
 
 どれも練習用の値です。本物のパスワードに使わないでください。
 
-| どこ | ユーザー | パスワード |
-|---|---|---|
-| Cognito（01-03・01-04 の `npm run setup` が作る） | `alice` / `bob` | `Passw0rd!` |
-| Cognito（02-02 の `npm run setup` が作る） | `carol` | `Passw0rd!` |
-| Cognito（03・04-02 の `npm run setup` が作る） | `alice` | `Passw0rd!` |
-| Keycloak | `kate` / `ken` | `Passw0rd!` |
-| Keycloak の管理コンソール | `admin` | `admin` |
-| entra-local（`npm run create-user`） | `taro@entralocal.dev` | `Passw0rd!` |
-| entra-local のシード | `alice@entralocal.dev` / `bob@entralocal.dev` | `Password1!` |
-
-01-01・01-02 と、02-01・02-03・02-04 の `npm run setup` はユーザーを作りません。本文の手順で自分でサインアップします。Floci のユーザーはレクチャーごとに別の User Pool にいるので、前のレクチャーで作ったユーザーは次のレクチャーにはいません。
+| どこ | ユーザー | パスワード | 作られる所 |
+|---|---|---|---|
+| Cognito | `alice`（admin グループ）/ `bob` | `Passw0rd!` | 01-02・01-03（`npm run setup` で作り直せる） |
+| Cognito | `carol` | `Passw0rd!` | 02-01 で手でサインアップ（setup では作られない） |
+| Keycloak | `kate` / `ken` | `Passw0rd!` | 03-02（realm のファイル） |
+| Keycloak の管理コンソール | `admin` | `admin` | 03-02 |
+| entra-local | `taro@entralocal.dev` | `Passw0rd!` | 04-01（`npm run entra:create-user`） |
+| entra-local のシード | `alice@entralocal.dev` / `bob@entralocal.dev` | `Password1!` | entra-local に最初から入っている |

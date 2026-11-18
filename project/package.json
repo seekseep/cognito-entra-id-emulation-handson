@@ -1,0 +1,82 @@
+{
+  "name": "handson",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "up": "${COMPOSE:-podman compose} up -d --wait",
+    "down": "${COMPOSE:-podman compose} down", // @until 02-04
+    "down": "${COMPOSE:-podman compose} --profile api down", // @since 02-04
+    "reset": "npm run down && npm run up",
+    "setup": "bash scripts/setup.sh", // @since 01-01
+    "read-code": "bash scripts/read-code.sh", // @since 01-02
+    // @since 01-03
+    "login": "bash scripts/login.sh",
+    "decode": "node scripts/decode-jwt.mjs",
+    // @end
+    // @since 01-04
+    "verify": "node scripts/verify-jwt.mjs",
+    "refresh": "bash scripts/refresh.sh",
+    // @end
+    // @since 02-01
+    "write-env": "bash scripts/write-api-env.sh",
+    "build": "nest build",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:prod": "node dist/main",
+    // @end
+    "make-admin": "bash scripts/make-admin.sh", // @since 02-02
+    "test:e2e": "vitest run --config ./vitest.config.e2e.ts", // @since 02-03
+    // @since 02-04
+    "api:up": "${COMPOSE:-podman compose} --profile api up -d --build --wait",
+    "api:down": "${COMPOSE:-podman compose} --profile api down",
+    // @end
+    "update-client": "bash scripts/update-client.sh", // @since 03-01
+    "keycloak:endpoints": "bash scripts/keycloak-endpoints.sh", // @since 03-02
+    // @since 03-03
+    "register-keycloak": "bash scripts/register-keycloak.sh",
+    "users": "bash scripts/list-users.sh",
+    // @end
+    // @since 04-01
+    "entra:endpoints": "bash scripts/entra-endpoints.sh",
+    "entra:register-app": "bash scripts/entra-register-app.sh",
+    "entra:create-user": "bash scripts/entra-create-user.sh",
+    "entra:preview-token": "bash scripts/entra-preview-token.sh",
+    // @end
+    "register-entra": "bash scripts/register-entra.sh", // @since 04-02
+  },
+  // @since 01-04
+  "dependencies": {
+    // @since 02-01
+    "@aws-sdk/client-cognito-identity-provider": "^3.1168.0",
+    "@nestjs/common": "^12.0.1",
+    "@nestjs/config": "^12.1.1",
+    "@nestjs/core": "^12.0.1",
+    "@nestjs/platform-express": "^12.0.1",
+    // @end
+    "@nestjs/serve-static": "^12.1.1", // @since 02-04
+    "jose": "^6.2.17",
+    // @since 02-01
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    // @end
+  },
+  // @end
+  // @since 02-01
+  "devDependencies": {
+    "@nestjs/cli": "^12.0.12",
+    "@nestjs/schematics": "^12.0.0",
+    "@nestjs/testing": "^12.0.1", // @since 02-03
+    "@types/express": "^5.0.0",
+    "@types/node": "^24.0.0",
+    "@types/supertest": "^7.0.0", // @since 02-03
+    "source-map-support": "^0.5.21",
+    "supertest": "^7.0.0", // @since 02-03
+    "typescript": "^6.0.2",
+    // @since 02-03
+    "vite": "^8.0.0",
+    "vitest": "^4.1.2",
+    // @end
+  },
+  // @end
+}

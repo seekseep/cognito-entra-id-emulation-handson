@@ -1,0 +1,41 @@
+{
+  "name": "handson",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "up": "${COMPOSE:-podman compose} up -d --wait",
+    "down": "${COMPOSE:-podman compose} down",
+    "reset": "npm run down && npm run up",
+    "setup": "bash scripts/setup.sh",
+    "read-code": "bash scripts/read-code.sh",
+    "login": "bash scripts/login.sh",
+    "decode": "node scripts/decode-jwt.mjs",
+    "verify": "node scripts/verify-jwt.mjs",
+    "refresh": "bash scripts/refresh.sh",
+    "write-env": "bash scripts/write-api-env.sh",
+    "build": "nest build",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:prod": "node dist/main",
+    "make-admin": "bash scripts/make-admin.sh"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.1168.0",
+    "@nestjs/common": "^12.0.1",
+    "@nestjs/config": "^12.1.1",
+    "@nestjs/core": "^12.0.1",
+    "@nestjs/platform-express": "^12.0.1",
+    "jose": "^6.2.17",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^12.0.12",
+    "@nestjs/schematics": "^12.0.0",
+    "@types/express": "^5.0.0",
+    "@types/node": "^24.0.0",
+    "source-map-support": "^0.5.21",
+    "typescript": "^6.0.2"
+  }
+}
