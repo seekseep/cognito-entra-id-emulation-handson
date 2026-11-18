@@ -58,7 +58,7 @@ npm run login alice 'Passw0rd!'
 node -e "console.log(require('./.tokens.json').IdToken)" | npm run -s decode
 ```
 
-```json
+```json nofile
 header: { "alg": "RS256", "typ": "JWT", "kid": "ap-northeast-1_1644239d1" }
 payload: {
   "sub": "e1f9945e-1e10-4577-a0eb-2ec360231189",

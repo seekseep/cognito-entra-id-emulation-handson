@@ -2,6 +2,8 @@
 // - 左のファイルボタンを押すと、対応するコードペインだけを表示する
 // - ヘッダの「全画面」ボタンで、エディタだけを画面いっぱいに広げる
 //   Fullscreen API を使い、使えないとき（iPhone の Safari など）は position: fixed で代わりにする
+// - 本文の抜粋（handson-excerpts.mjs が生成する `.excerpt`）に、ファイルでの行番号を振り、
+//   「全体を確認する」でファイル全体を開いて、抜粋の所までスクロールする
 // `.editor` が無いページでは何もしない。全ページの <head> に inline 注入される。
 (function () {
   function activate(editor, file) {
@@ -80,7 +82,35 @@
     });
   }
 
+  // ---- 抜粋 ----
+
+  function setupExcerpt(excerpt) {
+    // 抜粋の各行に、ファイルでの行番号を付ける（省いた印の行は ⋮）
+    var numbers = (excerpt.dataset.lines || '').split(',');
+    var code = excerpt.querySelector(':scope > .expressive-code');
+    if (code) {
+      code.querySelectorAll('.ec-line > .code').forEach(function (line, i) {
+        var n = numbers[i];
+        line.setAttribute('data-ln', n ? n : /^\s*(\/\/|#)?\s*(…|\.\.\.)\s*$/.test(line.textContent) ? '⋮' : '');
+      });
+    }
+    var btn = excerpt.querySelector('.excerpt__toggle');
+    var full = excerpt.querySelector('.excerpt__full');
+    if (!btn || !full) return;
+    btn.addEventListener('click', function () {
+      var open = full.hidden;
+      full.hidden = !open;
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.textContent = open ? '全体を閉じる' : '全体を確認する';
+      if (!open) return;
+      // 抜粋の所（色の付いた行）が見えるよう、全体の枠の中だけをスクロールする
+      var mark = full.querySelector('.ec-line.mark');
+      if (mark) full.scrollTop = Math.max(0, mark.offsetTop - full.clientHeight / 4);
+    });
+  }
+
   function setup() {
+    document.querySelectorAll('.excerpt').forEach(setupExcerpt);
     document.querySelectorAll('.editor').forEach(function (editor) {
       // 最初に開いているファイルが一覧の下のほうにあっても見えるよう、一覧だけをスクロールしておく（ページは動かさない）
       var active = editor.querySelector('.editor__file.is-active');

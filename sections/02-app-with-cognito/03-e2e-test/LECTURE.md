@@ -51,9 +51,11 @@ beforeEach(async () => {
 サインアップの確認コードは、Floci の SES から読みます（[test/floci.ts](./handson/test/floci.ts) の `readVerificationCode()`）。
 
 ```ts
-const { messages } = await (await fetch(`${FLOCI}/_aws/ses`)).json();
+const { messages } = (await (await fetch(`${FLOCI}/_aws/ses`)).json()) as {
+  // ...
+};
 const mail = messages.filter((m) => m.Destination.ToAddresses.includes(email)).at(-1);
-return mail.Body.text_part.match(/\d{6}/)[0];
+const code = mail?.Body.text_part?.match(/\d{6}/)?.[0];
 ```
 
 01-02 の `read-code.sh` と同じことを TypeScript で書いたものです。本物の Cognito ではできない（メールが実際に送られてしまう）ことが、ローカルではテストの中で完結します。

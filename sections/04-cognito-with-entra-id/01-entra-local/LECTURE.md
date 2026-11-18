@@ -136,7 +136,7 @@ npm run entra:preview-token taro@entralocal.dev
 
 `claims` の部分がトークンの中身です。
 
-```json
+```json nofile
 "claims": {
   "iss": "http://localhost:8443/11111111-1111-1111-1111-111111111111/v2.0",
   "sub": "7AVwZdeJEDtlOYPBd5JlCISHoby578la6SIPMq3Q27Q",

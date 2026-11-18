@@ -121,12 +121,20 @@ npm run write-env
 ```js
 const verifier = randomString();
 const challenge = base64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
+const state = randomString();
+// ...
+const params = {
+  client_id: config.clientId,
+  response_type: 'code',
+  redirect_uri: redirectUri,
+  scope: config.scope,
+  state,
+  code_challenge: challenge,
+  code_challenge_method: 'S256',
+};
 // ...
 const url = new URL(discovery.authorization_endpoint);
-url.search = new URLSearchParams({
-  client_id: config.clientId, response_type: 'code', redirect_uri: redirectUri,
-  scope: config.scope, state, code_challenge: challenge, code_challenge_method: 'S256',
-});
+url.search = new URLSearchParams(params);
 location.assign(url);
 ```
 

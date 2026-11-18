@@ -8,9 +8,12 @@
  *                           見出しのレベルは、直前の見出しより 1 つ深くする
  *   ::codeview            … このレクチャーを終えた handson/ 全体をエディタで見せる（ページの最後に置く）。
  *                           ファイル一覧に「作成」「変更」を付け、足したファイルを最初に開く
+ *   （抜粋）              … 手で書いたコードフェンスに、ファイルでの行番号と「全体を確認する」を付ける
+ *                           （handson-excerpts.mjs）
  *   ::timeline            … どのレクチャーで、どのファイルが増えるかの一覧（レクチャー以外のページでも使える）
  */
 
+import { expandExcerpts } from './handson-excerpts.mjs';
 import { SNAPSHOT_DIRNAME, addedLines, buildSnapshot, changesOf, loadManifest } from './snapshots.mjs';
 
 const CHANGES_RE = /^::changes\s*$/;
@@ -150,8 +153,10 @@ async function buildTimeline() {
  * `::codeview` は sentinels.mjs 側で buildHandsonEditor を呼ぶ。
  */
 export async function expandHandsonSentinels(body, { id, where }) {
-  if (!/^::(changes|file|timeline)\b/m.test(body)) return body;
   const info = id ? await changesOf(id) : null;
+  // 手で書いた抜粋に、ファイルでの行番号と「全体を確認する」を付ける（handson-excerpts.mjs）
+  if (info) body = expandExcerpts(body, info.current, { where, langOf });
+  if (!/^::(changes|file|timeline)\b/m.test(body)) return body;
   const { files } = await loadManifest();
   const out = [];
   // ::file の見出しのレベルを決めるため、直前の見出しの深さを覚えておく（コードフェンスの中の # は数えない）

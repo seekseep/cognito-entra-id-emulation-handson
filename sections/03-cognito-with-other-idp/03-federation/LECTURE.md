@@ -97,7 +97,7 @@ npm run start:dev          # 起動していたら、止めて起動し直す（
 
 <http://localhost:3000> に「Keycloak でログイン」のボタンが増えています。押すと Keycloak のログイン画面に移るので、`kate` / `Passw0rd!` でサインインします。画面に戻ってきたら、ID トークンを見てください。
 
-```json
+```json nofile
 {
   "cognito:username": "Keycloak_1f4ba046-07b3-4adf-94bd-bc3a813c870e",
   "email": "kate@example.com",

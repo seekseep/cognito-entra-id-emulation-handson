@@ -86,7 +86,7 @@ npm run start:dev          # 起動していたら、止めて起動し直す（
 
 <http://localhost:3000> に「EntraID でログイン」のボタンが増えています（Keycloak のボタンもそのまま並びます）。押して、entra-local のサインイン画面で `taro@entralocal.dev` / `Passw0rd!` を入れます。戻ってきたら ID トークンを見てください。
 
-```json
+```json nofile
 {
   "cognito:username": "EntraID_272c8101-ef40-41cb-bd40-ed64f04a6546",
   "custom:entra_oid": "daa6ae20-6153-4193-a9f7-9f8cc48bbf34",

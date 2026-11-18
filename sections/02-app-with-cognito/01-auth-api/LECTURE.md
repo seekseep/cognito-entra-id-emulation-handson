@@ -78,8 +78,8 @@ NestJS は TypeScript で書きます（NestJS 12 の標準の構成）。
 
 ```ts
 const endpoint = process.env.COGNITO_ENDPOINT || undefined;
-const issuer = process.env.COGNITO_ISSUER
-  ?? `${endpoint ?? `https://cognito-idp.${region}.amazonaws.com`}/${userPoolId}`;
+const userPoolId = required('COGNITO_USER_POOL_ID');
+const issuer = process.env.COGNITO_ISSUER ?? `${endpoint ?? `https://cognito-idp.${region}.amazonaws.com`}/${userPoolId}`;
 ```
 
 `COGNITO_ENDPOINT` があれば Floci、無ければ本物の Cognito です。トークンの発行者（`iss`）は「エンドポイント/プール ID」の形で、Floci も本物も同じ組み立て方で決まります。`iss` と `jwksUrl` は次のレクチャーでトークンを確かめるときに使います。

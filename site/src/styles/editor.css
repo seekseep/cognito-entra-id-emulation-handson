@@ -290,7 +290,12 @@ html.has-editor-fullscreen .main-pane {
   counter-increment: editor-ln;
 }
 
-.editor__pane .ec-line > .code::before {
+.editor__pane .expressive-code .ec-line.ec-line > .code::before {
+  /* Expressive Code は色を付けた行（mark・ins）の ::before を印に使い、position: absolute にする。
+     行番号が流れから外れて字下げがずれないよう、ここで流れに戻す（.ec-line.ec-line は詳細度を上げるため） */
+  position: static;
+  padding: 0;
+  background: none;
   content: counter(editor-ln);
   display: inline-block;
   width: 2.5ch;
@@ -450,4 +455,90 @@ html.has-editor-fullscreen .main-pane {
   flex-basis: 100%;
   font-size: var(--sl-text-sm);
   color: var(--sl-color-gray-3);
+}
+
+/* 本文の抜粋（handson-excerpts.mjs の .excerpt）。上にファイル名・何行目・「全体を確認する」を置き、
+   抜粋の各行にはファイルでの行番号（editor-client.js が data-ln に入れる）を出す。 */
+.excerpt__bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.6rem;
+  margin-bottom: 0.4rem;
+  font-size: var(--sl-text-sm);
+}
+
+.excerpt__range {
+  color: var(--sl-color-gray-3);
+}
+
+.excerpt__toggle {
+  margin-left: auto;
+  padding: 0.2rem 0.7rem;
+  font-size: var(--sl-text-xs);
+  color: var(--sl-color-white);
+  background: var(--sl-color-gray-6);
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.excerpt__toggle:hover {
+  background: var(--sl-color-gray-5);
+}
+
+.excerpt__toggle:focus-visible {
+  outline: 2px solid var(--sl-color-accent-high);
+  outline-offset: 2px;
+}
+
+.excerpt > .expressive-code {
+  margin-top: 0;
+}
+
+.excerpt > .expressive-code .ec-line.ec-line > .code::before {
+  /* Expressive Code は色を付けた行（mark・ins）の ::before を印に使い、position: absolute にする。
+     行番号が流れから外れて字下げがずれないよう、ここで流れに戻す（.ec-line.ec-line は詳細度を上げるため） */
+  position: static;
+  padding: 0;
+  background: none;
+  content: attr(data-ln);
+  display: inline-block;
+  min-width: 3ch;
+  margin-right: 1.25ch;
+  text-align: right;
+  color: var(--sl-color-gray-4);
+  user-select: none;
+}
+
+/* ファイル全体。長いファイルでもページが伸びすぎないよう、枠の中でスクロールさせる */
+.excerpt__full {
+  max-height: 28rem;
+  overflow: auto;
+  margin-top: 0.5rem;
+  border-radius: 0.4rem;
+}
+
+.excerpt__full .expressive-code code {
+  counter-reset: excerpt-ln;
+}
+
+.excerpt__full .ec-line {
+  counter-increment: excerpt-ln;
+}
+
+.excerpt__full .expressive-code .ec-line.ec-line > .code::before {
+  /* Expressive Code は色を付けた行（mark・ins）の ::before を印に使い、position: absolute にする。
+     行番号が流れから外れて字下げがずれないよう、ここで流れに戻す（.ec-line.ec-line は詳細度を上げるため） */
+  position: static;
+  padding: 0;
+  background: none;
+  content: counter(excerpt-ln);
+  display: inline-block;
+  min-width: 3ch;
+  margin-right: 1.25ch;
+  text-align: right;
+  color: var(--sl-color-gray-4);
+  user-select: none;
 }

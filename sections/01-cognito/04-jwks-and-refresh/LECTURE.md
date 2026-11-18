@@ -37,7 +37,7 @@ npm run login alice 'Passw0rd!'
 curl -s "$AWS_ENDPOINT_URL/$POOL_ID/.well-known/openid-configuration"
 ```
 
-```json
+```json nofile
 {
   "issuer": "http://localhost:4566/ap-northeast-1_57965a023",
   "jwks_uri": "http://localhost:4566/ap-northeast-1_57965a023/.well-known/jwks.json",
@@ -70,9 +70,13 @@ npm install jose
 
 ```js
 const issuer = `${env.AWS_ENDPOINT_URL}/${env.POOL_ID}`;
-const discovery = await (await fetch(`${issuer}/.well-known/openid-configuration`)).json();
+// ...
+const response = await fetch(`${issuer}/.well-known/openid-configuration`);
+// ...
+const discovery = await response.json();
 const jwks = createRemoteJWKSet(new URL(discovery.jwks_uri));
-const { payload } = await jwtVerify(token, jwks, { issuer });
+// ...
+const { payload, protectedHeader } = await jwtVerify(token, jwks, { issuer });
 ```
 
 ::file{path="scripts/verify-jwt.mjs"}
@@ -123,7 +127,7 @@ Floci は User Pool ごとに別の鍵を使います（本物も同じです）
 npm run refresh
 ```
 
-```json
+```json nofile
 { "ExpiresIn": 3600, "HasIdToken": true, "HasRefreshToken": false }
 ```
 

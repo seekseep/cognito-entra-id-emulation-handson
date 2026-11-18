@@ -45,9 +45,13 @@ npm run start:dev          # 別のターミナルで。setup をやり直した
 
 ```ts
 ({ payload } = await jwtVerify(token, this.jwks, { issuer: this.config.issuer }));
-
-if (payload.token_use !== 'access') { /* 401 */ }
-if (payload.client_id !== this.config.clientId) { /* 401 */ }
+// ...
+if (payload.token_use !== 'access') {
+  throw new UnauthorizedException('アクセストークンを送ってください（ID トークンは使えません）');
+}
+if (payload.client_id !== this.config.clientId) {
+  throw new UnauthorizedException('このアプリ向けのトークンではありません');
+}
 ```
 
 署名・`iss`・`exp` に加えて、2 つを確かめています。
