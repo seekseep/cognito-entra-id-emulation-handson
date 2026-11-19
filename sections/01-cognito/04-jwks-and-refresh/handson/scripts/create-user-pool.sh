@@ -16,6 +16,7 @@ CLIENT_ID=$(aws cognito-idp create-user-pool-client \
   --client-name practice-cli \
   --no-generate-secret \
   --explicit-auth-flows ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH \
+  --prevent-user-existence-errors ENABLED \
   --query UserPoolClient.ClientId --output text)
 
 cat > .cognito.env <<ENV

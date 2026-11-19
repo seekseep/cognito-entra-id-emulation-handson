@@ -137,6 +137,8 @@ npm run setup
 
 Floci は `UserNotFoundException` を返します。本物の Cognito では、App Client の `PreventUserExistenceErrors` が `ENABLED` なら、パスワード違いと同じ `NotAuthorizedException` が返り、ユーザーが存在するかを漏らしません。
 
-ただし既定値は作り方で変わります。**コンソールで作ったクライアントは `ENABLED`、API や aws CLI で値を渡さずに作ったクライアントは `LEGACY`**（存在しなければ `UserNotFoundException`）です。本物に向けて CLI でクライアントを作るときは、`--prevent-user-existence-errors ENABLED` を付けてください。Floci はこの設定を受け付けますが、保存せず、付けても `UserNotFoundException` を返します。どちらにしても、アプリ側でも 2 つを区別しないように作ります（次のセクションで扱います）。
+01-01 では `--prevent-user-existence-errors ENABLED` を付けてクライアントを作りました。既定値は作り方で変わり、**コンソールで作ったクライアントは `ENABLED`、API や aws CLI で値を渡さずに作ったクライアントは `LEGACY`**（存在しなければ `UserNotFoundException`）です。Floci はこの設定を保存しますが、効きません（付けても `UserNotFoundException` を返します）。
+
+02 からは、画面が Cognito を直接呼び、Cognito の応答がそのまま画面に届きます。ユーザーが存在するかを隠せるのは、この設定だけです。本物に向けるときは必ず `ENABLED` にしてください。
 
 :::

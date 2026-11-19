@@ -1,12 +1,7 @@
 node_modules/
 .cognito.env # @since 01-01
 .tokens.json # @since 01-03
-# @since 02-01
-dist/
-.env
-*.tsbuildinfo
-# @end
-# @since 04-01
+# @since 03-01
 .entra.env
 .entra.*.env
 # @end

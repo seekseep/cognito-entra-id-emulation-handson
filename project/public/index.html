@@ -15,12 +15,16 @@
 <body>
   <h1>Cognito ログインの練習</h1>
   <p id="status">ログインしていません</p>
-  <!-- @since 03-01 -->
+  <p>Cognito の API: <code id="endpoint">読み込み中…</code></p>
+  <!-- @since 02-02 -->
 
   <section>
     <h2>Hosted UI でログイン</h2>
-    <p>ログイン先: <code id="issuer">読み込み中…</code></p>
-    <div id="login-buttons"></div>
+    <p>ログイン先: <code id="authorize">読み込み中…</code></p>
+    <button id="hosted-login">Cognito のログイン画面へ</button>
+    <!-- @since 03-02 -->
+    <button id="entra-login">Entra ID でログイン</button>
+    <!-- @end -->
   </section>
   <!-- @end -->
 
@@ -48,20 +52,15 @@
   </form>
 
   <section>
-    <h2>API を呼ぶ</h2>
-    <button id="me">GET /me</button>
-    <button id="admin">GET /admin/dashboard</button>
-    <button id="refresh">トークンを更新</button>
-    <button id="logout">ログアウト</button>
-    <pre id="output">まだ何もしていません</pre>
-  </section>
-  <!-- @since 03-01 -->
-
-  <section>
     <h2>ID トークンの中身</h2>
     <pre id="id-token">ログインすると表示します</pre>
+    <button id="logout">ログアウト</button>
   </section>
-  <!-- @end -->
+
+  <section>
+    <h2>Cognito の応答</h2>
+    <pre id="output">まだ何もしていません</pre>
+  </section>
 
   <script type="module" src="./main.js"></script>
 </body>

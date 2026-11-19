@@ -166,10 +166,9 @@ export default defineConfig({
         { label: '進め方', link: '/getting-started/' },
         // Starlight v0.39+ では autogenerate を items 配列に入れる（label と autogenerate を同階層に書けない）。
         { label: '00. 準備', items: [{ autogenerate: { directory: '00-setup' } }] },
-        { label: '01. Cognito 単体', items: [{ autogenerate: { directory: '01-cognito' } }] },
-        { label: '02. NestJS API から使う', items: [{ autogenerate: { directory: '02-app-with-cognito' } }] },
-        { label: '03. Hosted UI と Keycloak', items: [{ autogenerate: { directory: '03-cognito-with-other-idp' } }] },
-        { label: '04. Entra ID', items: [{ autogenerate: { directory: '04-cognito-with-entra-id' } }] },
+        { label: '01. Cognito を作る', items: [{ autogenerate: { directory: '01-cognito' } }] },
+        { label: '02. HTML でログインする', items: [{ autogenerate: { directory: '02-login-page' } }] },
+        { label: '03. Entra ID と連携する', items: [{ autogenerate: { directory: '03-cognito-with-entra-id' } }] },
         // 過去のハンズオンの一覧（sections/PAST-HANDSON.md）。セクションを足したら、この上に足す。
         { label: '過去のハンズオン', link: '/past-handson/' },
       ],

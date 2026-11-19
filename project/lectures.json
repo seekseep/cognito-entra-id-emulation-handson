@@ -1,9 +1,9 @@
 {
-  "$comment": "最終形（04 を終えた状態）のファイルが、どのレクチャーで登場するか。ファイルの中で行が増える所は、ファイルの中の @since / @until で書く。site/scripts/build-snapshots.mjs が、ここからレクチャーごとの状態（sections/<sec>/<lec>/handson/）を作る",
-  "lectures": ["00-02", "01-01", "01-02", "01-03", "01-04", "02-01", "02-02", "02-03", "02-04", "03-01", "03-02", "03-03", "04-01", "04-02"],
+  "$comment": "最終形（03 を終えた状態）のファイルが、どのレクチャーで登場するか。ファイルの中で行が増える所は、ファイルの中の @since / @until で書く。site/scripts/build-snapshots.mjs が、ここからレクチャーごとの状態（sections/<sec>/<lec>/handson/）を作る",
+  "lectures": ["00-02", "01-01", "01-02", "01-03", "01-04", "02-01", "02-02", "03-01", "03-02"],
   "files": {
     "package.json": { "since": "00-02", "about": "npm run で呼ぶコマンドの一覧。レクチャーごとに増える" },
-    "compose.yaml": { "since": "00-02", "about": "コンテナの定義。Floci から始まり、API・Keycloak・entra-local が増える" },
+    "compose.yaml": { "since": "00-02", "about": "コンテナの定義。Floci から始まり、03 で entra-local が増える" },
     "env.sh": { "since": "00-02", "about": "aws CLI の向き先を Floci に変える" },
     ".gitignore": { "since": "00-02", "about": "手元にだけ置くファイル（ID・トークン・シークレット）" },
 
@@ -17,50 +17,18 @@
     "scripts/verify-jwt.mjs": { "since": "01-04", "about": "JWKS で JWT の署名・iss・exp を確かめる" },
     "scripts/refresh.sh": { "since": "01-04", "about": "リフレッシュトークンで新しいトークンをもらう" },
 
-    "scripts/write-api-env.sh": { "since": "02-01", "about": ".cognito.env から API 用の .env を書き出す" },
-    ".env.example": { "since": "02-01", "about": "API が読む .env の見本" },
-    "nest-cli.json": { "since": "02-01", "about": "NestJS の CLI の設定" },
-    "tsconfig.json": { "since": "02-01", "about": "TypeScript の設定" },
-    "tsconfig.build.json": { "since": "02-01", "about": "ビルドするときだけの TypeScript の設定" },
-    "src/main.ts": { "since": "02-01", "about": "API を起動する入口" },
-    "src/app.module.ts": { "since": "02-01", "about": "アプリ全体の組み立て" },
-    "src/config/cognito.config.ts": { "since": "02-01", "about": "環境変数から Cognito の設定（iss・JWKS の URL など）を作る" },
-    "src/auth/auth.module.ts": { "since": "02-01", "about": "認証まわりの部品をまとめる" },
-    "src/auth/auth.controller.ts": { "since": "02-01", "about": "/auth/signup・confirm・login・refresh を受ける" },
-    "src/auth/auth.service.ts": { "since": "02-01", "about": "AWS SDK で Cognito を呼ぶ" },
-    "src/auth/cognito-error.filter.ts": { "since": "02-01", "about": "Cognito の例外を HTTP のステータスに直す" },
+    "server.mjs": { "since": "02-01", "about": "Node の標準 API だけで書いた静的サーバー。画面と /config を配る" },
+    "public/index.html": { "since": "02-01", "about": "ログインの画面" },
+    "public/main.js": { "since": "02-01", "about": "画面から Cognito に直接サインアップ・ログインし、ID トークンの中身を出す。02-02 で Hosted UI のログインが増える" },
 
-    "scripts/make-admin.sh": { "since": "02-02", "about": "ユーザーを admin グループに入れる" },
-    "src/auth/cognito-jwt.guard.ts": { "since": "02-02", "about": "アクセストークンを確かめる Guard（401）" },
-    "src/auth/current-user.decorator.ts": { "since": "02-02", "about": "確かめた利用者をハンドラで受け取る" },
-    "src/auth/roles.decorator.ts": { "since": "02-02", "about": "ハンドラを使えるグループを書く" },
-    "src/auth/roles.guard.ts": { "since": "02-02", "about": "グループで認可する Guard（403）" },
-    "src/users/users.module.ts": { "since": "02-02", "about": "/me と管理画面の API をまとめる" },
-    "src/users/users.controller.ts": { "since": "02-02", "about": "トークンが無いと呼べない API" },
+    "scripts/update-client.sh": { "since": "02-02", "about": "App Client に Hosted UI の設定を足す（IdP が増えるたびに流す）" },
 
-    "test/floci.ts": { "since": "02-03", "about": "テストごとに Floci に User Pool を作る" },
-    "test/auth.e2e-spec.ts": { "since": "02-03", "about": "サインアップから認可までの E2E テスト" },
-    "vitest.config.e2e.ts": { "since": "02-03", "about": "E2E テストの設定" },
+    "scripts/entra-endpoints.sh": { "since": "03-01", "about": "entra-local の discovery から、登録に使う URL を抜き出す" },
+    "scripts/entra-register-app.sh": { "since": "03-01", "about": "entra-local に「Cognito から使うアプリ」を登録する" },
+    "scripts/entra-create-user.sh": { "since": "03-01", "about": "entra-local にユーザーを作る" },
+    "scripts/entra-preview-token.sh": { "since": "03-01", "about": "サインインしたら出る ID トークンの中身を見る" },
 
-    "public/index.html": { "since": "02-04", "about": "ブラウザの画面" },
-    "public/main.js": { "since": "02-04", "about": "画面から API を呼ぶ。03-01 で Hosted UI のログインが増える" },
-    "Containerfile": { "since": "02-04", "about": "API のコンテナイメージの作り方" },
-    ".containerignore": { "since": "02-04", "about": "イメージに入れないファイル" },
-
-    "scripts/update-client.sh": { "since": "03-01", "about": "App Client に Hosted UI の設定を足す（IdP が増えるたびに流す）" },
-    "src/auth/config.controller.ts": { "since": "03-01", "about": "画面にログイン先（issuer・クライアント ID・IdP）を教える" },
-
-    "keycloak/realm-practice.json": { "since": "03-02", "about": "Keycloak に読み込ませる realm（ユーザーとクライアント）" },
-    "scripts/keycloak-endpoints.sh": { "since": "03-02", "about": "Keycloak の discovery から、登録に使う URL を抜き出す" },
-
-    "scripts/register-keycloak.sh": { "since": "03-03", "about": "Keycloak を User Pool の外部 IdP として登録する" },
-    "scripts/list-users.sh": { "since": "03-03", "about": "User Pool のユーザーを一覧する" },
-
-    "scripts/entra-endpoints.sh": { "since": "04-01", "about": "entra-local の discovery から、登録に使う URL を抜き出す" },
-    "scripts/entra-register-app.sh": { "since": "04-01", "about": "entra-local に「Cognito から使うアプリ」を登録する" },
-    "scripts/entra-create-user.sh": { "since": "04-01", "about": "entra-local にユーザーを作る" },
-    "scripts/entra-preview-token.sh": { "since": "04-01", "about": "サインインしたら出る ID トークンの中身を見る" },
-
-    "scripts/register-entra.sh": { "since": "04-02", "about": "entra-local を User Pool の外部 IdP として登録する" }
+    "scripts/register-entra.sh": { "since": "03-02", "about": "entra-local を User Pool の外部 IdP として登録する" },
+    "scripts/list-users.sh": { "since": "03-02", "about": "User Pool のユーザーを一覧する" }
   }
 }

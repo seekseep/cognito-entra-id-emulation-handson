@@ -32,7 +32,6 @@ else
     --provider-details "$DETAILS" --attribute-mapping "$MAPPING" > /dev/null
 fi
 
-# アプリのクライアントで EntraID を選べるようにし、ログイン画面にボタンを出すため API の .env を書き直す
+# アプリのクライアントで EntraID を選べるようにする
 bash scripts/update-client.sh
-bash scripts/write-api-env.sh
-echo "EntraID を登録しました（API を起動し直すとボタンが出ます）"
+echo "EntraID を登録しました"

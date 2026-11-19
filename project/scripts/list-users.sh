@@ -5,5 +5,4 @@ cd "$(dirname "$0")/.."
 source ./env.sh
 source ./.cognito.env
 aws cognito-idp list-users --user-pool-id "$POOL_ID" \
-  --query 'Users[].{Username:Username,Status:UserStatus,Email:Attributes[?Name==`email`]|[0].Value}' --output table # @until 04-02
-  --query 'Users[].{Username:Username,Status:UserStatus,Email:Attributes[?Name==`email`]|[0].Value,EntraOid:Attributes[?Name==`custom:entra_oid`]|[0].Value}' --output table # @since 04-02
+  --query 'Users[].{Username:Username,Status:UserStatus,Email:Attributes[?Name==`email`]|[0].Value,EntraOid:Attributes[?Name==`custom:entra_oid`]|[0].Value}' --output table

@@ -54,12 +54,14 @@ aws cognito-idp create-user-pool-client \
   --client-name practice-cli \
   --no-generate-secret \
   --explicit-auth-flows ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH \
+  --prevent-user-existence-errors ENABLED \
   --query UserPoolClient.ClientId --output text
 # 708d6652cba84996a62ac8cdde
 ```
 
 - `--no-generate-secret` … クライアントシークレットを作りません。ブラウザやスマホのアプリは秘密を隠しておけないので、シークレットを持たせないのが基本です
 - `--explicit-auth-flows` … このクライアントに許すログインの方法です。`ALLOW_USER_PASSWORD_AUTH` はユーザー名とパスワードをそのまま送る方法、`ALLOW_REFRESH_TOKEN_AUTH` はトークンの更新です
+- `--prevent-user-existence-errors ENABLED` … ログインに失敗したとき、ユーザーが存在しないのか、パスワードが違うのかを区別して返さないようにします（Floci では効きません。01-02 の FAQ で扱います）
 
 ```bash "{直前の結果で出たクライアント ID}"
 export CLIENT_ID={直前の結果で出たクライアント ID}

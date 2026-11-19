@@ -7,7 +7,7 @@ docs: true
 
 ![道具をそろえる](./images/00-thumbnail.svg)
 
-このハンズオンでは、Cognito・Keycloak・Entra ID をすべて自分のパソコンの中のコンテナで動かします。AWS のアカウントも Entra のテナントも要りません。使う道具は Podman・aws CLI・Node.js の 3 つです。
+このハンズオンでは、Cognito と Entra ID をどちらも自分のパソコンの中のコンテナで動かします。AWS のアカウントも Entra のテナントも要りません。使う道具は Podman・aws CLI・Node.js の 3 つです。
 
 ## どの OS で進めるか
 
@@ -112,19 +112,19 @@ podman compose version                                       # Docker Compose ve
 
 ### 同じポートを使うほかのプログラム
 
-Docker Desktop・LocalStack・別の Floci などが同じポート（4566・8080・8443・3000）を使っていると、`localhost` へのアクセスの一部がそちらに流れます。`localhost` が IPv6（`::1`）にも IPv4（`127.0.0.1`）にも解決されるため、エラーにならず「ときどき別のサーバーにつながる」という分かりにくい壊れ方をします。始める前に、待ち受けているプログラムを確かめてください。
+Docker Desktop・LocalStack・別の Floci などが同じポート（4566・8443・3000）を使っていると、`localhost` へのアクセスの一部がそちらに流れます。`localhost` が IPv6（`::1`）にも IPv4（`127.0.0.1`）にも解決されるため、エラーにならず「ときどき別のサーバーにつながる」という分かりにくい壊れ方をします。始める前に、待ち受けているプログラムを確かめてください。
 
 :::::platform
 ::::macos
 ```bash
-lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(4566|3000|8080|8443) '
+lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(4566|3000|8443) '
 ```
 
 コンテナを起動する前に何も出なければ大丈夫です。起動したあとに出るのは `gvproxy`（Podman）だけのはずです。
 ::::
 ::::windows-linux
 ```bash
-ss -ltnp | grep -E ':(4566|3000|8080|8443) '
+ss -ltnp | grep -E ':(4566|3000|8443) '
 ```
 
 コンテナを起動する前に何も出なければ大丈夫です。起動したあとに出るのは `rootlessport`（Podman）だけのはずです。
@@ -157,7 +157,7 @@ aws --version   # aws-cli/2.x.x
 
 ## Node.js
 
-NestJS の API と、トークンを確かめる小さなスクリプトで使います。**24 以上**を入れてください（`fetch` や `--env-file` を前提にしています）。入れ方は何でも構いません。
+画面を配る静的サーバーと、トークンを確かめる小さなスクリプトで使います。**24 以上**を入れてください（`fetch` や `--env-file` を前提にしています）。入れ方は何でも構いません。
 
 :::::platform
 ::::macos
@@ -183,17 +183,15 @@ node --version   # v24.x.x 以上
 
 ## 当日より前にやっておくこと
 
-コンテナのイメージと npm のパッケージは、合わせて 1.5GB ほどになります。勉強会の会場で全員が同時に取得すると時間がかかるので、道具を入れたら、ネットワークのよい所で先に取得しておいてください。
+コンテナのイメージは、合わせて 500MB ほどになります。勉強会の会場で全員が同時に取得すると時間がかかるので、道具を入れたら、ネットワークのよい所で先に取得しておいてください。
 
 ```bash
-# コンテナのイメージ（展開後で合わせて約 1.3GB）
+# コンテナのイメージ（展開後で合わせて約 530MB）
 podman pull docker.io/floci/floci:2.4.0
-podman pull quay.io/keycloak/keycloak:26.8.2
 podman pull --platform linux/amd64 ghcr.io/cmaneu/entra-local:0.1.1
-podman pull docker.io/library/node:24-slim
 ```
 
-npm のパッケージ（約 140MB）は、01-04 と 02 で `handson/` に入れていきます。会場のネットワークが心配なら、最後のレクチャー（[04-02](../../04-cognito-with-entra-id/02-federation/LECTURE.md)）のページの一番下にある「コードをダウンロード」で完成形の `handson/` を取り、一度 `npm install` しておいてください。npm のキャッシュに残るので、当日の `npm install` が速くなります（試したフォルダは消して構いません）。
+npm のパッケージは、01-04 で入れる `jose`（JWT を確かめるライブラリ）1 つだけです。画面を配る静的サーバーは Node の標準の機能だけで書くので、ほかには何も入れません。
 
 ## エディタとブラウザ
 

@@ -19,11 +19,10 @@ sidebar:
 ダウンロードするのは、[Floci を起動する](./00-setup/02-floci/LECTURE.md) で配る `handson/` の 1 回だけです。最初は 4 つのファイルしかありません。そこから次のように育てていきます。
 
 ```text
-00 準備           compose.yaml・package.json・env.sh（Floci を起動するだけ）
-01 Cognito 単体   scripts/ に aws CLI のスクリプトが増える
-02 NestJS API     src/・test/・public/ が増え、API のプロジェクトになる
-03 Keycloak       compose.yaml に Keycloak、画面に「Hosted UI でログイン」が増える
-04 Entra ID       compose.yaml に entra-local、Entra を登録するスクリプトが増える
+00 準備             compose.yaml・package.json・env.sh（Floci を起動するだけ）
+01 Cognito を作る   scripts/ に aws CLI のスクリプトが増える
+02 HTML でログイン  server.mjs と public/ の画面が増え、Hosted UI のログインも足す
+03 Entra ID        compose.yaml に entra-local、Entra を登録するスクリプトが増える
 ```
 
 どのレクチャーで、どのファイルを足し・変えるかの一覧です。ファイルがいつ増えるかを見ると、そのファイルが何のためにあるのかが分かります。
@@ -43,23 +42,22 @@ sidebar:
 
 | コマンド | すること |
 |---|---|
-| `npm run up` | `compose.yaml` にあるコンテナを全部起動する（Floci、03 からは Keycloak、04 からは entra-local も） |
+| `npm run up` | `compose.yaml` にあるコンテナを全部起動する（Floci、03 からは entra-local も） |
 | `npm run down` | 止める |
-| `npm run reset` | 止めて起動し直す。Floci と Keycloak のデータは消える |
+| `npm run reset` | 止めて起動し直す。Floci のデータは消える |
 | `npm run setup` | `scripts/setup.sh` を流し、ここまでのレクチャーで Floci に作ったもの（User Pool・ユーザー・グループ・IdP の登録）を作り直す |
 
-Floci と Keycloak のデータはメモリにあり、コンテナを止めると消えます。そのため 01-01 で `scripts/setup.sh` を作り、レクチャーを終えるたびに 1 行ずつ足していきます。パソコンを再起動したあとなどは、`npm run up` → `npm run setup` で、前のレクチャーを終えた状態に戻せます。`setup` をやり直したら、API（`npm run start:dev`）も起動し直してください（`.env` は起動したときにしか読まれません）。
+Floci のデータはメモリにあり、コンテナを止めると消えます。そのため 01-01 で `scripts/setup.sh` を作り、レクチャーを終えるたびに 1 行ずつ足していきます。パソコンを再起動したあとなどは、`npm run up` → `npm run setup` で、前のレクチャーを終えた状態に戻せます。`setup` をやり直したら、開いている画面を読み込み直してください（User Pool の ID が変わるため）。
 
-entra-local（04）のデータだけはボリュームに残り、`npm run reset` でも消えません（消すときは `podman compose down -v`）。
+entra-local（03）のデータだけはボリュームに残り、`npm run reset` でも消えません（消すときは `podman compose down -v`）。
 
 ## 使うポート
 
 | ポート | 中身 | 使うセクション |
 |---|---|---|
 | 4566 | Floci（Cognito） | すべて |
-| 3000 | NestJS の API と画面 | 02・03・04 |
-| 8080 | Keycloak | 03 |
-| 8443 | entra-local | 04 |
+| 3000 | 画面（`npm start` の静的サーバー） | 02・03 |
+| 8443 | entra-local | 03 |
 
 :::warning[ほかのプログラムが同じポートを使っていないか]
 LocalStack・別の Floci・Docker Desktop のコンテナなどが同じポートを使っていると、エラーにならないまま、アクセスの一部がそちらに流れることがあります（`localhost` が IPv4 と IPv6 の両方に解決されるため）。始める前に、次のコマンドで確かめてください。
@@ -68,12 +66,12 @@ LocalStack・別の Floci・Docker Desktop のコンテナなどが同じポー�
 :::::platform
 ::::macos
 ```bash
-lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(4566|3000|8080|8443) '
+lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(4566|3000|8443) '
 ```
 ::::
 ::::windows-linux
 ```bash
-ss -ltnp | grep -E ':(4566|3000|8080|8443) '
+ss -ltnp | grep -E ':(4566|3000|8443) '
 ```
 ::::
 :::::
@@ -85,8 +83,6 @@ ss -ltnp | grep -E ':(4566|3000|8080|8443) '
 | どこ | ユーザー | パスワード | 作られる所 |
 |---|---|---|---|
 | Cognito | `alice`（admin グループ）/ `bob` | `Passw0rd!` | 01-02・01-03（`npm run setup` で作り直せる） |
-| Cognito | `carol` | `Passw0rd!` | 02-01 で手でサインアップ（setup では作られない） |
-| Keycloak | `kate` / `ken` | `Passw0rd!` | 03-02（realm のファイル） |
-| Keycloak の管理コンソール | `admin` | `admin` | 03-02 |
-| entra-local | `taro@entralocal.dev` | `Passw0rd!` | 04-01（`npm run entra:create-user`） |
+| Cognito | `carol` | `Passw0rd!` | 02-01 で画面からサインアップ（setup では作られない） |
+| entra-local | `taro@entralocal.dev` | `Passw0rd!` | 03-01（`npm run entra:create-user`） |
 | entra-local のシード | `alice@entralocal.dev` / `bob@entralocal.dev` | `Password1!` | entra-local に最初から入っている |

@@ -1,0 +1,26 @@
+{
+  "name": "handson",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "up": "${COMPOSE:-podman compose} up -d --wait",
+    "down": "${COMPOSE:-podman compose} down",
+    "reset": "npm run down && npm run up",
+    "setup": "bash scripts/setup.sh",
+    "read-code": "bash scripts/read-code.sh",
+    "login": "bash scripts/login.sh",
+    "decode": "node scripts/decode-jwt.mjs",
+    "verify": "node scripts/verify-jwt.mjs",
+    "refresh": "bash scripts/refresh.sh",
+    "start": "node server.mjs",
+    "update-client": "bash scripts/update-client.sh",
+    "entra:endpoints": "bash scripts/entra-endpoints.sh",
+    "entra:register-app": "bash scripts/entra-register-app.sh",
+    "entra:create-user": "bash scripts/entra-create-user.sh",
+    "entra:preview-token": "bash scripts/entra-preview-token.sh"
+  },
+  "dependencies": {
+    "jose": "^6.2.17"
+  }
+}

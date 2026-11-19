@@ -13,8 +13,9 @@ PROVIDERS=$(aws cognito-idp list-identity-providers --user-pool-id "$POOL_ID" \
 ARGS=(
   --user-pool-id "$POOL_ID"
   --client-id "$CLIENT_ID"
-  # 01-cognito で付けたログインの方法。渡し直さないと消えて、CLI や API からログインできなくなる
+  # 01-01 で付けたログインの方法と設定。渡し直さないと既定値に戻り、CLI や画面のフォームからログインできなくなる
   --explicit-auth-flows ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH
+  --prevent-user-existence-errors ENABLED
   --supported-identity-providers COGNITO $PROVIDERS
   # ログインのあとに戻ってくる URL。ここに無い URL へは戻せない（認可コードを盗まれないため）
   --callback-urls http://localhost:3000/
@@ -23,7 +24,7 @@ ARGS=(
   --allowed-o-auth-scopes openid email profile
   --allowed-o-auth-flows-user-pool-client
 )
-# @since 04-02
+# @since 03-02
 # custom:entra_oid をトークンに載せるには、読める属性に入れておく
 ARGS+=(--read-attributes email email_verified name preferred_username custom:entra_oid)
 # @end

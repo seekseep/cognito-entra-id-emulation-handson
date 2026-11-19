@@ -4,9 +4,9 @@ services:
     ports:
       # ほかのマシンから届かないよう、ループバックにだけ公開する（Floci は認証なしで API を受け付ける）
       - "127.0.0.1:4566:4566"
-    # @since 03-01
+    # @since 02-01
     environment:
-      # ブラウザ（http://localhost:3000）から discovery とトークンエンドポイントを直接呼べるようにする
+      # 画面（http://localhost:3000）から Cognito の API を直接呼べるようにする
       FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS: http://localhost:3000
     # @end
     healthcheck:
@@ -15,61 +15,7 @@ services:
       interval: 3s
       timeout: 3s
       retries: 20
-  # @since 02-04
-
-  # API もコンテナで動かすときだけ使う（npm run api:up）
-  api:
-    profiles: ["api"]
-    build:
-      context: .
-      dockerfile: Containerfile
-    ports:
-      - "127.0.0.1:3000:3000"
-    env_file: .env
-    environment:
-      # コンテナの中から見ると Floci は localhost ではなく、サービス名 floci で届く
-      COGNITO_ENDPOINT: http://floci:4566
-      # ただしトークンの iss は Floci の基準 URL（localhost:4566）のまま。
-      # 「発行者の名前」と「鍵を取りに行く先」を分けて渡す（${...} は同じフォルダの .env から埋まる）
-      COGNITO_ISSUER: http://localhost:4566/${COGNITO_USER_POOL_ID}
-      COGNITO_JWKS_URL: http://floci:4566/${COGNITO_USER_POOL_ID}/.well-known/jwks.json
-    depends_on:
-      floci:
-        condition: service_healthy
-    healthcheck:
-      # 起動しただけでなく、HTTP を受け付けるようになってから「準備完了」にする（--wait がここまで待つ）
-      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
-      interval: 3s
-      timeout: 3s
-      retries: 20
-  # @end
-  # @since 03-02
-
-  keycloak:
-    image: quay.io/keycloak/keycloak:26.8.2
-    # start-dev は HTTP で動く開発用モード。本番では start を使う
-    command: ["start-dev", "--import-realm", "--health-enabled=true"]
-    environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
-      # Keycloak は呼ばれたホスト名でトークンの iss を変える。ブラウザは localhost:8080、
-      # Floci はコンテナの中からサービス名 keycloak:8080 で呼ぶので、発行者の名前を localhost:8080 に固定する
-      KC_HOSTNAME: http://localhost:8080
-      # token・userinfo などのサーバー同士の呼び出しは、呼ばれた名前（keycloak:8080）のまま受け付けて返す
-      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
-    ports:
-      - "127.0.0.1:8080:8080"
-    volumes:
-      # 起動時に realm-practice.json を読み込む（同じ名前の realm が既にあれば読み込まない）
-      - ./keycloak:/opt/keycloak/data/import:ro,Z
-    healthcheck:
-      # Keycloak のイメージには curl が無いので、bash の /dev/tcp で管理ポートの /health/ready を叩く
-      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.0\\r\\n\\r\\n' >&3 && read -r status <&3 && [[ $$status == *' 200 '* ]]"]
-      interval: 5s
-      timeout: 5s
-      retries: 30
-  # @end
-  # @since 04-01
+  # @since 03-01
 
   entra-local:
     # amd64 向けのイメージしか無い。Apple Silicon の Mac ではエミュレーションで動く（起動に少し時間がかかる）

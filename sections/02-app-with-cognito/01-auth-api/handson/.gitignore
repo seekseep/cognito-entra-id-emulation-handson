@@ -1,6 +1,0 @@
-node_modules/
-.cognito.env
-.tokens.json
-dist/
-.env
-*.tsbuildinfo

@@ -1,6 +1,6 @@
 const output = document.querySelector('#output');
 
-// 練習なので sessionStorage に置く。本番では XSS で盗まれにくい置き場所（httpOnly の Cookie など）を検討する
+// 練習なので sessionStorage に置く（タブを閉じると消える）。XSS があると読まれてしまう場所なので、本番では置き場所を検討する
 let tokens = JSON.parse(sessionStorage.getItem('tokens') ?? 'null');
 
 function saveTokens(next) {
@@ -14,19 +14,11 @@ function show(label, status, body) {
   output.textContent = `${label} → ${status}\n${JSON.stringify(body, null, 2)}`;
 }
 
-async function call(method, path, body) {
-  const headers = { 'content-type': 'application/json' };
-  if (tokens?.accessToken) headers.authorization = `Bearer ${tokens.accessToken}`;
-  const response = await fetch(path, { method, headers, body: body && JSON.stringify(body) });
-  const json = await response.json().catch(() => ({}));
-  show(`${method} ${path}`, response.status, json);
-  return { ok: response.ok, json };
-}
-
 function formValues(form) {
   return Object.fromEntries(new FormData(form));
 }
 
+// JWT の真ん中（ペイロード）を読む。署名は確かめない（表示するだけなので）
 function decodeJwt(token) {
   const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
   return JSON.parse(decodeURIComponent(escape(atob(payload))));
@@ -35,50 +27,74 @@ function decodeJwt(token) {
 function render() {
   const claims = tokens?.idToken ? decodeJwt(tokens.idToken) : null;
   document.querySelector('#status').textContent = claims ? `${claims['cognito:username']} としてログイン中` : 'ログインしていません';
-  document.querySelector('#id-token').textContent = claims ? JSON.stringify(claims, null, 2) : 'ログインすると表示します'; // @since 03-01
+  document.querySelector('#id-token').textContent = claims ? JSON.stringify(claims, null, 2) : 'ログインすると表示します';
+}
+
+// ---- Cognito の API を直接呼ぶ ----
+
+// どの User Pool に、どのクライアントとして行くかは、静的サーバーの /config から教えてもらう
+const config = await (await fetch('/config')).json();
+// Cognito の API の入口は、issuer のオリジン（Floci は http://localhost:4566、本物は https://cognito-idp.<リージョン>.amazonaws.com）
+const cognitoEndpoint = new URL(config.issuer).origin;
+document.querySelector('#endpoint').textContent = cognitoEndpoint;
+
+// Cognito の API を 1 つ呼ぶ。流れを目で追うため、AWS SDK も Amplify も使わずに書く。
+// SignUp・InitiateAuth などは、AWS の認証情報（署名）なしで、クライアント ID だけで呼べる
+async function cognito(action, params) {
+  const response = await fetch(cognitoEndpoint, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/x-amz-json-1.1',
+      'x-amz-target': `AWSCognitoIdentityProviderService.${action}`,
+    },
+    body: JSON.stringify({ ClientId: config.clientId, ...params }),
+  });
+  const json = await response.json().catch(() => ({}));
+  // 失敗すると {"__type":"NotAuthorizedException","message":"..."} の形で返る
+  show(action, response.status, json);
+  return { ok: response.ok, json };
 }
 
 document.querySelector('#signup').addEventListener('submit', async (event) => {
   event.preventDefault();
-  await call('POST', '/auth/signup', formValues(event.target));
+  const { username, email, password } = formValues(event.target);
+  await cognito('SignUp', { Username: username, Password: password, UserAttributes: [{ Name: 'email', Value: email }] });
 });
 
 document.querySelector('#confirm').addEventListener('submit', async (event) => {
   event.preventDefault();
-  await call('POST', '/auth/confirm', formValues(event.target));
+  const { username, code } = formValues(event.target);
+  await cognito('ConfirmSignUp', { Username: username, ConfirmationCode: code });
 });
 
 document.querySelector('#login').addEventListener('submit', async (event) => {
   event.preventDefault();
-  const { ok, json } = await call('POST', '/auth/login', formValues(event.target));
-  if (ok && json.accessToken) saveTokens(json);
-});
-
-document.querySelector('#me').addEventListener('click', () => call('GET', '/me'));
-document.querySelector('#admin').addEventListener('click', () => call('GET', '/admin/dashboard'));
-
-document.querySelector('#refresh').addEventListener('click', async () => {
-  if (!tokens) return show('refresh', '-', { message: '先にログインしてください' });
-  const { ok, json } = await call('POST', '/auth/refresh', { refreshToken: tokens.refreshToken });
-  // REFRESH_TOKEN_AUTH の応答にはリフレッシュトークンが入らない。手元のものを使い続ける
-  if (ok) saveTokens({ ...json, refreshToken: tokens.refreshToken });
+  const { username, password } = formValues(event.target);
+  const { ok, json } = await cognito('InitiateAuth', {
+    AuthFlow: 'USER_PASSWORD_AUTH',
+    AuthParameters: { USERNAME: username, PASSWORD: password },
+  });
+  // 管理者が作ったユーザーの初回ログインなどでは、トークンの代わりにチャレンジ（ChallengeName）が返る
+  const result = json.AuthenticationResult;
+  if (ok && result) saveTokens({ idToken: result.IdToken, accessToken: result.AccessToken, refreshToken: result.RefreshToken });
 });
 
 document.querySelector('#logout').addEventListener('click', async () => {
-  // 手元から消す前に、リフレッシュトークンを Cognito で取り消す（盗まれていても使えなくする）。
-  // Hosted UI でもらったトークンも同じクライアントのものなので、同じ API で取り消せる
-  if (tokens?.refreshToken) await call('POST', '/auth/logout', { refreshToken: tokens.refreshToken });
+  // 手元から消す前に、リフレッシュトークンを Cognito で取り消す（盗まれていても使えなくする）
+  if (tokens?.refreshToken) await cognito('RevokeToken', { Token: tokens.refreshToken });
   saveTokens(null);
-  // @since 03-01
-  // Hosted UI 側のログイン状態（Cookie）も消す。消さないと次のログインで画面が出ずに素通りする
+  // @since 02-02
+  // Hosted UI 側のログイン状態（Cookie）も消す。消さないと、次に Hosted UI へ行ったとき画面が出ずに素通りする
   const url = new URL(discovery.authorization_endpoint.replace('/oauth2/authorize', '/logout'));
   url.search = new URLSearchParams({ client_id: config.clientId, logout_uri: redirectUri });
   location.assign(url);
   // @end
 });
-// @since 03-01
+// @since 02-02
 
 // ---- Hosted UI（Authorization Code + PKCE）。流れを目で追うため、ライブラリを使わずに書く ----
+
+// ログインのあとに戻ってくる URL。App Client の callback URL に登録したものと同じにする
 const redirectUri = `${location.origin}/`;
 
 function base64url(bytes) {
@@ -89,11 +105,9 @@ function randomString() {
   return base64url(crypto.getRandomValues(new Uint8Array(32)));
 }
 
-// どの User Pool に、どのクライアントとして行くかは API（/config）から教えてもらう
-const config = await (await fetch('/config')).json();
 // 認可・トークンのエンドポイントは discovery が教えてくれる（本物の Cognito でも Floci でも同じ書き方）
 const discovery = await (await fetch(`${config.issuer}/.well-known/openid-configuration`)).json();
-document.querySelector('#issuer').textContent = discovery.authorization_endpoint;
+document.querySelector('#authorize').textContent = discovery.authorization_endpoint;
 
 async function hostedLogin(identityProvider) {
   // verifier は手元に残し、そのハッシュ（challenge）だけを渡す。
@@ -107,7 +121,7 @@ async function hostedLogin(identityProvider) {
     client_id: config.clientId,
     response_type: 'code',
     redirect_uri: redirectUri,
-    scope: config.scope,
+    scope: 'openid email profile',
     state,
     code_challenge: challenge,
     code_challenge_method: 'S256',
@@ -120,6 +134,7 @@ async function hostedLogin(identityProvider) {
   location.assign(url);
 }
 
+// Hosted UI から ?code=...&state=... を付けて戻ってきたら、認可コードをトークンに換える
 async function handleCallback() {
   const params = new URLSearchParams(location.search);
   if (!params.has('code') && !params.has('error')) return;
@@ -150,23 +165,17 @@ async function handleCallback() {
     }),
   });
   const json = await response.json();
-  if (!response.ok) {
-    output.textContent = `トークンをもらえませんでした: ${JSON.stringify(json)}`;
-    return;
-  }
+  show('token エンドポイント', response.status, json);
+  if (!response.ok) return;
   // トークンエンドポイントの応答は snake_case。パスワードでログインしたときと同じ形にそろえて持つ
-  saveTokens({ idToken: json.id_token, accessToken: json.access_token, refreshToken: json.refresh_token, expiresIn: json.expires_in });
+  saveTokens({ idToken: json.id_token, accessToken: json.access_token, refreshToken: json.refresh_token });
 }
 
-// Cognito のログイン画面へのボタンと、User Pool に登録した外部 IdP ごとのボタンを並べる
-const buttons = document.querySelector('#login-buttons');
-for (const name of [null, ...config.identityProviders]) {
-  const button = document.createElement('button');
-  button.textContent = name ? `${name} でログイン` : 'Cognito のログイン画面へ';
-  button.addEventListener('click', () => hostedLogin(name ?? undefined));
-  buttons.append(button);
-}
-
+document.querySelector('#hosted-login').addEventListener('click', () => hostedLogin());
+// @since 03-02
+// Cognito に登録した IdP の名前（register-entra.sh の --provider-name）を渡す
+document.querySelector('#entra-login').addEventListener('click', () => hostedLogin('EntraID'));
+// @end
 await handleCallback();
 // @end
 render();
