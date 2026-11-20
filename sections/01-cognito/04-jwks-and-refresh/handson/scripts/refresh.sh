@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 source ./env.sh
 source ./.cognito.env
 
-REFRESH_TOKEN=$(node -e "console.log(require('./.tokens.json').RefreshToken)")
+REFRESH_TOKEN=$(jq -r .RefreshToken .tokens.json)
 aws cognito-idp initiate-auth \
   --client-id "$CLIENT_ID" \
   --auth-flow REFRESH_TOKEN_AUTH \

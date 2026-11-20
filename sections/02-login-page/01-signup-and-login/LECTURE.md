@@ -94,7 +94,7 @@ async function cognito(action, params) {
 - 送り先（`cognitoEndpoint`）は、`/config` の `issuer` のオリジンです。Floci なら `http://localhost:4566`、本物なら `https://cognito-idp.<リージョン>.amazonaws.com` になります
 - `SignUp`・`ConfirmSignUp`・`InitiateAuth`・`RevokeToken` は、AWS の認証情報（署名）なしで、クライアント ID だけで呼べる API です。ブラウザに秘密を置かずに済みます
 
-ログインは、01-03 の `npm run login` と同じ `InitiateAuth`（`USER_PASSWORD_AUTH`）です。返ってきた ID トークンの真ん中（ペイロード）を Base64URL から戻し、画面に出します。01-03 の `decode-jwt.mjs` と同じで、署名は確かめていません（表示するだけなので）。
+ログインは、01-03 の `npm run login` と同じ `InitiateAuth`（`USER_PASSWORD_AUTH`）です。返ってきた ID トークンの真ん中（ペイロード）を Base64URL から戻し、画面に出します。01-03 の `decode-jwt.sh` と同じで、署名は確かめていません（表示するだけなので）。
 
 ```js
 const { ok, json } = await cognito('InitiateAuth', {

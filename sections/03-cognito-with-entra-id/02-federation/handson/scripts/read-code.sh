@@ -4,11 +4,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 source ./env.sh
-curl -s "$AWS_ENDPOINT_URL/_aws/ses" | node -e "
-let s = '';
-process.stdin.on('data', (d) => (s += d)).on('end', () => {
-  const mail = JSON.parse(s).messages.filter((m) => m.Destination.ToAddresses.includes(process.argv[1])).at(-1);
-  const code = mail?.Body.text_part?.match(/\d{6}/)?.[0];
-  if (!code) { console.error('確認コードが見つかりません'); process.exit(1); }
-  console.log(code);
-});" "$1"
+
+curl -fsS "$AWS_ENDPOINT_URL/_aws/ses" | jq -er --arg to "$1" '
+  [.messages[] | select(.Destination.ToAddresses | index($to))] | last
+  | .Body.text_part // "" | capture("(?<code>[0-9]{6})").code' \
+  || { echo '確認コードが見つかりません' >&2; exit 1; }

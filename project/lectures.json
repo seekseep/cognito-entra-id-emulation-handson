@@ -13,8 +13,8 @@
     "scripts/read-code.sh": { "since": "01-02", "about": "Floci に届いた確認メールからコードを読む" },
     "scripts/create-groups.sh": { "since": "01-03", "about": "admin グループを作り、alice を入れる" },
     "scripts/login.sh": { "since": "01-03", "about": "パスワードでログインし、トークンを .tokens.json に残す" },
-    "scripts/decode-jwt.mjs": { "since": "01-03", "about": "JWT の中身を読む（署名は確かめない）" },
-    "scripts/verify-jwt.mjs": { "since": "01-04", "about": "JWKS で JWT の署名・iss・exp を確かめる" },
+    "scripts/decode-jwt.sh": { "since": "01-03", "about": "JWT の中身を読む（署名は確かめない）" },
+    "scripts/verify-jwt.sh": { "since": "01-04", "about": "JWKS で JWT の署名・iss・exp を確かめる" },
     "scripts/refresh.sh": { "since": "01-04", "about": "リフレッシュトークンで新しいトークンをもらう" },
 
     "server.mjs": { "since": "02-01", "about": "Node の標準 API だけで書いた静的サーバー。画面と /config を配る" },

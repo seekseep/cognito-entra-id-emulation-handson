@@ -7,7 +7,7 @@ docs: true
 
 ![道具をそろえる](./images/00-thumbnail.svg)
 
-このハンズオンでは、Cognito と Entra ID をどちらも自分のパソコンの中のコンテナで動かします。AWS のアカウントも Entra のテナントも要りません。使う道具は Podman・aws CLI・Node.js の 3 つです。
+このハンズオンでは、Cognito と Entra ID をどちらも自分のパソコンの中のコンテナで動かします。AWS のアカウントも Entra のテナントも要りません。使う道具は Podman・aws CLI・jq・Node.js の 4 つです。
 
 ## どの OS で進めるか
 
@@ -155,9 +155,33 @@ unzip -q awscliv2.zip && sudo ./aws/install && rm -rf aws awscliv2.zip
 aws --version   # aws-cli/2.x.x
 ```
 
+## jq
+
+JSON を読む道具です。セクション 01 のスクリプト（トークンを開く・署名を確かめるなど）は、jq と、最初から入っている `curl`・`openssl` だけで書いています。
+
+:::::platform
+::::macos
+macOS 15 以降は最初から入っています（`/usr/bin/jq`）。`jq --version` で何も出ないときだけ入れてください。
+
+```bash
+brew install jq
+```
+::::
+::::windows-linux
+```bash
+sudo apt-get install -y jq curl openssl
+```
+::::
+:::::
+
+```bash
+jq --version      # jq-1.6 以上
+openssl version   # OpenSSL 3.x か LibreSSL 3.x
+```
+
 ## Node.js
 
-画面を配る静的サーバーと、トークンを確かめる小さなスクリプトで使います。**24 以上**を入れてください（`fetch` や `--env-file` を前提にしています）。入れ方は何でも構いません。
+画面を配る静的サーバーで使います。**24 以上**を入れてください（`fetch` や `--env-file` を前提にしています）。入れ方は何でも構いません。
 
 :::::platform
 ::::macos
@@ -191,7 +215,7 @@ podman pull docker.io/floci/floci:2.4.0
 podman pull --platform linux/amd64 ghcr.io/cmaneu/entra-local:0.1.1
 ```
 
-npm のパッケージは、01-04 で入れる `jose`（JWT を確かめるライブラリ）1 つだけです。画面を配る静的サーバーは Node の標準の機能だけで書くので、ほかには何も入れません。
+npm のパッケージは 1 つも入れません。スクリプトは bash と jq で、画面を配る静的サーバーは Node の標準の機能だけで書きます。
 
 ## エディタとブラウザ
 

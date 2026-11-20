@@ -11,10 +11,10 @@
     "read-code": "bash scripts/read-code.sh", // @since 01-02
     // @since 01-03
     "login": "bash scripts/login.sh",
-    "decode": "node scripts/decode-jwt.mjs",
+    "decode": "bash scripts/decode-jwt.sh",
     // @end
     // @since 01-04
-    "verify": "node scripts/verify-jwt.mjs",
+    "verify": "bash scripts/verify-jwt.sh",
     "refresh": "bash scripts/refresh.sh",
     // @end
     "start": "node server.mjs", // @since 02-01
@@ -30,9 +30,4 @@
     "users": "bash scripts/list-users.sh",
     // @end
   },
-  // @since 01-04
-  "dependencies": {
-    "jose": "^6.2.17",
-  },
-  // @end
 }

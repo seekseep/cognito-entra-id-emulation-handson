@@ -10,6 +10,6 @@
     "setup": "bash scripts/setup.sh",
     "read-code": "bash scripts/read-code.sh",
     "login": "bash scripts/login.sh",
-    "decode": "node scripts/decode-jwt.mjs"
+    "decode": "bash scripts/decode-jwt.sh"
   }
 }

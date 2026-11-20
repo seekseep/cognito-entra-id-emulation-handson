@@ -9,7 +9,7 @@ docs: true
 
 トークンの中身は誰でも書き換えられます。API が受け取ったトークンを信じてよいかは、**署名** で判断します。Cognito がどの鍵で署名したかは JWKS（公開鍵の一覧）で公開されています。この鍵でトークンを確かめ、書き換えたトークンが弾かれることを見ます。最後にリフレッシュトークンでトークンを更新します。
 
-このレクチャーで足すファイルは次のとおりです。署名を確かめるスクリプトのために、初めて npm のパッケージ（jose）を入れます。
+このレクチャーで足すファイルは次のとおりです。署名を確かめるのも、ほかのスクリプトと同じくシェルスクリプトです。鍵の計算は openssl に任せます。
 
 ::changes
 
@@ -54,13 +54,7 @@ curl -s "$AWS_ENDPOINT_URL/$POOL_ID/.well-known/jwks.json"
 
 ## 署名を確かめる
 
-JWT の検証は自分で書かず、[jose](https://github.com/panva/jose) を使います。`npm install` で入れると、`package.json` に `dependencies` が増えます。
-
-```bash
-npm install jose
-```
-
-**`scripts/verify-jwt.mjs`** を作ります。次の 3 つを確かめます。
+**`scripts/verify-jwt.sh`** を作ります。次の 3 つを確かめます。
 
 1. JWKS の鍵で署名が正しいか
 2. `iss` が自分の User Pool か
@@ -68,25 +62,31 @@ npm install jose
 
 要点は、**`iss` を自分の User Pool から組み立て、そこから discovery → `jwks_uri` の順に鍵の在りかを知る** ことです。トークンの中に書かれた `iss` を信じて鍵を取りに行くことはしません。
 
-```js
-const issuer = `${env.AWS_ENDPOINT_URL}/${env.POOL_ID}`;
-// ...
-const response = await fetch(`${issuer}/.well-known/openid-configuration`);
-// ...
-const discovery = await response.json();
-const jwks = createRemoteJWKSet(new URL(discovery.jwks_uri));
-// ...
-const { payload, protectedHeader } = await jwtVerify(token, jwks, { issuer });
+```bash
+ISSUER="$AWS_ENDPOINT_URL/$POOL_ID"
+JWKS_URI=$(curl -fsS "$ISSUER/.well-known/openid-configuration" | jq -r .jwks_uri)
+KID=$(b64url_decode "$HEADER" | jq -r .kid)
+JWK=$(curl -fsS "$JWKS_URI" | jq -c --arg kid "$KID" '.keys[] | select(.kid == $kid)')
 ```
 
-::file{path="scripts/verify-jwt.mjs"}
+鍵が決まったら、署名を確かめます。
 
-`package.json` に `verify` を足します（`dependencies` は `npm install` が足したものです）。
+- JWKS の鍵は、RSA の 2 つの数（`n` と `e`）を base64url で書いたものです。openssl はこの形を直接は読めないので、`asn1parse -genconf` で公開鍵の形（PEM）に組み立てます
+- 署名は「`ヘッダー.ペイロード`」という文字列の SHA-256 に対するものです（ヘッダーの `alg` が `RS256`）。`openssl dgst -sha256 -verify` で、署名と鍵が合うかを見ます
+- 署名が合ったあとで、ペイロードの `iss` と `exp` を確かめます。署名を確かめる前の中身は信じません
+
+```bash
+openssl dgst -sha256 -verify "$WORK/key.pem" -signature "$WORK/signature" "$WORK/signed"
+```
+
+::file{path="scripts/verify-jwt.sh"}
+
+`package.json` に `verify` と、あとで使う `refresh` を足します。
 
 ::file{path="package.json"}
 
 ```bash
-npm run verify "$(node -e "console.log(require('./.tokens.json').AccessToken)")"
+npm run verify "$(jq -r .AccessToken .tokens.json)"
 # OK: 署名と iss と exp を確かめました
 ```
 
@@ -95,15 +95,18 @@ npm run verify "$(node -e "console.log(require('./.tokens.json').AccessToken)")"
 ペイロードの `cognito:groups` に `root` を足したトークンを作って、同じように確かめます。
 
 ```bash
-TAMPERED=$(node -e "
-const t = require('./.tokens.json').AccessToken.split('.');
-const p = JSON.parse(Buffer.from(t[1], 'base64url'));
-p['cognito:groups'] = ['admin', 'root'];
-t[1] = Buffer.from(JSON.stringify(p)).toString('base64url');
-console.log(t.join('.'));")
+TAMPERED=$(jq -r '
+  .AccessToken | split(".")
+  | .[1] |= (gsub("-"; "+") | gsub("_"; "/") | @base64d | fromjson
+             | .["cognito:groups"] += ["root"]
+             | tojson | @base64 | gsub("\\+"; "-") | gsub("/"; "_") | gsub("="; ""))
+  | join(".")' .tokens.json)
+npm run -s decode "$TAMPERED"     # cognito:groups が ["admin", "root"] になっている
 npm run verify "$TAMPERED"
-# NG: ERR_JWS_SIGNATURE_VERIFICATION_FAILED: signature verification failed
+# NG: 署名が合いません（中身が書き換えられています）
 ```
+
+真ん中（ペイロード）を開き、`cognito:groups` に `root` を足して、また base64url に戻しています。ヘッダーと署名はそのままです。
 
 中身を 1 文字でも変えると署名が合わなくなります。API が「トークンの中身を信じてよい」のは、この確認を通したときだけです。
 
@@ -111,15 +114,15 @@ npm run verify "$TAMPERED"
 
 ```bash
 OTHER=$(aws cognito-idp create-user-pool --pool-name other --query UserPool.Id --output text)
-POOL_ID=$OTHER npm run verify "$(node -e "console.log(require('./.tokens.json').AccessToken)")"
-# NG: ERR_JWKS_NO_MATCHING_KEY: no applicable key found in the JSON Web Key Set
+POOL_ID=$OTHER npm run verify "$(jq -r .AccessToken .tokens.json)"
+# NG: JWKS に kid が ap-northeast-1_xxxxxxxxx の鍵がありません
 ```
 
 Floci は User Pool ごとに別の鍵を使います（本物も同じです）。別の User Pool の鍵では確かめられません。
 
 ## トークンを更新する
 
-**`scripts/refresh.sh`** は、`.tokens.json` のリフレッシュトークンを `REFRESH_TOKEN_AUTH` で送ります。`package.json` の `refresh` は、上で `verify` と一緒に足してあります。
+**`scripts/refresh.sh`** は、`.tokens.json` のリフレッシュトークンを jq で取り出し、`REFRESH_TOKEN_AUTH` で送ります。`package.json` の `refresh` は、上で `verify` と一緒に足してあります。
 
 ::file{path="scripts/refresh.sh"}
 
@@ -136,7 +139,7 @@ npm run refresh
 ## サインアウトしても、トークンの署名は正しいまま
 
 ```bash
-AT=$(node -e "console.log(require('./.tokens.json').AccessToken)")
+AT=$(jq -r .AccessToken .tokens.json)
 aws cognito-idp global-sign-out --access-token "$AT"
 aws cognito-idp get-user --access-token "$AT"   # NotAuthorizedException: Access Token has been revoked
 npm run verify "$AT"                             # OK: 署名と iss と exp を確かめました
@@ -178,9 +181,12 @@ Cognito に問い合わせれば「取り消し済み」と分かりますが、
 
 :::faq
 
-### `jwks.json` を毎回取りに行くのは遅くないですか？
+### 本番の API でも、このように自分で確かめるのですか？
 
-jose の `createRemoteJWKSet` は取った鍵を覚えておき、知らない `kid` のトークンが来たときだけ取り直します。鍵が入れ替わったときも自然に追従します。
+いいえ。このスクリプトは、署名の確かめで何が起きているかを目で追うためのものです。本番の API では、[aws-jwt-verify](https://github.com/awslabs/aws-jwt-verify)（AWS の公式）や [jose](https://github.com/panva/jose) などのライブラリを使ってください。
+
+- 取った鍵を覚えておき、知らない `kid` のトークンが来たときだけ JWKS を取り直します。このスクリプトのように毎回取りに行くと遅くなります
+- `alg`・`iss`・`exp` のほか、`token_use`・`client_id`（`aud`）や、発行前の時刻（`nbf`）なども漏れなく確かめます
 
 ### 鍵の取得先は `iss` から決めてよいのですか？
 

@@ -55,7 +55,7 @@ flowchart LR
 
 ### 01-tools: 道具をそろえる
 - Podman: `podman machine init` / `podman machine start`（macOS）、`podman compose` が呼ぶ docker-compose / podman-compose の違い
-- aws CLI v2、Node.js 24 以上
+- aws CLI v2、jq、Node.js 24 以上
 - 共通の環境変数: `AWS_ENDPOINT_URL=http://localhost:4566`、ダミーの `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`、`AWS_REGION`（`env.sh` を `source` する）
 
 ### 02-floci: Floci を起動する
@@ -80,7 +80,7 @@ flowchart LR
 - `create-group` → `admin-add-user-to-group` → `cognito:groups`
 
 ### 04-jwks-and-refresh: 署名を確かめる・更新する
-- discovery と JWKS、`jose` で署名・`iss`・`exp` を確かめる、改ざんしたトークンが弾かれる
+- discovery と JWKS、curl・jq・openssl のシェルスクリプトで署名・`iss`・`exp` を確かめる、改ざんしたトークンが弾かれる
 - `REFRESH_TOKEN_AUTH`
 - 本物の Cognito との違い（`iss` のホスト、メール送信、ここで見つけた差分）
 

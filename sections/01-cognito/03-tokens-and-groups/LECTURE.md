@@ -41,9 +41,13 @@ ID トークンとアクセストークンは **JWT** です。`.` で区切っ�
 
 ::file{path="scripts/login.sh"}
 
-2 つ目は **`scripts/decode-jwt.mjs`** です。JWT を `.` で 3 つに分け、前の 2 つを base64url から戻して表示します。署名は確かめません（読むだけです）。
+2 つ目は **`scripts/decode-jwt.sh`** です。JWT を `.` で 3 つに分け、前の 2 つを base64url から戻して表示します。署名は確かめません（読むだけです）。
 
-::file{path="scripts/decode-jwt.mjs"}
+::file{path="scripts/decode-jwt.sh"}
+
+- JSON を扱うのは jq です。`split(".")` で 3 つに分け、`@base64d` で base64 を戻し、`fromjson` で JSON として読みます
+- base64url は、普通の base64 の `+` と `/` を URL で使える `-` と `_` に替えたものです。`gsub` で戻してから `@base64d` に渡します
+- `iat`・`auth_time`・`exp` は UNIX 秒なので、`todate` で読める形にして横に添えます
 
 `package.json` に `login` と `decode` を足し、`.tokens.json` を `.gitignore` に足します（トークンは手元にだけ置くものです）。
 
@@ -55,20 +59,25 @@ alice でログインし、ID トークンを開きます。
 
 ```bash
 npm run login alice 'Passw0rd!'
-node -e "console.log(require('./.tokens.json').IdToken)" | npm run -s decode
+jq -r .IdToken .tokens.json | npm run -s decode
 ```
 
+`jq -r .IdToken .tokens.json` は、`.tokens.json` の `IdToken` を引用符なしで取り出します。
+
 ```json nofile
-header: { "alg": "RS256", "typ": "JWT", "kid": "ap-northeast-1_1644239d1" }
-payload: {
-  "sub": "e1f9945e-1e10-4577-a0eb-2ec360231189",
-  "token_use": "id",
-  "iss": "http://localhost:4566/ap-northeast-1_1644239d1",
-  "aud": "299bc23b813f4b93ac5a7165e6",
-  "cognito:username": "alice",
-  "email": "alice@example.com",
-  "email_verified": true,
-  "exp": 1794554293
+{
+  "header": { "alg": "RS256", "typ": "JWT", "kid": "ap-northeast-1_1644239d1" },
+  "payload": {
+    "sub": "e1f9945e-1e10-4577-a0eb-2ec360231189",
+    "token_use": "id",
+    "iss": "http://localhost:4566/ap-northeast-1_1644239d1",
+    "aud": "299bc23b813f4b93ac5a7165e6",
+    "cognito:username": "alice",
+    "email": "alice@example.com",
+    "email_verified": true,
+    "exp": 1794554293,
+    "exp (読める形)": "2026-11-13T05:58:13Z"
+  }
 }
 ```
 
@@ -83,7 +92,7 @@ payload: {
 アクセストークンも開いてみます。
 
 ```bash
-node -e "console.log(require('./.tokens.json').AccessToken)" | npm run -s decode
+jq -r .AccessToken .tokens.json | npm run -s decode
 ```
 
 アクセストークンには `aud` がありません。代わりに `client_id` と `scope` が入ります。`email` も入りません。API に渡すのはこちらなので、API は「誰か」を `sub` と `username` で知ることになります。
@@ -102,7 +111,7 @@ aws cognito-idp admin-list-groups-for-user --user-pool-id "$POOL_ID" --username 
 
 ```bash
 npm run login alice 'Passw0rd!'
-node -e "console.log(require('./.tokens.json').AccessToken)" | npm run -s decode
+jq -r .AccessToken .tokens.json | npm run -s decode
 ```
 
 ID トークンにもアクセストークンにも `"cognito:groups": ["admin"]` が入りました。API はこれを見て「管理者だけが使える操作」を許すかを決めます（次のセクションで実装します）。
