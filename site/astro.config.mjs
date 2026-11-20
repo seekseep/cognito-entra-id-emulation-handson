@@ -169,8 +169,6 @@ export default defineConfig({
         { label: '01. Cognito を作る', items: [{ autogenerate: { directory: '01-cognito' } }] },
         { label: '02. HTML でログインする', items: [{ autogenerate: { directory: '02-login-page' } }] },
         { label: '03. Entra ID と連携する', items: [{ autogenerate: { directory: '03-cognito-with-entra-id' } }] },
-        // 過去のハンズオンの一覧（sections/PAST-HANDSON.md）。セクションを足したら、この上に足す。
-        { label: '過去のハンズオン', link: '/past-handson/' },
       ],
       editLink: {
         baseUrl: `${repoUrl}/edit/main/`,

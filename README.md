@@ -62,10 +62,6 @@ site/                    解説サイト（sections/ を取り込む）
 
 `project/` を直したら、`cd site && pnpm run build-snapshots` で各レクチャーの `handson/` を作り直します。
 
-## 過去のハンズオン
-
-これまでに作ったハンズオンの一覧は [過去のハンズオン](./sections/PAST-HANDSON.md) にあります。
-
 ## 注意
 
 - 学習用のリポジトリです。Floci・entra-local は、どちらもローカルでの開発・練習のための設定で動かしています。そのまま外部に公開しないでください
