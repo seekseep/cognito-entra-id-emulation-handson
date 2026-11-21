@@ -8,5 +8,3 @@ bash scripts/create-user-pool.sh
 bash scripts/update-client.sh
 bash scripts/create-users.sh
 bash scripts/create-groups.sh
-bash scripts/entra-register-app.sh
-bash scripts/entra-create-user.sh taro '山田 太郎'

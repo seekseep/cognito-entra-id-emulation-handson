@@ -1,11 +1,11 @@
 ---
-title: entra-local を用意する
+title: コンテナの用意
 docs: true
 ---
 
-# entra-local を用意する
+# コンテナの用意
 
-![entra-local を用意する](./images/00-thumbnail.svg)
+![コンテナの用意](./images/00-thumbnail.svg)
 
 Microsoft Entra ID（旧 Azure AD）を外部 IdP にする練習をします。本物の Entra テナントを使わず、手元で Entra ID を真似する [entra-local](https://github.com/cmaneu/entra-local) を使います。
 
@@ -28,7 +28,7 @@ Cognito に OIDC で登録する練習には十分です。
 entra-local は、管理 API に認証が無く、シードのユーザーとパスワードが公開されている「わざと緩い」道具です。自分のパソコンの中だけで使い、本物のパスワードを入れないでください。compose でも `127.0.0.1` にだけ公開しています。
 :::
 
-このレクチャーで足す・変えるファイルは次のとおりです。`compose.yaml` にサービスを 1 つ足し、操作を小さなスクリプトにしていきます。
+このレクチャーでは、`compose.yaml` に entra-local を足して起動します。足す・変えるファイルは次のとおりです。
 
 ::changes
 
@@ -88,7 +88,7 @@ environment:
 ```
 
 - `platform: linux/amd64` … amd64 向けのイメージしか無いため。Apple Silicon の Mac ではエミュレーションで動き、起動に少し時間がかかります
-- `TLS_ENABLED: "false"` … entra-local は既定で自己署名証明書の HTTPS で動きます。次のレクチャーで Floci がコンテナの中から entra-local を呼ぶとき、証明書を信頼させる手間を省くために HTTP にしています（本物の Entra は必ず HTTPS です）
+- `TLS_ENABLED: "false"` … entra-local は既定で自己署名証明書の HTTPS で動きます。05-04 で Floci がコンテナの中から entra-local を呼ぶとき、証明書を信頼させる手間を省くために HTTP にしています（本物の Entra は必ず HTTPS です）
 - `REQUIRE_PASSWORD: "true"` … 既定はアカウントを選ぶだけでサインインできます。本物に近づけるため、パスワードを求めます
 
 :::::platform
@@ -105,98 +105,6 @@ sudo apt-get install -y qemu-user-static
 :::::
 
 1 分ほど待っても `curl` に何も返らないときは、`podman compose logs entra-local` でログを見てください。
-
-## アプリを登録する
-
-Entra では、Entra にログインを頼むアプリを **アプリの登録** として登録し、クライアント ID とシークレットをもらいます。ここでは「Cognito」を 1 つのアプリとして登録します。本物の Entra ならポータルの画面で操作するところを、entra-local の管理 API に送ります。中心はこのリクエストです。
-
-```bash
-curl -X POST http://localhost:8443/admin/api/apps -H 'content-type: application/json' -d '{
-  "displayName": "Cognito (Floci)",
-  "isConfidential": true,
-  "redirectUris": [{ "uri": "http://localhost:4566/cognito-idp/oauth2/idpresponse", "type": "web" }]
-}'
-```
-
-- `isConfidential: true` … サーバー（Cognito）がシークレットを持つアプリ
-- リダイレクト URI … Cognito の **idpresponse**。Entra でのサインインが終わると、ブラウザはアプリではなく Cognito に戻ります。Cognito はそこで Entra のトークンを受け取り、自分のトークンに換えてからアプリに戻します
-
-シークレットの値は、作ったときに一度だけ返ります（本物の Entra と同じです）。登録とシークレットの発行をまとめた **`scripts/entra-register-app.sh`** を作り、クライアント ID とシークレットを **`.entra.env`** に控えます。entra-local のデータはボリュームに残るので、もう一度流しても、登録済みのアプリがあればそれを使い続けるようにしてあります。
-
-::file{path="scripts/entra-register-app.sh"}
-
-`.entra.env` にはシークレットが入るので、`.gitignore` に足します（下の「`sub` はアプリごとに変わる」で作る控えの `.entra.a.env` なども入れないよう、`.entra.*.env` も足します）。
-
-::file{path=".gitignore"}
-
-```bash
-bash scripts/entra-register-app.sh
-# 登録しました（クライアント ID: 542d7c9b-...）。シークレットは .entra.env にあります
-```
-
-## ユーザーを作って、トークンの中身を見る
-
-ユーザーを作る **`scripts/entra-create-user.sh`** と、トークンの中身を見る **`scripts/entra-preview-token.sh`** を作ります。`entra-preview-token.sh` は、entra-local の管理 API で「このアプリに、このユーザーがサインインしたら出る ID トークン」を見せてくれます。
-
-::file{path="scripts/entra-create-user.sh"}
-
-::file{path="scripts/entra-preview-token.sh"}
-
-```bash
-bash scripts/entra-create-user.sh taro '山田 太郎'      # taro@entralocal.dev / Passw0rd!
-bash scripts/entra-preview-token.sh taro@entralocal.dev
-```
-
-`claims` の部分がトークンの中身です。
-
-```json nofile
-"claims": {
-  "iss": "http://localhost:8443/11111111-1111-1111-1111-111111111111/v2.0",
-  "sub": "7AVwZdeJEDtlOYPBd5JlCISHoby578la6SIPMq3Q27Q",
-  "aud": "542d7c9b-2abd-4c55-9788-6dba155eaba0",
-  "tid": "11111111-1111-1111-1111-111111111111",
-  "oid": "82de800f-ad8c-42ac-bfef-bda7a2aa40ea",
-  "name": "山田 太郎",
-  "preferred_username": "taro@entralocal.dev",
-  "email": "taro@entralocal.dev",
-  "ver": "2.0",
-  ...
-}
-```
-
-Entra 特有のクレーム:
-
-- `tid` … テナント ID。どの組織のユーザーか
-- `oid` … ユーザーのオブジェクト ID。**テナントの中で、そのユーザーにずっと同じ値**
-- `sub` … OIDC の標準のユーザー ID。ただし Entra では **アプリごとに違う値** になる（pairwise）
-- `preferred_username` … サインインに使う名前（UPN）。人が読むためのもので、変わることがある
-
-### `sub` はアプリごとに変わる
-
-アプリをもう 1 つ登録して、同じ taro のトークンを見比べます。`entra:register-app` は `.entra.env` を書き換えるので、今のアプリ（A）の控えを別の名前で残してから登録します。
-
-```bash
-cp .entra.env .entra.a.env          # アプリ A の控え
-rm .entra.env && bash scripts/entra-register-app.sh   # アプリ B を登録（.entra.env は B になる）
-
-bash scripts/entra-preview-token.sh taro@entralocal.dev | grep -E '"(aud|sub|oid)"'                       # B
-ENTRA_ENV=.entra.a.env bash scripts/entra-preview-token.sh taro@entralocal.dev | grep -E '"(aud|sub|oid)"'  # A
-```
-
-```text
-B  "sub": "uqTHzCX6JXcJFCb5-L3lRrPXqRtQHv0jVVFJHrRAA70"  "aud": "462a0ca8-..."  "oid": "82de800f-ad8c-42ac-bfef-bda7a2aa40ea"
-A  "sub": "7AVwZdeJEDtlOYPBd5JlCISHoby578la6SIPMq3Q27Q"  "aud": "542d7c9b-..."  "oid": "82de800f-ad8c-42ac-bfef-bda7a2aa40ea"
-```
-
-`aud`（どのアプリ向けか）と一緒に `sub` も変わり、`oid` は同じです。
-
-アプリをまたいで「同じ人」を見分けたいなら `oid`（と `tid`）を使います。次のレクチャーで、`oid` を Cognito の属性に持ち込みます。
-
-## setup.sh に足す
-
-アプリの登録と taro は entra-local のボリュームに残るので、Floci を作り直しても消えません。それでも、ボリュームまで消したとき（`podman compose down -v`）に戻せるよう、`setup.sh` に足しておきます。どちらのスクリプトも、既にあれば作らずに使うので、何度流しても構いません。
-
-::file{path="scripts/setup.sh"}
 
 ## このレクチャーを終えた handson/
 

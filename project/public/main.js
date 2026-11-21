@@ -178,7 +178,7 @@ async function handleCallback() {
 }
 
 document.querySelector('#hosted-login').addEventListener('click', () => hostedLogin());
-// @since 05-02
+// @since 05-04
 // Cognito に登録した IdP の名前（register-entra.sh の --provider-name）を渡す
 document.querySelector('#entra-login').addEventListener('click', () => hostedLogin('EntraID'));
 // @end

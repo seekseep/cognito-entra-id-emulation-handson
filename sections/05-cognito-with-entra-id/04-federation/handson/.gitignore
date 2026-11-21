@@ -1,0 +1,5 @@
+.cognito.env
+public/config.json
+.tokens.json
+.entra.env
+.entra.*.env

@@ -1,7 +1,7 @@
 .cognito.env
 public/config.json # @since 03-01
 .tokens.json # @since 04-02
-# @since 05-01
+# @since 05-02
 .entra.env
 .entra.*.env
 # @end

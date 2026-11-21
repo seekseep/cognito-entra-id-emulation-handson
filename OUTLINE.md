@@ -126,18 +126,22 @@ flowchart LR
 - OIDC の範囲なら [cmaneu/entra-local](https://github.com/cmaneu/entra-local) で再現できる
 - できないもの: SAML、MFA、条件付きアクセス、マルチテナント、同意画面
 
-### 01-entra-local: entra-local を用意する
+### 01-entra-local: コンテナの用意
 - `ghcr.io/cmaneu/entra-local:0.1.1`（amd64 のみ。Apple Silicon ではエミュレーションで動く）
-- `TLS_ENABLED=false`・`PUBLIC_ORIGIN`・`REQUIRE_PASSWORD=true`、`/app/data` ボリューム
-- 管理 API でアプリ登録・シークレット発行、シードユーザー、discovery と JWKS
-- ID トークンのクレーム（`tid`・`oid`・`preferred_username`・`email`）を実際の出力で確認
+- `TLS_ENABLED=false`・`PUBLIC_ORIGIN`・`REQUIRE_PASSWORD=true`、`/app/data` ボリューム、discovery
 
-### 02-federation: Cognito 経由で Entra ID にログインする
-- `oidc_issuer` に v2.0 の issuer、エンドポイントの明示、`AttributeMapping`
-- `identity_provider=EntraID` でログイン → Cognito のトークン（`EntraID_<sub>`）
+### 02-app-registration: アプリの登録
+- 管理 API でアプリ登録・シークレット発行（`entra-register-app.sh`・`.entra.env`）
+
+### 03-users: ユーザーの作成
+- ユーザーを作り、ID トークンのクレーム（`tid`・`oid`・`preferred_username`・`email`）を見る
 - Entra の `sub` はアプリごとに変わる（pairwise）。ユーザーを特定するなら `oid`
 
-### 03-real-tenant:（任意・未検証）本物の Entra テナント + 実 Cognito
+### 04-federation: Entra ID にあるユーザーで Cognito にログイン
+- `oidc_issuer` に v2.0 の issuer、エンドポイントの明示、`AttributeMapping`
+- `identity_provider=EntraID` でログイン → Cognito のトークン（`EntraID_<sub>`）、`custom:entra_oid`
+
+### 05-real-tenant:（任意・未検証）本物の Entra テナント + 実 Cognito
 - アプリ登録、リダイレクト URI `https://<domain>.auth.<region>.amazoncognito.com/oauth2/idpresponse`
 - SAML で登録する場合の差分
 
@@ -153,4 +157,4 @@ flowchart LR
 - entra-local の userinfo には `oid` が入り、`custom:entra_oid=oid` で Cognito の属性に移せる。同じユーザーでもアプリごとに `sub` が変わることも確かめた
 - Hosted UI の `/oauth2/token` は PKCE を確かめる。ブラウザから Cognito の API・トークンエンドポイントを呼ぶには `FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS` が要る
 - Floci は署名なしの `SignUp`・`InitiateAuth`・`RevokeToken` を受け付ける。`PreventUserExistenceErrors: ENABLED` は保存するが効かない
-- 未確認のまま: entra-local を HTTPS のまま Floci からつなぐこと、本物の Entra テナント + 本物の Cognito（05-03 は手順のまとめだけ）
+- 未確認のまま: entra-local を HTTPS のまま Floci からつなぐこと、本物の Entra テナント + 本物の Cognito（05-05 は手順のまとめだけ）

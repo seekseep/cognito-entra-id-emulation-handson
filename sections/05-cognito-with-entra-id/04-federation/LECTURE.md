@@ -1,11 +1,11 @@
 ---
-title: Cognito 経由で Entra ID にログインする
+title: Entra ID にあるユーザーで Cognito にログイン
 docs: true
 ---
 
-# Cognito 経由で Entra ID にログインする
+# Entra ID にあるユーザーで Cognito にログイン
 
-![Cognito 経由で Entra ID にログインする](./images/00-thumbnail.svg)
+![Entra ID にあるユーザーで Cognito にログイン](./images/00-thumbnail.svg)
 
 entra-local を Cognito の外部 IdP（OIDC）として登録し、画面の「Entra ID でログイン」で Entra のユーザーをアプリに入れます。仕組みは 03-04 の Hosted UI の上に乗っていて、Cognito のログイン画面の代わりに Entra のサインイン画面に回るだけです。気をつけるのは Entra に特有の部分、とくに **ユーザーを何で見分けるか** です。
 
@@ -26,7 +26,7 @@ source ./env.sh && source ./.cognito.env
 
 ## 外部 IdP を登録する
 
-**`scripts/register-entra.sh`** を作ります。中心は `create-identity-provider` です。値は 05-01 で控えた `.entra.env` から読みます。
+**`scripts/register-entra.sh`** を作ります。中心は `create-identity-provider` です。値は 05-02 で控えた `.entra.env` から読みます。
 
 ```bash
 aws cognito-idp create-identity-provider \

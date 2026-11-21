@@ -48,7 +48,7 @@ aws CLI で、管理者が作るユーザーとサインアップするユーザ
 
 ### 05. Entra ID と連携する
 
-![Entra ID](./sections/05-cognito-with-entra-id/02-federation/images/00-thumbnail.svg)
+![Entra ID](./sections/05-cognito-with-entra-id/04-federation/images/00-thumbnail.svg)
 
 entra-local で Entra ID を手元に再現し、アプリの登録・シークレット・`tid` や `oid` といった Entra 特有のクレームを確かめます。Cognito の外部 IdP として登録し、画面の「Entra ID でログイン」で入れるようにします。アプリごとに値が変わる `sub` の代わりに、変わらない `oid` を Cognito の属性に持ち込みます。本物のテナントにつなぐ手順と SAML との違いもまとめます。
 
@@ -73,7 +73,7 @@ entra-local で Entra ID を手元に再現し、アプリの登録・シーク�
 |---|---|---|---|
 | Cognito | `alice`（admin グループ）/ `bob` | `Passw0rd!` | 04-01・04-02（`bash scripts/setup.sh` で作り直せる） |
 | Cognito | `carol` | `Passw0rd!` | 03-02 で画面からサインアップ（setup では作られない） |
-| entra-local | `taro@entralocal.dev` | `Passw0rd!` | 05-01（`bash scripts/entra-create-user.sh`） |
+| entra-local | `taro@entralocal.dev` | `Passw0rd!` | 05-03（`bash scripts/entra-create-user.sh`） |
 
 ## 関連するハンズオン
 

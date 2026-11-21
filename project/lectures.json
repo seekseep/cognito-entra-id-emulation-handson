@@ -1,6 +1,6 @@
 {
   "$comment": "最終形（05 を終えた状態）のファイルが、どのレクチャーで登場するか。ファイルの中で行が増える所は、ファイルの中の @since / @until で書く。site/scripts/build-snapshots.mjs が、ここからレクチャーごとの状態（sections/<sec>/<lec>/handson/）を作る",
-  "lectures": ["02-01", "02-04", "03-01", "03-02", "03-03", "03-04", "04-01", "04-02", "04-03", "05-01", "05-02"],
+  "lectures": ["02-01", "02-04", "03-01", "03-02", "03-03", "03-04", "04-01", "04-02", "04-03", "05-01", "05-02", "05-03", "05-04"],
   "files": {
     "compose.yaml": { "since": "02-01", "about": "コンテナの定義。Floci から始まり、05 で entra-local が増える" },
     "env.sh": { "since": "02-01", "about": "aws CLI の向き先を Floci に変える" },
@@ -22,11 +22,11 @@
     "scripts/update-client.sh": { "since": "03-04", "about": "App Client に Hosted UI の設定を足す（IdP が増えるたびに流す）" },
 
     "scripts/entra-endpoints.sh": { "since": "05-01", "about": "entra-local の discovery から、登録に使う URL を抜き出す" },
-    "scripts/entra-register-app.sh": { "since": "05-01", "about": "entra-local に「Cognito から使うアプリ」を登録する" },
-    "scripts/entra-create-user.sh": { "since": "05-01", "about": "entra-local にユーザーを作る" },
-    "scripts/entra-preview-token.sh": { "since": "05-01", "about": "サインインしたら出る ID トークンの中身を見る" },
+    "scripts/entra-register-app.sh": { "since": "05-02", "about": "entra-local に「Cognito から使うアプリ」を登録する" },
+    "scripts/entra-create-user.sh": { "since": "05-03", "about": "entra-local にユーザーを作る" },
+    "scripts/entra-preview-token.sh": { "since": "05-03", "about": "サインインしたら出る ID トークンの中身を見る" },
 
-    "scripts/register-entra.sh": { "since": "05-02", "about": "entra-local を User Pool の外部 IdP として登録する" },
-    "scripts/list-users.sh": { "since": "05-02", "about": "User Pool のユーザーを一覧する" }
+    "scripts/register-entra.sh": { "since": "05-04", "about": "entra-local を User Pool の外部 IdP として登録する" },
+    "scripts/list-users.sh": { "since": "05-04", "about": "User Pool のユーザーを一覧する" }
   }
 }

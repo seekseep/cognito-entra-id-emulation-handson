@@ -3,7 +3,7 @@ sys.path.insert(0, os.path.expanduser("~/.claude/skills/genfig"))
 from genfig import Canvas
 # entra-local にアプリとユーザーを登録する（CONTAINER）
 c = Canvas(760, 320)
-c.text(380, 46, "entra-local を用意する", scale="title", align="middle")
+c.text(380, 46, "コンテナの用意", scale="title", align="middle")
 c.sticky(250, 85, 470, 210, color="blue")
 c.text(270, 117, "テナント 1111…", scale="label", align="start")
 el = c.node(120, 195, "entra-local", emoji_cp="1f3e2")

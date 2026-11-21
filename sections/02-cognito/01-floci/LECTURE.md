@@ -117,7 +117,7 @@ podman compose up -d
 | `PreventUserExistenceErrors` | 受け付けるが保存されず、効かない。存在しないユーザーは常に `UserNotFoundException` |
 | discovery・JWKS | 使える。`iss` は `http://localhost:4566/<プール ID>` |
 | Hosted UI（ログイン画面）・`/oauth2/authorize`・`/oauth2/token`・`/oauth2/revoke` | 使える。PKCE も確かめる。ブラウザから呼ぶには `FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS` で CORS を許す |
-| 外部 IdP（OIDC）経由のログイン | 使える。登録のしかたに本物と違う点がある（[05-02](../../05-cognito-with-entra-id/02-federation/LECTURE.md) で扱う） |
+| 外部 IdP（OIDC）経由のログイン | 使える。登録のしかたに本物と違う点がある（[05-04](../../05-cognito-with-entra-id/04-federation/LECTURE.md) で扱う） |
 | 外部 IdP（SAML）・Facebook・Apple | 使えない |
 
 ## このレクチャーを終えた handson/
