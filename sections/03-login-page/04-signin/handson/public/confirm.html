@@ -14,17 +14,13 @@
     <label>ユーザー名 <input name="username" required></label>
     <label>確認コード <input name="code" inputmode="numeric" required></label>
     <button>確認する</button>
+    <p class="message"></p>
   </form>
-
-  <section>
-    <h2>Cognito の応答</h2>
-    <pre id="output">まだ何もしていません</pre>
-  </section>
 
   <p><a href="./">トップへ</a></p>
 
   <script type="module">
-    import { client, config, formValues, show, ConfirmSignUpCommand } from './cognito.js';
+    import { client, config, formValues, showMessage, showError, ConfirmSignUpCommand } from './cognito.js';
 
     // サインアップの画面から来たときは、ユーザー名を入れておく
     document.querySelector('#confirm [name=username]').value = new URLSearchParams(location.search).get('username') ?? '';
@@ -33,10 +29,10 @@
       event.preventDefault();
       const { username, code } = formValues(event.target);
       try {
-        const result = await client.send(new ConfirmSignUpCommand({ ClientId: config.clientId, Username: username, ConfirmationCode: code }));
-        show('ConfirmSignUp', result);
+        await client.send(new ConfirmSignUpCommand({ ClientId: config.clientId, Username: username, ConfirmationCode: code }));
+        showMessage(event.target, '確認できました。サインインできます');
       } catch (error) {
-        show('ConfirmSignUp', error);
+        showError(event.target, error);
       }
     });
   </script>

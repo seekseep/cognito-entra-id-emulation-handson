@@ -54,17 +54,18 @@ const result = await client.send(new InitiateAuthCommand({
 
 <http://localhost:3000> の「サインイン」を開きます（開いていたら読み込み直し）。
 
-1. 前のレクチャーでサインアップして確認した `carol` / `Passw0rd!` でサインインする。「Cognito の応答」に `InitiateAuth → 成功` と `AuthenticationResult`（`IdToken`・`AccessToken`・`RefreshToken`）が出る
-2. パスワードを間違えてサインインしてみる → `NotAuthorizedException`
-3. 「サインアップ」で新しく登録し、確認せずにサインインしてみる → `UserNotConfirmedException`
+1. 前のレクチャーでサインアップして確認した `carol` / `Passw0rd!` でサインインする。フォームに「サインインしました」と出る。開発者ツールの Application タブの Session Storage に `tokens`（`idToken`・`accessToken`・`refreshToken`）が入っている
+2. パスワードを間違えてサインインしてみる → 「ユーザー名かパスワードが違います」と出る（Network タブの応答は `NotAuthorizedException`）
+3. いないユーザー名でサインインしてみる → 同じく「ユーザー名かパスワードが違います」と出る（応答は `UserNotFoundException`）
+4. 「サインアップ」で新しく登録し、確認せずにサインインしてみる → 「メールの確認が済んでいません…」と出る（応答は `UserNotConfirmedException`）
 
 開発者ツールの Network タブで、次を確かめてください。
 
 - サインインの要求は `localhost:4566` に飛び、`localhost:3000`（画面を配る nginx）には飛んでいない。**パスワードはサーバーを通りません**
 - 要求のヘッダーに `x-amz-target: AWSCognitoIdentityProviderService.InitiateAuth` が付いている
 
-:::warning[エラーはそのまま画面に届く]
-画面が Cognito を直接呼ぶので、Cognito のエラー（`UsernameExistsException`・`UserNotConfirmedException` など）はそのまま画面に届きます。言い換えると、画面を使わなくても、誰でも同じ API を呼んで同じ応答を見られます。
+:::warning[エラーは画面を通らずに届く]
+画面が Cognito を直接呼ぶので、Cognito のエラー（`UsernameExistsException`・`UserNotFoundException` など）はブラウザにそのまま届きます。この画面は、いないユーザーでもパスワード違いと同じ文を出していますが、Network タブを見れば元の例外が分かります。言い換えると、画面を使わなくても、誰でも同じ API を呼んで同じ応答を見られます。
 
 ユーザーが存在するかを隠せるのは、App Client の `PreventUserExistenceErrors: ENABLED`（02-03 で付けました）だけです。本物の Cognito では、存在しないユーザーへのログインも、パスワード違いと同じ `NotAuthorizedException` になります。**Floci ではこの設定が効かず**、`UserNotFoundException` が返ります。
 :::

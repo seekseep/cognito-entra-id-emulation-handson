@@ -14,17 +14,13 @@
     <label>メール <input name="email" type="email" required></label>
     <label>パスワード <input name="password" type="password" required></label>
     <button>登録する</button>
+    <p class="message"></p>
   </form>
-
-  <section>
-    <h2>Cognito の応答</h2>
-    <pre id="output">まだ何もしていません</pre>
-  </section>
 
   <p><a href="./">トップへ</a></p>
 
   <script type="module">
-    import { client, config, formValues, show, SignUpCommand } from './cognito.js';
+    import { client, config, formValues, showError, SignUpCommand } from './cognito.js';
 
     document.querySelector('#signup').addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -39,7 +35,7 @@
         // 登録できたら、メールに届いた確認コードを入れる画面へ
         location.assign(`./confirm.html?username=${encodeURIComponent(username)}`);
       } catch (error) {
-        show('SignUp', error);
+        showError(event.target, error);
       }
     });
   </script>

@@ -41,7 +41,7 @@ await client.send(new SignUpCommand({ ClientId: config.clientId, Username, Passw
 - 版（`@3.1163.0`）を URL に書いて固定します。書かないと、ある日から新しい版が読み込まれて動きが変わることがあります
 - `endpoint` で、送り先を `config.json` の `issuer` のオリジンに向けます。Floci なら `http://localhost:4566` です。本物の Cognito なら `endpoint` は要りません（`region` から決まります）
 - `SignUp`・`ConfirmSignUp`・`InitiateAuth`・`RevokeToken` は、AWS の認証情報（署名）なしで、クライアント ID だけで呼べる API です。ブラウザに秘密を置かずに済みます
-- 失敗すると、`UsernameExistsException` などの名前の例外になります。成功の結果も失敗も、画面の「Cognito の応答」の欄（`#output`）に出します
+- 失敗すると、`UsernameExistsException` などの名前の例外になります。例外の名前ごとに利用者向けの文を決めておき（`ERROR_MESSAGES`）、フォームの中に出します（`showError`）。元の例外は、開発者ツールの Network タブの応答で見られます
 - CDN から読み込むので、画面を開くときはインターネットにつながっている必要があります
 
 ::file{path="public/cognito.js"}
@@ -64,9 +64,10 @@ await client.send(new SignUpCommand({ ClientId: config.clientId, Username, Passw
 
 1. 「サインアップ」を開き、登録する（例: `carol` / `carol@example.com` / `Passw0rd!`）。「メールを確認する」の画面に移り、ユーザー名が入っている
 2. 画面のリンクから「メールボックス」を開き、`carol@example.com` 宛ての確認コードを読む
-3. 違うコード（例: `000000`）を入れて「確認する」を押す → `ConfirmSignUp → 失敗` と `CodeMismatchException`
-4. 正しいコードを入れて「確認する」を押す → `ConfirmSignUp → 成功`
-5. 「サインアップ」に戻り、同じユーザー名でもう一度登録してみる → `SignUp → 失敗` と `UsernameExistsException`
+3. 違うコード（例: `000000`）を入れて「確認する」を押す → フォームに「確認コードが違います」と出る（Network タブの応答は `CodeMismatchException`）
+4. 正しいコードを入れて「確認する」を押す → 「確認できました。サインインできます」と出る
+5. 「サインアップ」に戻り、同じユーザー名でもう一度登録してみる → 「このユーザー名は、すでに使われています」と出る（応答は `UsernameExistsException`）
+6. 別の名前で、短いパスワード（例: `pass`）で登録してみる → 「パスワードは 8 文字以上で、英大文字・英小文字・数字を含めてください」と出る（応答は `InvalidPasswordException`。02-02 で決めたパスワードポリシーです）
 
 開発者ツールの Network タブで、次を確かめてください。
 
