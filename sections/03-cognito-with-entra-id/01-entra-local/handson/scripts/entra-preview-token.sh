@@ -6,6 +6,6 @@ cd "$(dirname "$0")/.."
 # 見比べるために別のアプリの控えを使いたいときは ENTRA_ENV=.entra.a.env のように渡す
 source "${ENTRA_ENV:-./.entra.env}"
 ENTRA=http://localhost:8443
-USER_ID=$(curl -fsS "$ENTRA/admin/api/users?search=$1" | node -e "let s='';process.stdin.on('data',(d)=>(s+=d)).on('end',()=>console.log(JSON.parse(s).value[0].id))")
+USER_ID=$(curl -fsS "$ENTRA/admin/api/users?search=$1" | jq -r '.value[0].id')
 curl -fsS -X POST "$ENTRA/admin/api/apps/$ENTRA_CLIENT_ID/token-preview" -H 'content-type: application/json' \
-  -d "{\"userId\":\"$USER_ID\",\"tokenType\":\"idToken\"}" | node -e "let s='';process.stdin.on('data',(d)=>(s+=d)).on('end',()=>console.log(JSON.stringify(JSON.parse(s),null,2)))"
+  -d "{\"userId\":\"$USER_ID\",\"tokenType\":\"idToken\"}" | jq .

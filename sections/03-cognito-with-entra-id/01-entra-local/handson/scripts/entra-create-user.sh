@@ -18,11 +18,11 @@ STATUS=$(curl -sS -o "$BODY" -w '%{http_code}' -X POST "$ENTRA/admin/api/users" 
 
 case "$STATUS" in
   201)
-    node -e "const u=JSON.parse(require('fs').readFileSync('$BODY','utf8'));console.log({ id: u.id, userPrincipalName: u.userPrincipalName })"
+    jq '{ id, userPrincipalName }' "$BODY"
     ;;
   409)
     echo "$UPN は既にいます（entra-local のデータはボリュームに残ります）"
-    curl -fsS "$ENTRA/admin/api/users" | node -e "let s='';process.stdin.on('data',(d)=>(s+=d)).on('end',()=>{const u=JSON.parse(s).value.find((x)=>x.userPrincipalName==='$UPN');console.log({ id: u.id, userPrincipalName: u.userPrincipalName })})"
+    curl -fsS "$ENTRA/admin/api/users" | jq --arg upn "$UPN" '.value[] | select(.userPrincipalName == $upn) | { id, userPrincipalName }'
     ;;
   *)
     echo "ユーザーを作れませんでした（HTTP $STATUS）" >&2

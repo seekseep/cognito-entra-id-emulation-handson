@@ -20,11 +20,11 @@ APP_ID=$(curl -fsS -X POST "$ENTRA/admin/api/apps" -H 'content-type: application
   "displayName": "Cognito (Floci)",
   "isConfidential": true,
   "redirectUris": [{ "uri": "http://localhost:4566/cognito-idp/oauth2/idpresponse", "type": "web" }]
-}' | node -e "let s='';process.stdin.on('data',(d)=>(s+=d)).on('end',()=>console.log(JSON.parse(s).id))")
+}' | jq -r .id)
 
 # シークレットの値は作ったときに一度だけ返る（本物の Entra と同じ）。ここで控えておく
 SECRET=$(curl -fsS -X POST "$ENTRA/admin/api/apps/$APP_ID/secrets" -H 'content-type: application/json' \
-  -d '{"displayName":"cognito"}' | node -e "let s='';process.stdin.on('data',(d)=>(s+=d)).on('end',()=>console.log(JSON.parse(s).secretText))")
+  -d '{"displayName":"cognito"}' | jq -r .secretText)
 
 cat > .entra.env <<ENV
 export ENTRA_TENANT_ID=11111111-1111-1111-1111-111111111111
