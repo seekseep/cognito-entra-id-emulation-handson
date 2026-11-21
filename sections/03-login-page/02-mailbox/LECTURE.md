@@ -22,22 +22,16 @@ podman compose up -d
 bash scripts/setup.sh              # 前のレクチャーまでに作ったものを作り直す
 ```
 
-## 画面を作る
+## 画面を置く
 
-Floci は、Cognito が送るメールを実際には送らず、手元にためておきます（`http://localhost:4566/_aws/ses` で JSON の一覧が読めます）。確認コードを読めるよう、ためたメールを表で出す画面 **`public/mail.html`** を作ります。本物の Cognito にはこの一覧は無く、メールはそのまま利用者に届きます。
+Floci は、Cognito が送るメールを実際には送らず、手元にためておきます（`http://localhost:4566/_aws/ses` で JSON の一覧が読めます）。確認コードを読めるよう、ためたメールを表で出す画面 **`public/mail.html`**・**`public/mail.js`** を置きます。本物の Cognito にはこの一覧は無く、メールはそのまま利用者に届きます。
 
-::file{path="public/mail.html"}
+::download{dir="public"}
 
-**`public/mail.js`** が、メールの一覧を読んで表に並べます。
+上のボタンで、このレクチャーを終えた `public/` をダウンロードし、`handson/` の中で展開して上書きします（`setup` が書き出す `public/config.json` は ZIP に入っていないので、そのまま残ります）。
 
-::file{path="public/mail.js"}
-
-- `lib/config.js` から Cognito の API の入口（`http://localhost:4566`）を受け取り、`/_aws/ses` を読みます
-- 新しいメールが上に来るよう、一覧を逆順に並べます
-
-トップの画面に、メールボックスへのリンクを足します。
-
-::file{path="public/index.html"}
+- `mail.js` は、`lib/config.js` から Cognito の API の入口（`http://localhost:4566`）を受け取り、`/_aws/ses` を読みます。新しいメールが上に来るよう、一覧を逆順に並べます
+- トップの画面（`index.html`）に、メールボックスへのリンクが増えています
 
 ## 画面から使う
 

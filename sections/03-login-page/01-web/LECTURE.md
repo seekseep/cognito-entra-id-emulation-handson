@@ -28,30 +28,26 @@ podman compose up -d
 bash scripts/setup.sh              # 前のレクチャーまでに作ったものを作り直す
 ```
 
-## 画面を作る
+## 画面を置く
 
-このあと、メールボックス・サインアップ・ログインと画面が増えていきます。画面は、見た目の HTML と、同じ名前の `.js`（動き）の組で作ります。どの画面でも使う部品は `public/lib/` に、役割ごとに 1 ファイルずつ置きます。
+このハンズオンの主題は Cognito なので、画面のファイルは書かずに、ダウンロードして置きます。下のボタンで `public/` をダウンロードし、`handson/` の中で展開してください（`handson/public/` ができます）。
+
+::download{dir="public"}
+
+このあと、メールボックス・サインアップ・ログインと画面が増えていきます。そのたびに、そのレクチャーの `public/` をダウンロードし、`handson/` の中で展開して上書きします。
 
 ```text
 public/
-  index.html  index.js   画面（HTML と動き）
+  index.html  index.js   画面（見た目の HTML と、同じ名前の .js の動き）
   style.css              どの画面でも使う見た目
   lib/                   どの画面でも使う部品
     config.js            config.json を読む
 ```
 
-- **`public/style.css`** … どの画面でも使う見た目
 - **`public/lib/config.js`** … `config.json` を読み、Cognito の API の入口（`issuer` のオリジン）を求めます。Floci なら `http://localhost:4566`、本物なら `https://cognito-idp.<リージョン>.amazonaws.com` になります
+- **`public/index.html`・`public/index.js`** … トップの画面。いまは、`lib/config.js` から受け取った Cognito の API の入口を出すだけです
 
-::file{path="public/style.css"}
-
-::file{path="public/lib/config.js"}
-
-トップの画面 **`public/index.html`** は、いまは Cognito の API の入口を出す 1 行だけです。**`public/index.js`** が `lib/config.js` から入口を受け取って、画面に出します。
-
-::file{path="public/index.html"}
-
-::file{path="public/index.js"}
+中身は、ページの最後の「このレクチャーを終えた handson/」で読めます。
 
 ## 画面に設定を渡す
 

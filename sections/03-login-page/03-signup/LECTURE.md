@@ -26,9 +26,15 @@ podman compose up -d
 bash scripts/setup.sh              # 前のレクチャーまでに作ったものを作り直す
 ```
 
-## 画面を作る
+## 画面を置く
 
-まず、Cognito の API を呼ぶ部品を **`public/lib/cognito.js`** に作ります。Cognito の API は、AWS SDK for JavaScript v3（`@aws-sdk/client-cognito-identity-provider`）で呼びます。npm で入れずに、CDN（esm.sh）からブラウザが直接読み込みます。
+サインアップの画面（`signup.html`）と、メールに届いた確認コードを入れる画面（`confirm.html`）を置きます。
+
+::download{dir="public"}
+
+上のボタンで、このレクチャーを終えた `public/` をダウンロードし、`handson/` の中で展開して上書きします（`setup` が書き出す `public/config.json` は ZIP に入っていないので、そのまま残ります）。
+
+Cognito の API は、AWS SDK for JavaScript v3（`@aws-sdk/client-cognito-identity-provider`）で呼びます。npm で入れずに、CDN（esm.sh）からブラウザが直接読み込みます。読み込みと送り先の設定は **`public/lib/cognito.js`** にまとめてあります。
 
 ```js
 import { CognitoIdentityProviderClient, SignUpCommand }
@@ -41,32 +47,14 @@ await client.send(new SignUpCommand({ ClientId: config.clientId, Username, Passw
 - 版（`@3.1163.0`）を URL に書いて固定します。書かないと、ある日から新しい版が読み込まれて動きが変わることがあります
 - `endpoint` で、送り先を `config.json` の `issuer` のオリジンに向けます。Floci なら `http://localhost:4566` です。本物の Cognito なら `endpoint` は要りません（`region` から決まります）
 - `SignUp`・`ConfirmSignUp`・`InitiateAuth`・`RevokeToken` は、AWS の認証情報（署名）なしで、クライアント ID だけで呼べる API です。ブラウザに秘密を置かずに済みます
-- 失敗すると、`UsernameExistsException` などの名前の例外になります
+- 失敗すると、`UsernameExistsException` などの名前の例外になります。**`public/lib/form.js`** が、例外の名前ごとに決めた利用者向けの文（`ERROR_MESSAGES`）を、フォームの中に出します
 - CDN から読み込むので、画面を開くときはインターネットにつながっている必要があります
 
-::file{path="public/lib/cognito.js"}
+画面の流れは次のとおりです。
 
-フォームの値を読み、フォームの中にメッセージやエラーを出す部品を **`public/lib/form.js`** に作ります。例外の名前ごとに利用者向けの文を決めておき（`ERROR_MESSAGES`）、フォームの中に出します（`showError`）。元の例外は、開発者ツールの Network タブの応答で見られます。
-
-::file{path="public/lib/form.js"}
-
-**`public/signup.html`** と **`public/signup.js`** は、サインアップの画面です。`SignUp` が成功したら、確認コードを入れる画面へ移ります（ユーザー名を URL に付けて渡します）。
-
-送信のボタンは、最初は押せない（`disabled`）ようにしておき、スクリプトがフォームを受け持ったところで押せるようにします。スクリプトは `config.json` と CDN の SDK を読み終えてから動くので、その前に押すと、ブラウザがフォームをふつうに送ってしまい、入れたパスワードが URL（`?username=...&password=...`）に載ってしまうからです。確認とログインのフォームも同じにします。
-
-::file{path="public/signup.html"}
-
-::file{path="public/signup.js"}
-
-**`public/confirm.html`** と **`public/confirm.js`** は、メールに届いた確認コードを入れる画面です。URL に `?username=...` が付いていれば、ユーザー名を入れておきます。
-
-::file{path="public/confirm.html"}
-
-::file{path="public/confirm.js"}
-
-トップの画面に、2 つの画面へのリンクを足します。
-
-::file{path="public/index.html"}
+- `signup.js` … `SignUp` が成功したら、確認コードを入れる画面へ移ります（ユーザー名を URL の `?username=...` で渡します）
+- `confirm.js` … 確認コードを `ConfirmSignUp` で送ります。URL にユーザー名が付いていれば、入れておきます
+- 送信のボタンは、最初は押せない（`disabled`）ようにしてあり、スクリプトがフォームを受け持ったところで押せるようになります。スクリプトは `config.json` と CDN の SDK を読み終えてから動くので、その前に押すと、ブラウザがフォームをふつうに送ってしまい、入れたパスワードが URL（`?username=...&password=...`）に載ってしまうからです
 
 ## 画面から使う
 

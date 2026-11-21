@@ -192,7 +192,7 @@ export async function expandSentinels(body, { lectureAbsDir, sec, lec, base, whe
   if (!inLecture && !/^::(codeview|preview|assets|::sheetdemo|sheetcode|timeline)\b/m.test(body)) return body;
   // 積み上げ方式（handson/）のレクチャーなら、そのレクチャー ID。::changes / ::file / ::codeview が使う
   const handsonId = inLecture && (await hasSnapshot(lectureIdOf(sec, lec))) ? lectureIdOf(sec, lec) : null;
-  body = await expandHandsonSentinels(body, { id: handsonId, where });
+  body = await expandHandsonSentinels(body, { id: handsonId, where, base, sec, lec });
   const exampleAbs = inLecture ? path.join(lectureAbsDir, EXAMPLE_DIR) : null;
   // `::::sheetdemo` / `::sheetcode`（スプレッドシート表示）は sheets.mjs で展開する。
   // レクチャー以外（概要ページなど）では、src="<sec>/<lec>" で指したレクチャーのブックを使う。

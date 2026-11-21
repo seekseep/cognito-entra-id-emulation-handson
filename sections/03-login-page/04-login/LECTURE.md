@@ -27,9 +27,15 @@ podman compose up -d
 bash scripts/setup.sh              # 前のレクチャーまでに作ったものを作り直す
 ```
 
-## 画面を作る
+## 画面を置く
 
-ログインは、aws CLI の `initiate-auth` と同じ `InitiateAuth`（`USER_PASSWORD_AUTH`）です。
+ログインの画面（`login.html`）と、ログイン中の画面（`home.html`）を置きます。
+
+::download{dir="public"}
+
+上のボタンで、このレクチャーを終えた `public/` をダウンロードし、`handson/` の中で展開して上書きします（`setup` が書き出す `public/config.json` は ZIP に入っていないので、そのまま残ります）。
+
+ログインは、aws CLI の `initiate-auth` と同じ `InitiateAuth`（`USER_PASSWORD_AUTH`）です（`login.js`）。
 
 ```js
 const result = await client.send(new InitiateAuthCommand({
@@ -39,30 +45,9 @@ const result = await client.send(new InitiateAuthCommand({
 }));
 ```
 
-トークンを扱う部品を **`public/lib/tokens.js`** に作ります。
-
-- トークンの保存と読み出し（`saveTokens`・`getTokens`）。受け取ったトークンを、どの画面からも読めるように `sessionStorage` に置きます
-- ID トークンの真ん中（ペイロード）を Base64URL から戻して読む関数（`decodeJwt`）。署名は確かめていません（表示するだけなので）。トークンの中身と署名の確かめ方は、05 でコマンドを使って詳しく見ます
-
-::file{path="public/lib/tokens.js"}
-
-**`public/login.html`** と **`public/login.js`** は、ログインの画面です。成功したら、トークンを保存して、ログイン中の画面へ移ります。
-
-::file{path="public/login.html"}
-
-::file{path="public/login.js"}
-
-**`public/home.html`** と **`public/home.js`** は、ログイン中の画面です。保存したトークンがあれば、`cognito:username` と ID トークンの中身を出します。
-
-「ログアウト」は、手元のトークンを消す前に `RevokeToken` でリフレッシュトークンを Cognito で取り消します。消すだけにすると、もしトークンが盗まれていた場合、ログアウトしたあとも使われ続けます（リフレッシュトークンは既定で 30 日有効です）。
-
-::file{path="public/home.html"}
-
-::file{path="public/home.js"}
-
-トップの画面に、2 つの画面へのリンクを足します。
-
-::file{path="public/index.html"}
+- 成功したら、受け取ったトークンを保存して、ログイン中の画面へ移ります。トークンは、どの画面からも読めるように `sessionStorage` に置きます（**`public/lib/tokens.js`** の `saveTokens`・`getTokens`）
+- ログイン中の画面（`home.js`）は、保存したトークンがあれば、`cognito:username` と ID トークンの中身を出します。中身は、ID トークンの真ん中（ペイロード）を Base64URL から戻して読みます（`tokens.js` の `decodeJwt`）。署名は確かめていません（表示するだけなので）。トークンの中身と署名の確かめ方は、05 でコマンドを使って詳しく見ます
+- 「ログアウト」は、手元のトークンを消す前に `RevokeToken` でリフレッシュトークンを Cognito で取り消します。消すだけにすると、もしトークンが盗まれていた場合、ログアウトしたあとも使われ続けます（リフレッシュトークンは既定で 30 日有効です）
 
 ## 画面から使う
 

@@ -136,7 +136,11 @@ aws cognito-idp update-user-pool-client \
 
 認可コードは URL に載るので、横取りされるかもしれません。PKCE では、最初に送ったハッシュの元（`code_verifier`）を知っている人しかコードをトークンに換えられません。Floci も、`code_verifier` が合わないと `invalid_grant` を返します。
 
-この流れを、ライブラリなしで **`public/lib/hosted-ui.js`** に書きます。
+この流れを、ライブラリなしで書いた **`public/lib/hosted-ui.js`** と、「Entra ID でログイン」のボタンを足した画面を置きます。
+
+::download{dir="public"}
+
+上のボタンで、このレクチャーを終えた `public/` をダウンロードし、`handson/` の中で展開して上書きします（`public/config.json` はそのまま残ります）。`hosted-ui.js` の要は次のところです。
 
 ```js
 const verifier = randomString();
@@ -166,23 +170,11 @@ location.assign(url);
 - `handleCallback()` … 戻ってきた `?code=...` を `code_verifier` と一緒に `/oauth2/token` へ送り、トークンを保存します
 - `hostedLogout()` … Cognito の `/logout` に移り、Hosted UI 側のログイン状態（Cookie）も消します
 
-::file{path="public/lib/hosted-ui.js"}
+画面の変わったところは次のとおりです。
 
-ログインの画面に「Entra ID でログイン」のボタンを足します。
-
-::file{path="public/login.html"}
-
-::file{path="public/login.js"}
-
-Entra ID から戻ってくる先（コールバック URL）はトップ（`http://localhost:3000/`）です。トップで認可コードをトークンに換え、ログイン中の画面へ移ります。
-
-::file{path="public/index.html"}
-
-::file{path="public/index.js"}
-
-ログイン中の画面のログアウトでは、手元のトークンを消したあと、Cognito の `/logout` にも移ります。
-
-::file{path="public/home.js"}
+- `login.html`・`login.js` … 「Entra ID でログイン」のボタン。押すと `hostedLogin('EntraID')` を呼びます
+- `index.js` … Entra ID から戻ってくる先（コールバック URL）はトップ（`http://localhost:3000/`）です。トップで `handleCallback()` を呼んで認可コードをトークンに換え、ログイン中の画面へ移ります
+- `home.js` … ログアウトでは、手元のトークンを消したあと、`hostedLogout()` で Cognito の `/logout` にも移ります
 
 :::warning[本番でのトークンの置き場所]
 `sessionStorage` は、ページに XSS があると JavaScript から読まれてしまう場所です（前のレクチャーの注意と同じです）。この画面のようにブラウザが `/oauth2/token` を直接呼ぶ作りでは、httpOnly の Cookie に置くことはできません。本番では、トークンの交換をサーバー側で行い、ブラウザとは httpOnly の Cookie のセッションでやり取りする形（BFF: Backend for Frontend）を検討してください。

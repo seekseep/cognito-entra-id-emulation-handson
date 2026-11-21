@@ -32,6 +32,8 @@
  *   手元で動かしたときにできた node_modules・.env などは入れない（作り直したファイルだけを入れる）。
  *   ZIP 内のルートフォルダは常に `handson/`。受講者は最初に 1 度だけダウンロードし、
  *   あとは自分でファイルを足していく。途中のレクチャーの ZIP は、追いつくための控え。
+ *   本文に `::download{dir="<dir>"}` があるレクチャーは、handson/<dir>/ だけの
+ *   `<sec>-<lec>-<dir>.zip`（ルートフォルダは `<dir>/`）も出す。handson/ で展開すると置き換わる。
  *
  * ダウンロード URL の規約 (<sec>-<lec>.zip) は libs/naming.mjs に集約し、
  * sync-lectures.mjs のリンク生成と共有している。
@@ -47,6 +49,7 @@ import iconv from 'iconv-lite';
 import { walkFiles } from './libs/fs-walk.mjs';
 import {
   assetsZipBasenameFor,
+  dirZipBasenameFor,
   exampleDirOf,
   parseLectureRel,
   platformZipBasenameFor,
@@ -54,6 +57,7 @@ import {
   zipBasenameFor,
 } from './libs/naming.mjs';
 import { DOWNLOADS_DIR, ROOT } from './libs/paths.mjs';
+import { DOWNLOAD_RE } from './libs/handson-sentinels.mjs';
 import { SNAPSHOT_DIRNAME, buildSnapshot, lectureIdOf } from './libs/snapshots.mjs';
 
 const IGNORE_DIRS = new Set(['node_modules', '.git']);
@@ -192,6 +196,24 @@ async function zipHandson(lectureRel) {
   return zipFiles(absDir, [...snapshot.keys()], outPath, SNAPSHOT_DIRNAME);
 }
 
+/** 本文の `::download{dir="..."}` ごとに、handson/<dir>/ だけの ZIP を作る。[dir, 件数] の配列を返す。 */
+async function zipHandsonDirs(lectureRel) {
+  const { sec, lec } = parseLectureRel(lectureRel);
+  const body = await readFile(path.join(ROOT, ...lectureRel.split('/'), 'LECTURE.md'), 'utf8');
+  const dirs = [...new Set(body.split('\n').map((line) => line.match(DOWNLOAD_RE)?.[1]).filter(Boolean))];
+  if (dirs.length === 0) return [];
+  const snapshot = await buildSnapshot(lectureIdOf(sec, lec));
+  const absDir = path.join(ROOT, ...lectureRel.split('/'), SNAPSHOT_DIRNAME);
+  const made = [];
+  for (const dir of dirs) {
+    const prefix = `${dir}/`;
+    const files = [...snapshot.keys()].filter((rel) => rel.startsWith(prefix)).map((rel) => rel.slice(prefix.length));
+    const outPath = path.join(DOWNLOADS_DIR, dirZipBasenameFor(sec, lec, dir));
+    made.push([dir, await zipFiles(path.join(absDir, ...dir.split('/')), files, outPath, dir)]);
+  }
+  return made;
+}
+
 async function main() {
   await rm(DOWNLOADS_DIR, { recursive: true, force: true });
   await mkdir(DOWNLOADS_DIR, { recursive: true });
@@ -218,6 +240,9 @@ async function main() {
     const { sec, lec } = parseLectureRel(lectureRel);
     const count = await zipHandson(lectureRel);
     console.log(`[build-downloads] ${lectureRel}/${SNAPSHOT_DIRNAME} -> site/public/downloads/${zipBasenameFor(sec, lec)} (${count} files)`);
+    for (const [dir, n] of await zipHandsonDirs(lectureRel)) {
+      console.log(`[build-downloads] ${lectureRel}/${SNAPSHOT_DIRNAME}/${dir} -> site/public/downloads/${dirZipBasenameFor(sec, lec, dir)} (${n} files)`);
+    }
   }
 
   if (exampleLectures.length === 0 && handsonLectures.length === 0) {

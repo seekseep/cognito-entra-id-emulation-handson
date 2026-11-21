@@ -79,6 +79,16 @@ export function assetsDownloadUrlFor(base, sec, lec) {
   return `${base}/downloads/${assetsZipBasenameFor(sec, lec)}`;
 }
 
+/** handson/ の 1 フォルダだけの ZIP のファイル名（`<sec>-<lec>-<dir>.zip`。例: `03-login-page-01-web-public.zip`）。 */
+export function dirZipBasenameFor(sec, lec, dir) {
+  return `${sec}-${lec}-${dir.replace(/\//g, '-')}.zip`;
+}
+
+/** サイト上の、handson/ の 1 フォルダだけの ZIP への URL。 */
+export function dirDownloadUrlFor(base, sec, lec, dir) {
+  return `${base}/downloads/${dirZipBasenameFor(sec, lec, dir)}`;
+}
+
 /** サイト上のライブプレビュー URL（`<base>/preview/<sec>-<lec>[--<demo>]/index.html`）。 */
 export function previewUrlFor(base, sec, lec, demo) {
   return `${base}/preview/${previewNameOf(sec, lec, demo)}/index.html`;

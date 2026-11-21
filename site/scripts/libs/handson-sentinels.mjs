@@ -10,15 +10,21 @@
  *                           ファイル一覧に「作成」「変更」を付け、足したファイルを最初に開く
  *   （抜粋）              … 手で書いたコードフェンスに、ファイルでの行番号と「全体を確認する」を付ける
  *                           （handson-excerpts.mjs）
+ *   ::download{dir="public"} … このレクチャーを終えた handson/<dir>/ だけの ZIP のダウンロードボタンと、
+ *                           中のファイルの一覧（このレクチャーで作成・変更したものに印）を置く。
+ *                           本文で 1 つずつ書かせるほどではないファイル（画面など）を配るときに使う。
+ *                           ZIP は build-downloads.mjs が `<sec>-<lec>-<dir>.zip`（ルートは `<dir>/`）として出す
  *   ::timeline            … どのレクチャーで、どのファイルが増えるかの一覧（レクチャー以外のページでも使える）
  */
 
 import { expandExcerpts } from './handson-excerpts.mjs';
+import { dirDownloadUrlFor } from './naming.mjs';
 import { SNAPSHOT_DIRNAME, addedLines, buildSnapshot, changesOf, loadManifest } from './snapshots.mjs';
 
 const CHANGES_RE = /^::changes\s*$/;
 const FILE_RE = /^::file\{path="([^"]+)"\}\s*$/;
 const TIMELINE_RE = /^::timeline\s*$/;
+export const DOWNLOAD_RE = /^::download\{dir="([^"]+)"\}\s*$/;
 
 export const STATUS_LABEL = { added: '作成', changed: '変更', removed: '削除' };
 
@@ -73,6 +79,28 @@ async function buildChanges(id, info) {
   });
   if (rows.length === 0) return null;
   return (
+    `<table class="file-changes"><thead><tr><th></th><th>ファイル</th><th>役割</th></tr></thead><tbody>` +
+    rows.join('') +
+    `</tbody></table>`
+  );
+}
+
+/** `::download{dir="..."}` のボタンとファイルの一覧（生 HTML。空行を含めない）。 */
+function buildDownload(dir, info, files, url) {
+  const prefix = `${dir}/`;
+  const rels = [...info.current.keys()].filter((rel) => rel.startsWith(prefix));
+  if (rels.length === 0) return null;
+  const rows = rels.map((rel) => {
+    const status = statusOf(rel, info);
+    return `<tr><td>${status ? badge(status) : ''}</td><td><code>${escapeHtml(rel)}</code></td><td>${escapeHtml(files[rel]?.about ?? '')}</td></tr>`;
+  });
+  return (
+    `<div class="assets-download">` +
+    `<a class="download-button" href="${url}" download>` +
+    `<span class="download-button__icon" aria-hidden="true"></span>` +
+    `<span class="download-button__label"><code>${escapeHtml(dir)}/</code> をダウンロード</span>` +
+    `</a>` +
+    `</div>` +
     `<table class="file-changes"><thead><tr><th></th><th>ファイル</th><th>役割</th></tr></thead><tbody>` +
     rows.join('') +
     `</tbody></table>`
@@ -157,11 +185,11 @@ async function buildTimeline() {
  * `::changes` / `::file` / `::timeline` を展開する。id はこのレクチャーの ID（レクチャー以外は null）。
  * `::codeview` は sentinels.mjs 側で buildHandsonEditor を呼ぶ。
  */
-export async function expandHandsonSentinels(body, { id, where }) {
+export async function expandHandsonSentinels(body, { id, where, base, sec, lec }) {
   const info = id ? await changesOf(id) : null;
   // 手で書いた抜粋に、ファイルでの行番号と「全体を確認する」を付ける（handson-excerpts.mjs）
   if (info) body = expandExcerpts(body, info.current, { where, langOf });
-  if (!/^::(changes|file|timeline)\b/m.test(body)) return body;
+  if (!/^::(changes|file|timeline|download)\b/m.test(body)) return body;
   const { files } = await loadManifest();
   const out = [];
   // ::file の見出しのレベルを決めるため、直前の見出しの深さを覚えておく（コードフェンスの中の # は数えない）
@@ -187,6 +215,17 @@ export async function expandHandsonSentinels(body, { id, where }) {
       }
       const block = await buildChanges(id, info);
       if (block) out.push(block);
+      continue;
+    }
+    const dl = line.match(DOWNLOAD_RE);
+    if (dl) {
+      if (!info) {
+        console.warn(`[handson] ::download は handson/ を持つレクチャーでだけ使えます（${where}）`);
+        continue;
+      }
+      const block = buildDownload(dl[1], info, files, dirDownloadUrlFor(base, sec, lec, dl[1]));
+      if (!block) throw new Error(`[handson] ${where}: ::download{dir="${dl[1]}"} の ${dl[1]}/ が、このレクチャーの ${SNAPSHOT_DIRNAME}/ にありません`);
+      out.push(block);
       continue;
     }
     const file = line.match(FILE_RE);
