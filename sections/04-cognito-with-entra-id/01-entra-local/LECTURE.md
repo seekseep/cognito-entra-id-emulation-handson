@@ -46,11 +46,25 @@ discovery から登録に使う値を抜き出す **`scripts/entra-endpoints.sh`
 
 ## 起動する
 
-`podman compose up -d` で、Floci はそのまま、entra-local が新しく起動します。entra-local は起動に数秒かかるので、`curl` で `"status":"ok"` が返るのを確かめてから進みます。何も返らないときは、数秒待ってからもう一度打ってください。
+`podman compose up -d` で、Floci はそのまま、entra-local が新しく起動します。
 
 ```bash
 podman compose up -d
+```
+
+## 動作確認する
+
+entra-local の health に問い合わせます。
+
+```bash
 curl -s http://localhost:8443/health
+```
+
+`"status":"ok"` が返れば起動しています。entra-local は起動に数秒かかるので、何も返らないときは、数秒待ってからもう一度打ってください。
+
+起動したら、登録に使う値を discovery から抜き出します。
+
+```bash
 npm run entra:endpoints
 ```
 

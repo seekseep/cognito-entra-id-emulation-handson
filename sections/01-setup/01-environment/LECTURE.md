@@ -254,14 +254,37 @@ cd handson
 - イメージは `2.4.0` に固定しています。`latest` だと、ある日から挙動が変わることがあります
 - ポートは **4566** です。`127.0.0.1:` を付けて、自分のパソコンからだけ届くようにしています。Floci は認証なしで API を受け付けるので、ほかのマシンから触られないようにするためです
 
-`handson/` で、コンテナを起動します。
+### 起動する
+
+`handson/` で、コンテナを起動します。`-d` は、コンテナを裏で動かし続ける指定です。
 
 ```bash
 podman compose up -d
-curl -s http://localhost:4566/_floci/health | head -c 120
 ```
 
-`-d` は、コンテナを裏で動かし続ける指定です。`curl` で `{"edition":"community","services":{...` のような JSON が返れば起動しています。何も返らないときは、数秒待ってからもう一度 `curl` を打ってください。
+次のように出れば起動できています。初回はイメージの取得（`Pulled`）に少し時間がかかります。
+
+```text
+>>>> Executing external compose provider "/opt/homebrew/bin/docker-compose". Please see podman-compose(1) for how to disable this message. <<<<
+
+[+] up 10/10
+ ✔ Image docker.io/floci/floci:2.4.0 Pulled          9.6s
+ ✔ Network handson_default           Created         0.0s
+ ✔ Container handson-floci-1         Started         0.3s
+```
+
+1 行目の `>>>> Executing external compose provider ...` は、`podman compose` が docker-compose に処理を渡したという知らせで、エラーではありません。
+
+### 動作確認する
+
+Floci の health に問い合わせ、返ってきた JSON から Cognito（`cognito-idp`）の状態だけを `jq` で取り出します。
+
+```bash
+curl -s http://localhost:4566/_floci/health | jq '.services["cognito-idp"]'
+# "running"
+```
+
+`"running"` と出れば起動しています。何も出ないときは、数秒待ってからもう一度打ってください。
 
 ### env.sh を作る
 
