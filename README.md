@@ -7,11 +7,12 @@ title: Podman + Floci で Cognito 認証を練習する
 
 Amazon Cognito の認証を、AWS アカウントも Entra テナントも使わずに、**自分のパソコンの中だけで** 手を動かして学ぶハンズオンです。Cognito は [Floci](https://floci.io/)、Entra ID は [entra-local](https://github.com/cmaneu/entra-local) で、どちらも Podman のコンテナで動かします。
 
-やることは 3 つです。
+やることは 4 つです。
 
-1. ローカルのコンテナに Cognito を用意し、aws CLI で設定する
+1. ローカルのコンテナに User Pool を作り、いつでも作り直せるようにする
 2. シンプルな HTML の画面から、サインアップとログインをする
-3. Cognito に Entra ID をつなぎ、「Entra ID でログイン」で入れるようにする
+3. ユーザー・トークン・グループ・署名を、コマンドで操作して確かめる
+4. Cognito に Entra ID をつなぎ、「Entra ID でログイン」で入れるようにする
 
 手元では **`handson/` という 1 つのフォルダ** を、レクチャーごとに少しずつ育てていきます。User Pool を作るスクリプト 1 つから始まり、画面・Entra ID と、どのファイルをいつ足すかを追いながら進めます。
 
@@ -20,17 +21,18 @@ Amazon Cognito の認証を、AWS アカウントも Entra テナントも使わ
 | セクション | 使うコンテナ | ローカルで完結すること | 本物が要ること |
 |---|---|---|---|
 | 01. 準備 | Floci | 道具を入れ、`handson/` を作って Floci を起動する | なし |
-| 02. Cognito を作る | Floci | User Pool・ユーザー・トークン・JWKS | なし |
+| 02. User Pool を作る | Floci | User Pool と App Client、作り直すスクリプト | なし |
 | 03. HTML でログインする | Floci | サインアップ・ログイン・Hosted UI | なし |
-| 04. Entra ID と連携する | Floci・entra-local | Cognito 経由の Entra ID（OIDC）ログイン | SAML、MFA・条件付きアクセス |
+| 04. コマンドで確かめる | Floci | ユーザー・トークン・グループ・JWKS での署名の確認 | なし |
+| 05. Entra ID と連携する | Floci・entra-local | Cognito 経由の Entra ID（OIDC）ログイン | SAML、MFA・条件付きアクセス |
 
 ## このハンズオンで作るもの
 
-### 02. Cognito を作る
+### 02. User Pool を作る
 
 ![User Pool](./sections/02-cognito/01-user-pool/images/00-thumbnail.svg)
 
-aws CLI だけで、User Pool と App Client を作り、管理者が作るユーザーとサインアップするユーザーの両方を通します。返ってきた ID トークン・アクセストークンを開いて中身を読み、グループがトークンに載ることを確かめます。最後に JWKS の公開鍵で署名を確かめ、書き換えたトークンが弾かれることを見ます。
+aws CLI で User Pool と App Client を作ります。Floci のデータはコンテナを止めると消えるので、作ったものをいつでも作り直せるスクリプト（`scripts/setup.sh`）も用意します。
 
 ### 03. HTML でログインする
 
@@ -38,9 +40,15 @@ aws CLI だけで、User Pool と App Client を作り、管理者が作るユ�
 
 HTML と JavaScript だけの画面を、Node の標準 API で書いた 40 行ほどの静的サーバーで配ります。画面から Cognito に直接サインアップ・ログインし（SDK も Amplify も使わず `fetch` で）、もらった ID トークンの中身を画面に出します。続けて、ログイン画面ごと Cognito に任せる Hosted UI を、認可コードフロー + PKCE で通します。
 
-### 04. Entra ID と連携する
+### 04. コマンドで確かめる
 
-![Entra ID](./sections/04-cognito-with-entra-id/02-federation/images/00-thumbnail.svg)
+![トークン](./sections/04-cli/02-tokens-and-groups/images/00-thumbnail.svg)
+
+aws CLI で、管理者が作るユーザーとサインアップするユーザーの両方を通します。返ってきた ID トークン・アクセストークンを開いて中身を読み、グループがトークンに載ることを確かめます。最後に JWKS の公開鍵で署名を確かめ、書き換えたトークンが弾かれることを見ます。
+
+### 05. Entra ID と連携する
+
+![Entra ID](./sections/05-cognito-with-entra-id/02-federation/images/00-thumbnail.svg)
 
 entra-local で Entra ID を手元に再現し、アプリの登録・シークレット・`tid` や `oid` といった Entra 特有のクレームを確かめます。Cognito の外部 IdP として登録し、画面の「Entra ID でログイン」で入れるようにします。アプリごとに値が変わる `sub` の代わりに、変わらない `oid` を Cognito の属性に持ち込みます。本物のテナントにつなぐ手順と SAML との違いもまとめます。
 
@@ -63,9 +71,9 @@ entra-local で Entra ID を手元に再現し、アプリの登録・シーク�
 
 | どこ | ユーザー | パスワード | 作られる所 |
 |---|---|---|---|
-| Cognito | `alice`（admin グループ）/ `bob` | `Passw0rd!` | 02-02・02-03（`bash scripts/setup.sh` で作り直せる） |
+| Cognito | `alice`（admin グループ）/ `bob` | `Passw0rd!` | 04-01・04-02（`bash scripts/setup.sh` で作り直せる） |
 | Cognito | `carol` | `Passw0rd!` | 03-01 で画面からサインアップ（setup では作られない） |
-| entra-local | `taro@entralocal.dev` | `Passw0rd!` | 04-01（`bash scripts/entra-create-user.sh`） |
+| entra-local | `taro@entralocal.dev` | `Passw0rd!` | 05-01（`bash scripts/entra-create-user.sh`） |
 
 ## 関連するハンズオン
 
@@ -79,7 +87,7 @@ NestJS のハンズオン 3 本とつながっています。どれから始め�
 ## リポジトリの構成
 
 ```text
-project/                 04 を終えた状態の handson/（ここが元。ファイルの中の @since で、いつ足す行かを書く）
+project/                 05 を終えた状態の handson/（ここが元。ファイルの中の @since で、いつ足す行かを書く）
   lectures.json          どのファイルがどのレクチャーで増えるか
 sections/<sec>/<lec>/
   LECTURE.md             教材の本文

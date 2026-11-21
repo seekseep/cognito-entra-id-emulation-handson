@@ -9,7 +9,7 @@ docs: true
 
 前のレクチャーでは、画面がパスワードの入力欄を持ち、Cognito の API に直接送っていました。このレクチャーでは、**アプリはパスワードに一切触らず**、ログイン画面ごと Cognito に任せます。Cognito が用意するログイン画面を **Hosted UI**（マネージドログイン）と呼びます。
 
-外部の IdP（Entra ID）にログインを任せる「フェデレーション」（04）も、この Hosted UI の仕組みの上に乗っています。まず Cognito 自身のユーザーで、この流れを通します。
+外部の IdP（Entra ID）にログインを任せる「フェデレーション」（05）も、この Hosted UI の仕組みの上に乗っています。まず Cognito 自身のユーザーで、この流れを通します。
 
 前のレクチャーで作った画面に **「Cognito のログイン画面へ」のボタンを足します**。パスワードのフォームはそのまま残し、2 つのログインの方法を並べて見比べられるようにします。足す・変えるファイルは次のとおりです。
 
@@ -42,7 +42,7 @@ aws cognito-idp update-user-pool-client \
   --allowed-o-auth-flows-user-pool-client
 ```
 
-- `--supported-identity-providers COGNITO` … ログイン画面で使えるのは Cognito 自身のユーザー（04-02 で Entra ID を足します）
+- `--supported-identity-providers COGNITO` … ログイン画面で使えるのは Cognito 自身のユーザー（05-02 で Entra ID を足します）
 - `--callback-urls` … ログイン後に戻ってよい先。ここに無い URL へは戻さない（コードを盗まれないため）
 - `--allowed-o-auth-flows code` … 認可コードフローを許す
 
@@ -50,7 +50,7 @@ aws cognito-idp update-user-pool-client \
 `update-user-pool-client` は「渡さなかった設定を既定値に戻す」API です。Hosted UI の設定だけを渡すと、02-01 で付けた `--explicit-auth-flows` が消えて、パスワードでのログイン（CLI・画面のフォーム）ができなくなります。`--prevent-user-existence-errors` も既定値に戻ります。足したい設定だけでなく、今の設定を全部渡し直します。本物の Cognito も同じです。
 :::
 
-これを **`scripts/update-client.sh`** にします。04-02 で外部 IdP を足したときに、このスクリプトをもう一度流します。そのとき IdP の一覧を書き直さなくて済むよう、`--supported-identity-providers` には User Pool に登録してある IdP を全部並べるようにしてあります（今は 1 つも無いので `COGNITO` だけです）。
+これを **`scripts/update-client.sh`** にします。05-02 で外部 IdP を足したときに、このスクリプトをもう一度流します。そのとき IdP の一覧を書き直さなくて済むよう、`--supported-identity-providers` には User Pool に登録してある IdP を全部並べるようにしてあります（今は 1 つも無いので `COGNITO` だけです）。
 
 ::file{path="scripts/update-client.sh"}
 
@@ -113,7 +113,7 @@ location.assign(url);
 node server.mjs
 ```
 
-<http://localhost:3000> を開き、「Cognito のログイン画面へ」を押します。Floci のログイン画面に移るので、`alice` / `Passw0rd!` でサインインします。画面に戻ってきて、ID トークンの中身が表示されれば成功です。下の「パスワードでログイン」のフォームも、これまでどおり使えます。
+<http://localhost:3000> を開き、「Cognito のログイン画面へ」を押します。Floci のログイン画面に移るので、前のレクチャーで画面からサインアップした `carol` / `Passw0rd!` でサインインします（Floci を作り直したときは、前のレクチャーの手順で画面からサインアップし直してください）。画面に戻ってきて、ID トークンの中身が表示されれば成功です。下の「パスワードでログイン」のフォームも、これまでどおり使えます。
 
 2 つの方法でログインして、ID トークンの中身を見比べてください。どちらも同じ User Pool・同じクライアントが出したトークンなので、`iss` と `aud` は同じです。アプリから見ると、どちらの方法でログインしたかは区別しなくて済みます。
 
@@ -133,7 +133,7 @@ node server.mjs
 
 ## パスワードのフォームは残す？
 
-本番で Hosted UI に寄せるなら、パスワードのフォームは消し、App Client の `ExplicitAuthFlows` から `ALLOW_USER_PASSWORD_AUTH` も外せます。アプリがパスワードに一切触らなくなるのが、Hosted UI のいちばんの利点です。このハンズオンでは、見比べるためと、CLI（`bash scripts/login.sh`）で使うために残しています。
+本番で Hosted UI に寄せるなら、パスワードのフォームは消し、App Client の `ExplicitAuthFlows` から `ALLOW_USER_PASSWORD_AUTH` も外せます。アプリがパスワードに一切触らなくなるのが、Hosted UI のいちばんの利点です。このハンズオンでは、見比べるためと、04 で CLI からパスワードでログインするために残しています。
 
 ## このレクチャーを終えた handson/
 

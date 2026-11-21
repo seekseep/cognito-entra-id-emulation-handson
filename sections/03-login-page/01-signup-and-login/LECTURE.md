@@ -90,7 +90,7 @@ async function cognito(action, params) {
 - 送り先（`cognitoEndpoint`）は、`/config` の `issuer` のオリジンです。Floci なら `http://localhost:4566`、本物なら `https://cognito-idp.<リージョン>.amazonaws.com` になります
 - `SignUp`・`ConfirmSignUp`・`InitiateAuth`・`RevokeToken` は、AWS の認証情報（署名）なしで、クライアント ID だけで呼べる API です。ブラウザに秘密を置かずに済みます
 
-ログインは、02-03 の `bash scripts/login.sh` と同じ `InitiateAuth`（`USER_PASSWORD_AUTH`）です。返ってきた ID トークンの真ん中（ペイロード）を Base64URL から戻し、画面に出します。02-03 の `decode-jwt.sh` と同じで、署名は確かめていません（表示するだけなので）。
+ログインは、aws CLI の `initiate-auth` と同じ `InitiateAuth`（`USER_PASSWORD_AUTH`）です。返ってきた ID トークンの真ん中（ペイロード）を Base64URL から戻し、画面に出します。署名は確かめていません（表示するだけなので）。トークンの中身と署名の確かめ方は、04 でコマンドを使って詳しく見ます。
 
 ```js
 const { ok, json } = await cognito('InitiateAuth', {
@@ -111,8 +111,7 @@ const { ok, json } = await cognito('InitiateAuth', {
 2. 確認の前にログインしてみる → `UserNotConfirmedException`
 3. <http://localhost:4566/_aws/ses> で確認コードを読み、確認する
 4. ログインする。「ID トークンの中身」に `cognito:username`・`email`・`iss`・`aud` などが出る
-5. `alice` / `Passw0rd!` でもログインしてみる。`cognito:groups` に `admin` が入っている
-6. 「ログアウト」を押す
+5. 「ログアウト」を押す
 
 開発者ツールの Network タブで、次を確かめてください。
 

@@ -1,6 +1,0 @@
-services:
-  floci:
-    image: docker.io/floci/floci:2.4.0
-    ports:
-      # ほかのマシンから届かないよう、ループバックにだけ公開する（Floci は認証なしで API を受け付ける）
-      - "127.0.0.1:4566:4566"

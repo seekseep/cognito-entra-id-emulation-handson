@@ -117,8 +117,8 @@ podman compose version                                       # Docker Compose ve
 | ポート | 中身 | 使うセクション |
 |---|---|---|
 | 4566 | Floci（Cognito） | すべて |
-| 3000 | 画面（`node server.mjs` の静的サーバー） | 03・04 |
-| 8443 | entra-local | 04 |
+| 3000 | 画面（`node server.mjs` の静的サーバー） | 03・05 |
+| 8443 | entra-local | 05 |
 
 Docker Desktop・LocalStack・別の Floci などが同じポート（4566・8443・3000）を使っていると、`localhost` へのアクセスの一部がそちらに流れます。`localhost` が IPv6（`::1`）にも IPv4（`127.0.0.1`）にも解決されるため、エラーにならず「ときどき別のサーバーにつながる」という分かりにくい壊れ方をします。始める前に、待ち受けているプログラムを確かめてください。
 
@@ -165,7 +165,7 @@ aws --version   # aws-cli/2.x.x
 
 ## jq
 
-JSON を読む道具です。セクション 02 のスクリプト（トークンを開く・署名を確かめるなど）は、jq と、最初から入っている `curl`・`openssl` だけで書いています。
+JSON を読む道具です。セクション 04 のスクリプト（トークンを開く・署名を確かめるなど）は、jq と、最初から入っている `curl`・`openssl` だけで書いています。
 
 :::::platform
 ::::macos
@@ -317,11 +317,11 @@ podman compose up -d
 
 | コマンド | すること |
 |---|---|
-| `podman compose up -d` | `compose.yaml` にあるコンテナを全部起動する（Floci、04 からは entra-local も） |
+| `podman compose up -d` | `compose.yaml` にあるコンテナを全部起動する（Floci、05 からは entra-local も） |
 | `podman compose down` | 止める。Floci のデータは消える |
 | `bash scripts/setup.sh` | `scripts/setup.sh` を流し、ここまでのレクチャーで Floci に作ったもの（User Pool・ユーザー・グループ・IdP の登録）を作り直す（02-01 から） |
 
-`setup` をやり直したら、開いている画面を読み込み直してください（User Pool の ID が変わるため）。entra-local（04）のデータだけはボリュームに残り、`podman compose down` でも消えません（消すときは `podman compose down -v`）。
+`setup` をやり直したら、開いている画面を読み込み直してください（User Pool の ID が変わるため）。entra-local（05）のデータだけはボリュームに残り、`podman compose down` でも消えません（消すときは `podman compose down -v`）。
 
 ### Floci の Cognito で使えるもの・使えないもの
 
@@ -336,7 +336,7 @@ podman compose up -d
 | `PreventUserExistenceErrors` | 受け付けるが保存されず、効かない。存在しないユーザーは常に `UserNotFoundException` |
 | discovery・JWKS | 使える。`iss` は `http://localhost:4566/<プール ID>` |
 | Hosted UI（ログイン画面）・`/oauth2/authorize`・`/oauth2/token`・`/oauth2/revoke` | 使える。PKCE も確かめる。ブラウザから呼ぶには `FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS` で CORS を許す |
-| 外部 IdP（OIDC）経由のログイン | 使える。登録のしかたに本物と違う点がある（[04-02](../../04-cognito-with-entra-id/02-federation/LECTURE.md) で扱う） |
+| 外部 IdP（OIDC）経由のログイン | 使える。登録のしかたに本物と違う点がある（[05-02](../../05-cognito-with-entra-id/02-federation/LECTURE.md) で扱う） |
 | 外部 IdP（SAML）・Facebook・Apple | 使えない |
 
 

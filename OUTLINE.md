@@ -65,25 +65,10 @@ flowchart LR
 
 ---
 
-## 02-cognito — Cognito 単体（aws CLI だけ）
+## 02-cognito — User Pool を作る（作り直すスクリプトまで）
 
 ### 01-user-pool: User Pool と App Client を作る
 - パスワードポリシー、`ALLOW_USER_PASSWORD_AUTH`、シークレットなしのクライアント、ID を `.cognito.env` に残す
-
-### 02-users: ユーザーを作る
-- 管理者が作る: `admin-create-user` → `initiate-auth` → `NEW_PASSWORD_REQUIRED` → `respond-to-auth-challenge`
-- 自分でサインアップする: `sign-up` → 確認コード（Floci の SES に届いたメールから読む／`admin-confirm-sign-up`）→ `initiate-auth`
-
-### 03-tokens-and-groups: トークンを読む・グループ
-- ID トークンとアクセストークンの違い、デコード、主なクレーム
-- `create-group` → `admin-add-user-to-group` → `cognito:groups`
-
-### 04-jwks-and-refresh: 署名を確かめる・更新する
-- discovery と JWKS、curl・jq・openssl のシェルスクリプトで署名・`iss`・`exp` を確かめる、改ざんしたトークンが弾かれる
-- `REFRESH_TOKEN_AUTH`
-- 本物の Cognito との違い（`iss` のホスト、メール送信、ここで見つけた差分）
-
----
 
 ## 03-login-page — HTML でログインする
 
@@ -103,7 +88,26 @@ flowchart LR
 
 ---
 
-## 04-cognito-with-entra-id — Entra ID（entra-local）
+## 04-cli — コマンドで確かめる
+
+### 01-users: ユーザーを作る
+- 管理者が作る: `admin-create-user` → `initiate-auth` → `NEW_PASSWORD_REQUIRED` → `respond-to-auth-challenge`
+- 自分でサインアップする: `sign-up` → 確認コード（Floci の SES に届いたメールから読む／`admin-confirm-sign-up`）→ `initiate-auth`
+
+### 02-tokens-and-groups: トークンを読む・グループ
+- ID トークンとアクセストークンの違い、デコード、主なクレーム
+- `create-group` → `admin-add-user-to-group` → `cognito:groups`
+
+### 03-jwks-and-refresh: 署名を確かめる・更新する
+- discovery と JWKS、curl・jq・openssl のシェルスクリプトで署名・`iss`・`exp` を確かめる、改ざんしたトークンが弾かれる
+- `REFRESH_TOKEN_AUTH`
+- 本物の Cognito との違い（`iss` のホスト、メール送信、ここで見つけた差分）
+
+---
+
+---
+
+## 05-cognito-with-entra-id — Entra ID（entra-local）
 
 ### Entra ID はローカルで再現できるか（セクション冒頭のレクチャー本文で扱う）
 - OIDC の範囲なら [cmaneu/entra-local](https://github.com/cmaneu/entra-local) で再現できる
@@ -124,7 +128,7 @@ flowchart LR
 - アプリ登録、リダイレクト URI `https://<domain>.auth.<region>.amazoncognito.com/oauth2/idpresponse`
 - SAML で登録する場合の差分
 
-### Entra 固有の落とし穴（04 の末尾）
+### Entra 固有の落とし穴（05 の末尾）
 - テナントごとの issuer と `common`、`email` が来ないことがある、groups の overage、シークレットの期限切れ
 
 ---
@@ -136,4 +140,4 @@ flowchart LR
 - entra-local の userinfo には `oid` が入り、`custom:entra_oid=oid` で Cognito の属性に移せる。同じユーザーでもアプリごとに `sub` が変わることも確かめた
 - Hosted UI の `/oauth2/token` は PKCE を確かめる。ブラウザから Cognito の API・トークンエンドポイントを呼ぶには `FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS` が要る
 - Floci は署名なしの `SignUp`・`InitiateAuth`・`RevokeToken` を受け付ける。`PreventUserExistenceErrors: ENABLED` は保存するが効かない
-- 未確認のまま: entra-local を HTTPS のまま Floci からつなぐこと、本物の Entra テナント + 本物の Cognito（04-03 は手順のまとめだけ）
+- 未確認のまま: entra-local を HTTPS のまま Floci からつなぐこと、本物の Entra テナント + 本物の Cognito（05-03 は手順のまとめだけ）
