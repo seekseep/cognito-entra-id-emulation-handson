@@ -31,8 +31,13 @@ aws cognito-idp create-user-pool \
 # ap-northeast-1_bba540037
 ```
 
-- `--policies` … 8 文字以上・大文字・小文字・数字を必須にします
-- `--auto-verified-attributes email` … サインアップしたらメールに確認コードを送る、という設定です。03-03 で使います
+| オプション | 設定する値 | 意味 |
+|---|---|---|
+| `--pool-name` | `practice` | User Pool の名前。見分けるためのもので、何でもよい |
+| `--policies` | `PasswordPolicy={MinimumLength=8,...}` | パスワードのルール。8 文字以上・英大文字・英小文字・数字を必須にし、記号は求めない |
+| `--auto-verified-attributes` | `email` | サインアップしたら、メールに確認コードを送って確かめる。03-03 で使う |
+| `--query` | `UserPool.Id` | 応答のうち、User Pool の ID だけを取り出す |
+| `--output` | `text` | 取り出した値を、引用符なしの文字だけで出す |
 
 返ってきた ID をシェル変数に入れておきます。`{ }` の所は、直前のコマンドで出た値に書き換えてから実行します（`{ }` ごと消します）。
 

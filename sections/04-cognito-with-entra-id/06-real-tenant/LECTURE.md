@@ -49,6 +49,14 @@ aws cognito-idp create-identity-provider \
   --attribute-mapping email=email,name=name,preferred_username=preferred_username,custom:entra_oid=oid,username=sub
 ```
 
+entra-local との違いは、`--provider-details` だけです。
+
+| 項目 | 本物に向けるときの値 | entra-local のとき（04-04） |
+|---|---|---|
+| `client_id` / `client_secret` | Entra のアプリの登録の「アプリケーション ID」と「シークレットの値」 | entra-local に登録したもの |
+| `oidc_issuer` | `https://login.microsoftonline.com/<テナント ID>/v2.0` | `http://localhost:8443/<テナント ID>/v2.0` |
+| `authorize_url`・`token_url`・`attributes_url`・`jwks_uri` | 書かない（Cognito が discovery から読む） | 全部書く（Floci が discovery を読まないため） |
+
 続けて、App Client の `--supported-identity-providers` に `EntraID` を足します（ほかの設定も全部渡し直します）。
 
 `custom:entra_oid=oid` は、entra-local では userinfo から入りました。本物の Entra の userinfo は `oid` を返さず、`oid` は ID トークンにだけ入ります。ログインしたあと、Cognito のユーザーに `custom:entra_oid` が入っているかを確かめてください（未確認の点です）。

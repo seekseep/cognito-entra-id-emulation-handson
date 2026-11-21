@@ -34,8 +34,17 @@ APP_ID=$(curl -s -X POST http://localhost:8443/admin/api/apps -H 'content-type: 
 echo "$APP_ID"
 ```
 
-- `isConfidential: true` … サーバー（Cognito）がシークレットを持つアプリ
-- リダイレクト URI … Cognito の **idpresponse**。Entra でのサインインが終わると、ブラウザはアプリではなく Cognito に戻ります。Cognito はそこで Entra のトークンを受け取り、自分のトークンに換えてからアプリに戻します
+| 項目 | 設定する値 | 意味 |
+|---|---|---|
+| `-X POST` と URL | `http://localhost:8443/admin/api/apps` | entra-local の管理 API の「アプリの登録」 |
+| `content-type` | `application/json` | 本文を JSON で送る |
+| `displayName` | `Cognito (Floci)` | アプリの名前。管理ポータルに出る |
+| `isConfidential` | `true` | サーバー（Cognito）がシークレットを持つアプリ |
+| `redirectUris[].uri` | `http://localhost:4566/cognito-idp/oauth2/idpresponse` | サインインのあとに戻ってよい先。Cognito の **idpresponse** |
+| `redirectUris[].type` | `web` | サーバーで受け取る戻り先 |
+| `jq -r .id` | | 応答から、アプリのクライアント ID だけを取り出す |
+
+Entra でのサインインが終わると、ブラウザはアプリではなく Cognito（idpresponse）に戻ります。Cognito はそこで Entra のトークンを受け取り、自分のトークンに換えてからアプリに戻します。
 
 ## シークレットを作る
 
@@ -46,6 +55,12 @@ SECRET=$(curl -s -X POST "http://localhost:8443/admin/api/apps/$APP_ID/secrets" 
   -d '{"displayName":"cognito"}' | jq -r .secretText)
 echo "$SECRET"
 ```
+
+| 項目 | 設定する値 | 意味 |
+|---|---|---|
+| URL | `http://localhost:8443/admin/api/apps/$APP_ID/secrets` | 上で登録したアプリに、シークレットを作る |
+| `displayName` | `cognito` | シークレットの名前（何に使うかのメモ） |
+| `jq -r .secretText` | | 応答から、シークレットの値だけを取り出す |
 
 シークレットの値は、作ったときに一度だけ返ります（本物の Entra と同じです）。あとから読み直せないので、クライアント ID と一緒に **`.entra.env`** に控えます。
 

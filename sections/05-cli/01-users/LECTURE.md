@@ -37,6 +37,16 @@ aws cognito-idp admin-create-user \
 # "FORCE_CHANGE_PASSWORD"
 ```
 
+| オプション | 設定する値 | 意味 |
+|---|---|---|
+| `--user-pool-id` | `"$POOL_ID"` | どの User Pool に作るか |
+| `--username` | `alice` | ユーザー名 |
+| `--temporary-password` | `Temp1234` | 一時パスワード。最初のログインで変えさせる |
+| `--user-attributes` | `Name=email,Value=alice@example.com` | メールアドレス |
+| | `Name=email_verified,Value=true` | メールは確認済みとする（管理者が作るので、確認コードを送らない） |
+| `--message-action` | `SUPPRESS` | 招待メールを送らない |
+| `--query` | `User.UserStatus` | 応答のうち、ユーザーの状態だけを出す |
+
 状態が `FORCE_CHANGE_PASSWORD` になりました。一時パスワードでログインしても、トークンは返らず **チャレンジ** が返ります。
 
 ```bash
@@ -46,6 +56,13 @@ aws cognito-idp initiate-auth \
   --auth-parameters USERNAME=alice,PASSWORD=Temp1234 \
   --query '{Challenge:ChallengeName,Session:Session}'
 ```
+
+| オプション | 設定する値 | 意味 |
+|---|---|---|
+| `--client-id` | `"$CLIENT_ID"` | どの App Client としてログインするか |
+| `--auth-flow` | `USER_PASSWORD_AUTH` | ユーザー名とパスワードでログインする（02-03 で許した方法） |
+| `--auth-parameters` | `USERNAME=alice,PASSWORD=Temp1234` | ユーザー名と、一時パスワード |
+| `--query` | `{Challenge:ChallengeName,Session:Session}` | チャレンジの名前と、答えるときに使う `Session` だけを出す |
 
 `NEW_PASSWORD_REQUIRED` は「新しいパスワードを決めてください」という意味です。返ってきた `Session` を付けて、新しいパスワードで答えます。
 
@@ -59,6 +76,14 @@ aws cognito-idp respond-to-auth-challenge \
   --query 'keys(AuthenticationResult)'
 ```
 
+| オプション | 設定する値 | 意味 |
+|---|---|---|
+| `--client-id` | `"$CLIENT_ID"` | どの App Client か |
+| `--challenge-name` | `NEW_PASSWORD_REQUIRED` | どのチャレンジに答えるか |
+| `--session` | `"$SESSION"` | 直前のログインで返った `Session`。どのログインの続きかを示す |
+| `--challenge-responses` | `USERNAME=alice,NEW_PASSWORD='Passw0rd!'` | ユーザー名と、新しいパスワード |
+| `--query` | `keys(AuthenticationResult)` | 返ってきたトークンの種類の名前だけを出す |
+
 今度はトークン（`IdToken`・`AccessToken`・`RefreshToken`）が返ります。ポリシーを満たさないパスワード（`short` など）を送ると `InvalidPasswordException` になります。
 
 ## ユーザーが自分でサインアップする
@@ -70,6 +95,13 @@ aws cognito-idp sign-up \
   --password 'Passw0rd!' \
   --user-attributes Name=email,Value=bob@example.com
 ```
+
+| オプション | 設定する値 | 意味 |
+|---|---|---|
+| `--client-id` | `"$CLIENT_ID"` | どの App Client からサインアップするか |
+| `--username` | `bob` | ユーザー名 |
+| `--password` | `Passw0rd!` | パスワード（02-02 のパスワードポリシーを満たすもの） |
+| `--user-attributes` | `Name=email,Value=bob@example.com` | メールアドレス。ここに確認コードが送られる |
 
 `UserConfirmed: false` と、確認コードをメールで送ったこと（`CodeDeliveryDetails`）が返ります。このままログインすると `UserNotConfirmedException` で断られます。
 

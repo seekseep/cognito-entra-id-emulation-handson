@@ -33,6 +33,15 @@ USER_ID=$(curl -s -X POST http://localhost:8443/admin/api/users -H 'content-type
 echo "$USER_ID"
 ```
 
+| 項目 | 設定する値 | 意味 |
+|---|---|---|
+| URL | `http://localhost:8443/admin/api/users` | entra-local の管理 API の「ユーザーの作成」 |
+| `userPrincipalName` | `taro@entralocal.dev` | サインインに使う名前（UPN）。`@` の後ろは entra-local のドメイン |
+| `displayName` | `山田 太郎` | 表示名。トークンの `name` に入る |
+| `mail` | `taro@entralocal.dev` | メールアドレス。トークンの `email` に入る |
+| `password` | `Passw0rd!` | サインインのパスワード |
+| `jq -r .id` | | 応答から、ユーザーの ID（`oid` になる値）だけを取り出す |
+
 entra-local のデータはボリュームに残るので、2 回目は「既にいる」と断られます。そのときは、作ってあるユーザーの ID を読みます。
 
 ```bash
@@ -48,6 +57,13 @@ source ./.entra.env
 curl -s -X POST "http://localhost:8443/admin/api/apps/$ENTRA_CLIENT_ID/token-preview" -H 'content-type: application/json' \
   -d "{\"userId\":\"$USER_ID\",\"tokenType\":\"idToken\"}" | jq .claims
 ```
+
+| 項目 | 設定する値 | 意味 |
+|---|---|---|
+| URL | `.../admin/api/apps/$ENTRA_CLIENT_ID/token-preview` | このアプリに向けて出るトークンを見る |
+| `userId` | `$USER_ID` | 誰がサインインしたことにするか |
+| `tokenType` | `idToken` | どのトークンを見るか（ID トークン） |
+| `jq .claims` | | 応答から、トークンの中身（クレーム）だけを出す |
 
 出てくるのがトークンの中身です。
 

@@ -34,9 +34,15 @@ aws cognito-idp create-user-pool-client \
 # 708d6652cba84996a62ac8cdde
 ```
 
-- `--no-generate-secret` … クライアントシークレットを作りません。ブラウザやスマホのアプリは秘密を隠しておけないので、シークレットを持たせないのが基本です
-- `--explicit-auth-flows` … このクライアントに許すログインの方法です。`ALLOW_USER_PASSWORD_AUTH` はユーザー名とパスワードをそのまま送る方法、`ALLOW_REFRESH_TOKEN_AUTH` はトークンの更新です
-- `--prevent-user-existence-errors ENABLED` … ログインに失敗したとき、ユーザーが存在しないのか、パスワードが違うのかを区別して返さないようにします（Floci では効きません。05-01 の FAQ で扱います）
+| オプション | 設定する値 | 意味 |
+|---|---|---|
+| `--user-pool-id` | `"$POOL_ID"` | どの User Pool に作るか（前のレクチャーで作ったもの） |
+| `--client-name` | `practice-cli` | App Client の名前。見分けるためのもので、何でもよい |
+| `--no-generate-secret` | （値なし） | クライアントシークレットを作らない。ブラウザやスマホのアプリは秘密を隠しておけないので、シークレットを持たせないのが基本 |
+| `--explicit-auth-flows` | `ALLOW_USER_PASSWORD_AUTH` | ユーザー名とパスワードをそのまま送るログインを許す |
+| | `ALLOW_REFRESH_TOKEN_AUTH` | リフレッシュトークンでのトークンの更新を許す |
+| `--prevent-user-existence-errors` | `ENABLED` | ログインに失敗したとき、ユーザーがいないのかパスワードが違うのかを区別して返さない（Floci では効かない。05-01 の FAQ で扱う） |
+| `--query` / `--output` | `UserPoolClient.ClientId` / `text` | 応答のうち、クライアント ID だけを文字で出す |
 
 ```bash "{直前の結果で出たクライアント ID}"
 export CLIENT_ID={直前の結果で出たクライアント ID}

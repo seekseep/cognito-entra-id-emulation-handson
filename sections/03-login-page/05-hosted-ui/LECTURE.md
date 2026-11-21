@@ -53,6 +53,18 @@ aws cognito-idp update-user-pool-client \
   --allowed-o-auth-flows-user-pool-client
 ```
 
+| オプション | 設定する値 | 意味 |
+|---|---|---|
+| `--user-pool-id` / `--client-id` | `"$POOL_ID"` / `"$CLIENT_ID"` | どの App Client を変えるか |
+| `--explicit-auth-flows` | `ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH` | 今の設定（パスワードでのログインと更新）。渡し直さないと消える |
+| `--prevent-user-existence-errors` | `ENABLED` | 今の設定。渡し直さないと既定値に戻る |
+| `--supported-identity-providers` | `COGNITO` | 使ってよい IdP。`COGNITO` は User Pool 自身のユーザー |
+| `--callback-urls` | `http://localhost:3000/` | ログインのあとに戻ってよい先。ここに無い URL へは戻さない（認可コードを盗まれないため） |
+| `--logout-urls` | `http://localhost:3000/` | ログアウトのあとに戻ってよい先 |
+| `--allowed-o-auth-flows` | `code` | 認可コードフローを許す |
+| `--allowed-o-auth-scopes` | `openid email profile` | 渡してよいスコープ。ID トークンにメールや名前を載せる |
+| `--allowed-o-auth-flows-user-pool-client` | （値なし） | この App Client で、上の OAuth の設定を使うことを有効にする |
+
 `update-user-pool-client` は「渡さなかった設定を既定値に戻す」API なので、今の設定（`--explicit-auth-flows` など）も全部渡し直します。この設定は `setup.sh` には入れていないので、Floci を作り直すと元に戻ります（04-04 で、もう一度設定します）。
 
 ### ログインの URL を作る
@@ -64,6 +76,22 @@ VERIFIER=$(openssl rand -hex 32)
 CHALLENGE=$(printf '%s' "$VERIFIER" | openssl dgst -sha256 -binary | openssl base64 -A | tr '+/' '-_' | tr -d '=')
 echo "http://localhost:4566/cognito-idp/oauth2/authorize?response_type=code&client_id=$CLIENT_ID&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F&scope=openid+email+profile&code_challenge=$CHALLENGE&code_challenge_method=S256"
 ```
+
+| 値 | 作り方・中身 | 意味 |
+|---|---|---|
+| `VERIFIER` | `openssl rand -hex 32`（ランダムな 64 文字） | 手元に残す合言葉（`code_verifier`）。あとでトークンに換えるときに送る |
+| `CHALLENGE` | `VERIFIER` の SHA-256 を base64url にしたもの | `VERIFIER` のハッシュ（`code_challenge`）。こちらだけを先に渡す |
+
+URL に付けるパラメータは次のとおりです。
+
+| パラメータ | 設定する値 | 意味 |
+|---|---|---|
+| `response_type` | `code` | 認可コードを返してもらう |
+| `client_id` | `$CLIENT_ID` | どの App Client としてログインするか |
+| `redirect_uri` | `http://localhost:3000/`（URL の中なので `%3A%2F%2F...` と書く） | ログインのあとに戻る先。App Client の `--callback-urls` と同じでないと断られる |
+| `scope` | `openid email profile` | 欲しい情報。`openid` で ID トークンがもらえる |
+| `code_challenge` | `$CHALLENGE` | `VERIFIER` のハッシュ |
+| `code_challenge_method` | `S256` | ハッシュの作り方（SHA-256） |
 
 ### ブラウザでログインする
 
@@ -84,6 +112,15 @@ curl -s -X POST http://localhost:4566/cognito-idp/oauth2/token \
   -d code_verifier="$VERIFIER" | jq 'keys'
 # ["access_token", "expires_in", "id_token", "refresh_token", "token_type"]
 ```
+
+| 送る値 | 設定する値 | 意味 |
+|---|---|---|
+| `-X POST` と `content-type` | `application/x-www-form-urlencoded` | フォームの形で送る（トークンのエンドポイントの決まり） |
+| `grant_type` | `authorization_code` | 認可コードをトークンに換える |
+| `client_id` | `$CLIENT_ID` | どの App Client か |
+| `code` | `$CODE` | ブラウザで受け取った認可コード |
+| `redirect_uri` | `http://localhost:3000/` | ログインの URL に付けたのと同じ戻り先。違うと断られる |
+| `code_verifier` | `$VERIFIER` | 手元に残した合言葉。`CHALLENGE` の元になった値でないと断られる |
 
 パスワードはアプリ（`localhost:3000`）を一度も通らず、アプリが受け取ったのは認可コードだけです。そのコードも、`VERIFIER` を知らなければトークンに換えられません。同じコードでもう一度送ると、`invalid_grant`（一度しか使えない）になります。
 

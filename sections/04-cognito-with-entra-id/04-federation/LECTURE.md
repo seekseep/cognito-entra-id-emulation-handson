@@ -54,9 +54,39 @@ aws cognito-idp create-identity-provider \
   --attribute-mapping email=email,name=name,preferred_username=preferred_username,custom:entra_oid=oid,username=sub
 ```
 
-- `oidc_issuer` は **v2.0 の、自分のテナントの issuer** にします。Entra には `common`（どのテナントでも可）というエンドポイントもありますが、Cognito に登録するのは自分のテナントのものです
-- ブラウザが通る `authorize_url` だけ `localhost`、Floci がコンテナの中から呼ぶものはサービス名 `entra-local` にします。コンテナの中から見ると、`localhost` は Floci 自身だからです
-- `--attribute-mapping` の `custom:entra_oid=oid` で、Entra の `oid` を、上で足したカスタム属性に入れます
+| オプション | 設定する値 | 意味 |
+|---|---|---|
+| `--user-pool-id` | `"$POOL_ID"` | どの User Pool に登録するか |
+| `--provider-name` | `EntraID` | IdP の名前。画面はこの名前で呼び出す |
+| `--provider-type` | `OIDC` | OpenID Connect の IdP として登録する |
+| `--provider-details` | （下の表） | IdP につなぐための値 |
+| `--attribute-mapping` | （下の表） | Entra のクレームを、Cognito のどの属性に入れるか |
+
+`--provider-details` の中身:
+
+| 項目 | 設定する値 | 意味 |
+|---|---|---|
+| `client_id` | `$ENTRA_CLIENT_ID` | 04-02 で登録したアプリのクライアント ID |
+| `client_secret` | `$ENTRA_CLIENT_SECRET` | 04-02 で作ったシークレット |
+| `authorize_scopes` | `openid email profile` | Entra に求めるスコープ |
+| `oidc_issuer` | `http://localhost:8443/$ENTRA_TENANT_ID/v2.0` | Entra の issuer。**v2.0 の、自分のテナントのもの** にする（`common` ではない） |
+| `attributes_request_method` | `GET` | userinfo を GET で呼ぶ |
+| `authorize_url` | `http://localhost:8443/...` | サインインの画面。**ブラウザが開く** ので `localhost` |
+| `token_url` | `http://entra-local:8443/...` | トークンのエンドポイント。**Floci がコンテナの中から呼ぶ** ので、サービス名 `entra-local`（コンテナの中から見ると `localhost` は Floci 自身） |
+| `attributes_url` | `http://entra-local:8443/graph/oidc/userinfo` | userinfo。Floci が呼ぶので `entra-local` |
+| `jwks_uri` | `http://entra-local:8443/.../discovery/v2.0/keys` | トークンの署名を確かめる鍵。Floci が呼ぶので `entra-local` |
+
+本物の Cognito なら `oidc_issuer` だけで、ほかのエンドポイントは discovery から読みます。Floci は discovery を読まないので、全部書きます。
+
+`--attribute-mapping` の中身（`Cognito の属性=Entra のクレーム`）:
+
+| Cognito の属性 | Entra のクレーム | 意味 |
+|---|---|---|
+| `email` | `email` | メールアドレス |
+| `name` | `name` | 表示名 |
+| `preferred_username` | `preferred_username` | サインインに使う名前（UPN） |
+| `custom:entra_oid` | `oid` | 上で足したカスタム属性に、変わらない `oid` を入れる |
+| `username` | `sub` | Cognito のユーザー名の元にする値 |
 
 ## App Client の設定を変える
 
@@ -77,10 +107,19 @@ aws cognito-idp update-user-pool-client \
   --query 'UserPoolClient.{IdPs:SupportedIdentityProviders,Callback:CallbackURLs,Flows:AllowedOAuthFlows}'
 ```
 
-- `--supported-identity-providers COGNITO EntraID` … 使ってよい IdP
-- `--callback-urls` … ログインのあとに戻ってよい先。ここに無い URL へは戻さない（認可コードを盗まれないため）
-- `--allowed-o-auth-flows code` … 認可コードフローを許す
-- `--read-attributes ... custom:entra_oid` … アプリがトークンで読める属性。`custom:entra_oid` を入れておかないと、トークンに載りません
+| オプション | 設定する値 | 意味 |
+|---|---|---|
+| `--user-pool-id` / `--client-id` | `"$POOL_ID"` / `"$CLIENT_ID"` | どの App Client を変えるか |
+| `--explicit-auth-flows` | `ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH` | 今の設定（パスワードでのログインと更新）。渡し直さないと消える |
+| `--prevent-user-existence-errors` | `ENABLED` | 今の設定。渡し直さないと既定値に戻る |
+| `--supported-identity-providers` | `COGNITO` EntraID | 使ってよい IdP。`COGNITO` は User Pool 自身のユーザー、`EntraID` は上で登録した Entra ID |
+| `--callback-urls` | `http://localhost:3000/` | ログインのあとに戻ってよい先。ここに無い URL へは戻さない（認可コードを盗まれないため） |
+| `--logout-urls` | `http://localhost:3000/` | ログアウトのあとに戻ってよい先 |
+| `--allowed-o-auth-flows` | `code` | 認可コードフローを許す |
+| `--allowed-o-auth-scopes` | `openid email profile` | 渡してよいスコープ。ID トークンにメールや名前を載せる |
+| `--allowed-o-auth-flows-user-pool-client` | （値なし） | この App Client で、上の OAuth の設定を使うことを有効にする |
+| `--read-attributes` | `email email_verified name preferred_username custom:entra_oid` | アプリがトークンで読める属性。`custom:entra_oid` を入れておかないと、トークンに載らない |
+| `--query` | `UserPoolClient.{IdPs:...,Callback:...,Flows:...}` | 応答のうち、変えた所だけを出す |
 
 :::warning[UpdateUserPoolClient は全部を渡し直す]
 `update-user-pool-client` は「渡さなかった設定を既定値に戻す」API です。Hosted UI の設定だけを渡すと、02-03 で付けた `--explicit-auth-flows` が消えて、パスワードでのログイン（CLI・画面のフォーム）ができなくなります。`--prevent-user-existence-errors` も既定値に戻ります。足したい設定だけでなく、今の設定を全部渡し直します。本物の Cognito も同じです。
