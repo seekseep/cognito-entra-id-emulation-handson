@@ -10,7 +10,7 @@ docs: true
 HTML と JavaScript だけの画面を、Podman の nginx のコンテナで配ります。このレクチャーでは、画面が「どの User Pool に、どのクライアントとしてログインするか」を読み込んで表示するところまでを用意します。サインアップとログインは、次のレクチャーから足していきます。
 
 ```text
-画面を配る   ブラウザ ◀──index.html・main.js・config.json── nginx のコンテナ（:3000）
+画面を配る   ブラウザ ◀──index.html・index.js・config.json── nginx のコンテナ（:3000）
 ```
 
 フレームワークは使いません。画面は `public/` に置いたファイルだけで、nginx がそのまま配ります。「どの User Pool に、どのクライアントとしてログインするか」は、`setup` が書き出す `public/config.json` で画面に渡します。
@@ -30,20 +30,28 @@ bash scripts/setup.sh              # 前のレクチャーまでに作ったも�
 
 ## 画面を作る
 
-このあと、サインアップ・確認コード・ログインと画面が増えていきます。どの画面でも使う部分は、先に 2 つのファイルにまとめておきます。
+このあと、メールボックス・サインアップ・ログインと画面が増えていきます。画面は、見た目の HTML と、同じ名前の `.js`（動き）の組で作ります。どの画面でも使う部品は `public/lib/` に、役割ごとに 1 ファイルずつ置きます。
+
+```text
+public/
+  index.html  index.js   画面（HTML と動き）
+  style.css              どの画面でも使う見た目
+  lib/                   どの画面でも使う部品
+    config.js            config.json を読む
+```
 
 - **`public/style.css`** … どの画面でも使う見た目
-- **`public/cognito.js`** … `config.json` を読み、Cognito の API の入口（`issuer` のオリジン）を求めます。Floci なら `http://localhost:4566`、本物なら `https://cognito-idp.<リージョン>.amazonaws.com` になります
+- **`public/lib/config.js`** … `config.json` を読み、Cognito の API の入口（`issuer` のオリジン）を求めます。Floci なら `http://localhost:4566`、本物なら `https://cognito-idp.<リージョン>.amazonaws.com` になります
 
 ::file{path="public/style.css"}
 
-::file{path="public/cognito.js"}
+::file{path="public/lib/config.js"}
 
-トップの画面 **`public/index.html`** は、いまは Cognito の API の入口を出す 1 行だけです。**`public/main.js`** が `cognito.js` から入口を受け取って、画面に出します。
+トップの画面 **`public/index.html`** は、いまは Cognito の API の入口を出す 1 行だけです。**`public/index.js`** が `lib/config.js` から入口を受け取って、画面に出します。
 
 ::file{path="public/index.html"}
 
-::file{path="public/main.js"}
+::file{path="public/index.js"}
 
 ## 画面に設定を渡す
 

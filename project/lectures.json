@@ -16,16 +16,24 @@
     "scripts/verify-jwt.sh": { "since": "05-03", "about": "JWKS で JWT の署名・iss・exp を確かめる" },
     "scripts/refresh.sh": { "since": "05-03", "about": "リフレッシュトークンで新しいトークンをもらう" },
 
-
     "public/index.html": { "since": "03-01", "about": "トップの画面。各画面へのリンク。04-04 で Entra ID から戻ってくる受け口にもなる" },
-    "public/main.js": { "since": "03-01", "about": "トップの画面の動き" },
+    "public/index.js": { "since": "03-01", "about": "トップの画面の動き" },
     "public/style.css": { "since": "03-01", "about": "どの画面でも使う見た目" },
-    "public/cognito.js": { "since": "03-01", "about": "どの画面でも使う部分。設定・Cognito の API・トークン。04-04 で Hosted UI の仕組みが増える" },
+    "public/lib/config.js": { "since": "03-01", "about": "config.json を読み、Cognito の API の入口を求める" },
     "public/mail.html": { "since": "03-02", "about": "Floci に届いたメールを読むメールボックス" },
+    "public/mail.js": { "since": "03-02", "about": "メールボックスの動き" },
+    "public/lib/cognito.js": { "since": "03-03", "about": "AWS SDK を CDN から読み込み、Floci に向けた client を用意する" },
+    "public/lib/form.js": { "since": "03-03", "about": "フォームの値を読み、メッセージやエラーを出す" },
     "public/signup.html": { "since": "03-03", "about": "サインアップの画面" },
+    "public/signup.js": { "since": "03-03", "about": "サインアップの動き" },
     "public/confirm.html": { "since": "03-03", "about": "メールに届いた確認コードを入れる画面" },
+    "public/confirm.js": { "since": "03-03", "about": "確認コードの動き" },
+    "public/lib/tokens.js": { "since": "03-04", "about": "トークンの保存・読み出し・中身を読む" },
     "public/login.html": { "since": "03-04", "about": "パスワードでログインする画面。04-04 で Entra ID のボタンが増える" },
-    "public/home.html": { "since": "03-04", "about": "ログイン中の画面。ID トークンの中身とサインアウト" },
+    "public/login.js": { "since": "03-04", "about": "ログインの動き" },
+    "public/home.html": { "since": "03-04", "about": "ログイン中の画面。ID トークンの中身とログアウト" },
+    "public/home.js": { "since": "03-04", "about": "ログイン中の画面の動き" },
+    "public/lib/hosted-ui.js": { "since": "04-04", "about": "Hosted UI の仕組み（認可コード + PKCE・コールバック・ログアウト）" },
 
     "scripts/update-client.sh": { "since": "04-05", "about": "App Client に Hosted UI の設定を足す（IdP が増えるたびに流す）" },
 

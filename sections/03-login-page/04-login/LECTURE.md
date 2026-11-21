@@ -39,22 +39,26 @@ const result = await client.send(new InitiateAuthCommand({
 }));
 ```
 
-**`public/cognito.js`** に、2 つ足します。
+トークンを扱う部品を **`public/lib/tokens.js`** に作ります。
 
 - トークンの保存と読み出し（`saveTokens`・`getTokens`）。受け取ったトークンを、どの画面からも読めるように `sessionStorage` に置きます
 - ID トークンの真ん中（ペイロード）を Base64URL から戻して読む関数（`decodeJwt`）。署名は確かめていません（表示するだけなので）。トークンの中身と署名の確かめ方は、05 でコマンドを使って詳しく見ます
 
-::file{path="public/cognito.js"}
+::file{path="public/lib/tokens.js"}
 
-**`public/login.html`** は、ログインの画面です。成功したら、トークンを保存して、ログイン中の画面へ移ります。
+**`public/login.html`** と **`public/login.js`** は、ログインの画面です。成功したら、トークンを保存して、ログイン中の画面へ移ります。
 
 ::file{path="public/login.html"}
 
-**`public/home.html`** は、ログイン中の画面です。保存したトークンがあれば、`cognito:username` と ID トークンの中身を出します。
+::file{path="public/login.js"}
+
+**`public/home.html`** と **`public/home.js`** は、ログイン中の画面です。保存したトークンがあれば、`cognito:username` と ID トークンの中身を出します。
 
 「ログアウト」は、手元のトークンを消す前に `RevokeToken` でリフレッシュトークンを Cognito で取り消します。消すだけにすると、もしトークンが盗まれていた場合、ログアウトしたあとも使われ続けます（リフレッシュトークンは既定で 30 日有効です）。
 
 ::file{path="public/home.html"}
+
+::file{path="public/home.js"}
 
 トップの画面に、2 つの画面へのリンクを足します。
 

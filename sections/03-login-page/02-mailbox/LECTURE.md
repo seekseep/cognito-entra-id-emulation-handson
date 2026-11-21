@@ -28,7 +28,11 @@ Floci は、Cognito が送るメールを実際には送らず、手元にため
 
 ::file{path="public/mail.html"}
 
-- `cognito.js` から Cognito の API の入口（`http://localhost:4566`）を受け取り、`/_aws/ses` を読みます
+**`public/mail.js`** が、メールの一覧を読んで表に並べます。
+
+::file{path="public/mail.js"}
+
+- `lib/config.js` から Cognito の API の入口（`http://localhost:4566`）を受け取り、`/_aws/ses` を読みます
 - 新しいメールが上に来るよう、一覧を逆順に並べます
 
 トップの画面に、メールボックスへのリンクを足します。

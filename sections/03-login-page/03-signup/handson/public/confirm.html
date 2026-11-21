@@ -19,25 +19,6 @@
 
   <p><a href="./">トップへ</a></p>
 
-  <script type="module">
-    import { client, config, formValues, showMessage, showError, ConfirmSignUpCommand } from './cognito.js';
-
-    // サインアップの画面から来たときは、ユーザー名を入れておく
-    document.querySelector('#confirm [name=username]').value = new URLSearchParams(location.search).get('username') ?? '';
-
-    document.querySelector('#confirm').addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const { username, code } = formValues(event.target);
-      try {
-        await client.send(new ConfirmSignUpCommand({ ClientId: config.clientId, Username: username, ConfirmationCode: code }));
-        showMessage(event.target, '確認できました。ログインできます');
-      } catch (error) {
-        showError(event.target, error);
-      }
-    });
-
-    // スクリプトの準備ができてから押せるようにする（その前に押すと、ブラウザがフォームをふつうに送り、パスワードが URL に載ってしまう）
-    document.querySelector('#confirm button').disabled = false;
-  </script>
+  <script type="module" src="./confirm.js"></script>
 </body>
 </html>

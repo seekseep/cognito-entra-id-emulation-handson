@@ -13,7 +13,7 @@ flowchart LR
     server["nginx :3000<br/>画面（public/）を配る"]
   end
   browser["ブラウザ（HTML + JS）"]
-  server -- "index.html・main.js・config.json" --> browser
+  server -- "index.html・index.js・config.json" --> browser
   browser -- "SignUp・InitiateAuth / /oauth2/authorize" --> floci
   floci -- "フェデレーション（OIDC）" --> el
 ```
@@ -85,7 +85,7 @@ flowchart LR
 ### 01-web: Web の用意
 - nginx のコンテナ（`web`）で `public/` を配る。`setup` が `public/config.json`（issuer・クライアント ID）を書き出す
 - Floci の CORS（`FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS`）
-- 共通の cognito.js・style.css。トップは Cognito の API の入口を出すだけ
+- 画面は HTML と同じ名前の .js の組。共通の部品は lib/（config.js・cognito.js・form.js・tokens.js・hosted-ui.js）。トップは Cognito の API の入口を出すだけ
 
 ### 02-mailbox: メールボックス
 - Floci の `/_aws/ses` にたまったメールを表で出す（mail.html）

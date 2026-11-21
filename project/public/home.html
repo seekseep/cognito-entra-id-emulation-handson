@@ -18,29 +18,6 @@
 
   <p><a href="./">トップへ</a></p>
 
-  <script type="module">
-    import { client, config, getTokens, saveTokens, decodeJwt, RevokeTokenCommand } from './cognito.js';
-    import { hostedLogout } from './cognito.js'; // @since 04-04
-
-    const tokens = getTokens();
-    if (tokens) {
-      const claims = decodeJwt(tokens.idToken);
-      document.querySelector('#status').textContent = `${claims['cognito:username']} としてログイン中`;
-      document.querySelector('#id-token').textContent = JSON.stringify(claims, null, 2);
-    }
-
-    document.querySelector('#logout').addEventListener('click', async () => {
-      // 手元から消す前に、リフレッシュトークンを Cognito で取り消す（盗まれていても使えなくする）
-      if (tokens) await client.send(new RevokeTokenCommand({ ClientId: config.clientId, Token: tokens.refreshToken }));
-      saveTokens(null);
-      // @until 04-04
-      location.assign('./login.html');
-      // @end
-      // @since 04-04
-      // Entra ID でログインしたときのために、Hosted UI 側のログイン状態も消す（そのあとトップに戻る）
-      hostedLogout();
-      // @end
-    });
-  </script>
+  <script type="module" src="./home.js"></script>
 </body>
 </html>
