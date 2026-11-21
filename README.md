@@ -22,7 +22,7 @@ Amazon Cognito の認証を、AWS アカウントも Entra テナントも使わ
 |---|---|---|---|
 | 01. 準備 | なし | 道具を入れる | なし |
 | 02. Cognito を用意する | Floci | Floci の起動、User Pool と App Client、作り直すスクリプト | なし |
-| 03. HTML でログインする | Floci | サインアップ・ログイン・Hosted UI | なし |
+| 03. HTML でログインする | Floci | メールボックス・サインアップ・サインイン・ログイン中の画面 | なし |
 | 04. コマンドで確かめる | Floci | ユーザー・トークン・グループ・JWKS での署名の確認 | なし |
 | 05. Entra ID と連携する | Floci・entra-local | Cognito 経由の Entra ID（OIDC）ログイン | SAML、MFA・条件付きアクセス |
 
@@ -38,7 +38,7 @@ Amazon Cognito の認証を、AWS アカウントも Entra テナントも使わ
 
 ![HTML でログインする](./sections/03-login-page/01-web/images/00-thumbnail.svg)
 
-HTML と JavaScript だけの画面を、Podman の nginx のコンテナで配ります。画面から Cognito に直接サインアップ・ログインし（SDK も Amplify も使わず `fetch` で）、もらった ID トークンの中身を画面に出します。続けて、ログイン画面ごと Cognito に任せる Hosted UI を、認可コードフロー + PKCE で通します。
+HTML と JavaScript だけの画面を、Podman の nginx のコンテナで配ります。画面から AWS SDK（CDN から読み込む）で Cognito を直接呼び、サインアップ・確認・サインインをします。Floci に届いた確認コードのメールを読むメールボックスと、ID トークンの中身を出すログイン中の画面も作ります。Cognito が用意するログイン画面（Hosted UI）は説明だけにして、05 の Entra ID で使います。
 
 ### 04. コマンドで確かめる
 
@@ -72,7 +72,7 @@ entra-local で Entra ID を手元に再現し、アプリの登録・シーク�
 | どこ | ユーザー | パスワード | 作られる所 |
 |---|---|---|---|
 | Cognito | `alice`（admin グループ）/ `bob` | `Passw0rd!` | 04-01・04-02（`bash scripts/setup.sh` で作り直せる） |
-| Cognito | `carol` | `Passw0rd!` | 03-02〜03-04 で画面からサインアップして確認（setup では作られない） |
+| Cognito | `carol` | `Passw0rd!` | 03-03 で画面からサインアップして確認（setup では作られない） |
 | entra-local | `taro@entralocal.dev` | `Passw0rd!` | 05-03（`bash scripts/entra-create-user.sh`） |
 
 ## 関連するハンズオン

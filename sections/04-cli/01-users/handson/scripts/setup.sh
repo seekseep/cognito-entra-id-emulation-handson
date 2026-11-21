@@ -5,5 +5,4 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 bash scripts/create-user-pool.sh
-bash scripts/update-client.sh
 bash scripts/create-users.sh

@@ -85,25 +85,23 @@ flowchart LR
 ### 01-web: Web の用意
 - nginx のコンテナ（`web`）で `public/` を配る。`setup` が `public/config.json`（issuer・クライアント ID）を書き出す
 - Floci の CORS（`FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS`）
-- 画面は config.json を読み、Cognito の API の入口を出すだけ
+- 共通の cognito.js・style.css。トップは Cognito の API の入口を出すだけ
 
-### 02-signup: サインアップ
-- AWS SDK v3 を CDN（esm.sh）から読み込み、`SignUp`（署名なし）
-
-### 03-mail: 届いたメールを見る
+### 02-mailbox: メールボックス
 - Floci の `/_aws/ses` にたまったメールを表で出す（mail.html）
 
-### 04-confirm: メールを確認する
-- 確認コードで `ConfirmSignUp`。サインアップのあと確認の画面へ移る
+### 03-signup: サインアップ
+- AWS SDK v3 を CDN（esm.sh）から読み込み、`SignUp`・`ConfirmSignUp`（署名なし）。signup.html → confirm.html
 
-### 05-login: ログイン
-- `InitiateAuth` でログインし、ID トークンの中身を画面に出す。`RevokeToken` でログアウト
+### 04-signin: サインイン
+- `InitiateAuth` でサインインし、トークンを sessionStorage に保存する（signin.html）
 - `PreventUserExistenceErrors`（Floci では効かない）、トークンの置き場所
 
-### 06-hosted-ui: Cognito の Hosted UI でログインする
-- フェデレーションの前に、自前ユーザーで Authorization Code + PKCE（`/oauth2/authorize` → Floci のログイン画面 → `/oauth2/token`）
-- App Client の Callback URL・`AllowedOAuthFlows`・スコープ（`update-client.sh`）
-- 画面に「Cognito のログイン画面へ」を足し、パスワードのフォームと見比べる
+### 05-login: ログイン
+- ログイン中の画面（home.html）。ID トークンの中身、`RevokeToken` でサインアウト
+
+### 06-hosted-ui: Hosted UI について（説明だけ）
+- Floci の Hosted UI はログイン画面だけ。03 では使わず、05-04 で Entra ID のサインインに同じ仕組み（認可コード + PKCE）を使う
 
 ---
 

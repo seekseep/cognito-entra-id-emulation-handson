@@ -162,7 +162,7 @@ Cognito に問い合わせれば「取り消し済み」と分かりますが、
 | 確認コードの照合 | `AutoVerifiedAttributes` に `email` が無いと、どんなコードでも確認が通る | 違うコードは `CodeMismatchException` | [04-01](../01-users/LECTURE.md) |
 | どこから呼んでも `iss` | いつも `http://localhost:4566/<プール ID>`。コンテナの中から `floci:4566` で呼んでも変わらない | いつも `https://cognito-idp.<region>.amazonaws.com/<プール ID>` | このレクチャー |
 | ブラウザから Cognito の API を呼ぶ | `FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS` で CORS を許す必要がある | 最初から CORS に対応している | [03-01](../../03-login-page/01-web/LECTURE.md) |
-| 存在しないユーザーでのログイン | `PreventUserExistenceErrors: ENABLED` でも `UserNotFoundException` | `ENABLED` ならパスワード違いと同じ `NotAuthorizedException` | [03-05](../../03-login-page/05-login/LECTURE.md) |
+| 存在しないユーザーでのログイン | `PreventUserExistenceErrors: ENABLED` でも `UserNotFoundException` | `ENABLED` ならパスワード違いと同じ `NotAuthorizedException` | [03-04](../../03-login-page/04-signin/LECTURE.md) |
 | 外部 IdP から入ったユーザーの名前 | `EntraID_<別の UUID>`。`identities` の `userId` とは違う値 | `EntraID_<IdP の sub>`（`identities` の `userId` と同じ） | [05-04](../../05-cognito-with-entra-id/04-federation/LECTURE.md) |
 | 外部 IdP（OIDC）の登録 | discovery を読みに行かないので、エンドポイントを全部明示する | `oidc_issuer` だけでよく、discovery が届かないと登録を拒否する | [05-04](../../05-cognito-with-entra-id/04-federation/LECTURE.md) |
 

@@ -8,51 +8,25 @@
 </head>
 <body>
   <h1>Cognito ログインの練習</h1>
-  <!-- @since 03-05 -->
-  <p id="status">ログインしていません</p>
-  <!-- @end -->
   <p>Cognito の API: <code id="endpoint">読み込み中…</code></p>
   <!-- @since 03-02 -->
   <ul>
-    <li><a href="./signup.html">サインアップ</a></li>
+    <li><a href="./mail.html">メールボックス</a></li>
     <!-- @since 03-03 -->
-    <li><a href="./mail.html">届いたメール</a></li>
+    <li><a href="./signup.html">サインアップ</a></li>
+    <li><a href="./confirm.html">メールを確認する</a></li>
     <!-- @end -->
     <!-- @since 03-04 -->
-    <li><a href="./confirm.html">メールを確認する</a></li>
+    <li><a href="./signin.html">サインイン</a></li>
+    <!-- @end -->
+    <!-- @since 03-05 -->
+    <li><a href="./home.html">ログイン中の画面</a></li>
     <!-- @end -->
   </ul>
   <!-- @end -->
-  <!-- @since 03-06 -->
+  <!-- @since 05-04 -->
 
-  <section>
-    <h2>Hosted UI でログイン</h2>
-    <p>ログイン先: <code id="authorize">読み込み中…</code></p>
-    <button id="hosted-login">Cognito のログイン画面へ</button>
-    <!-- @since 05-04 -->
-    <button id="entra-login">Entra ID でログイン</button>
-    <!-- @end -->
-  </section>
-  <!-- @end -->
-  <!-- @since 03-05 -->
-
-  <form id="login">
-    <h2>パスワードでログイン</h2>
-    <label>ユーザー名 <input name="username" required></label>
-    <label>パスワード <input name="password" type="password" required></label>
-    <button>ログイン</button>
-  </form>
-
-  <section>
-    <h2>ID トークンの中身</h2>
-    <pre id="id-token">ログインすると表示します</pre>
-    <button id="logout">ログアウト</button>
-  </section>
-
-  <section>
-    <h2>Cognito の応答</h2>
-    <pre id="output">まだ何もしていません</pre>
-  </section>
+  <pre id="output"></pre>
   <!-- @end -->
 
   <script type="module" src="./main.js"></script>

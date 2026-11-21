@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ログイン中の画面</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <h1>ログイン中の画面</h1>
+  <p id="status">ログインしていません。<a href="./signin.html">サインイン</a>してください</p>
+
+  <section>
+    <h2>ID トークンの中身</h2>
+    <pre id="id-token">ログインすると表示します</pre>
+    <button id="logout">サインアウト</button>
+  </section>
+
+  <p><a href="./">トップへ</a></p>
+
+  <script type="module">
+    import { client, config, getTokens, saveTokens, decodeJwt, RevokeTokenCommand } from './cognito.js';
+    import { hostedLogout } from './cognito.js'; // @since 05-04
+
+    const tokens = getTokens();
+    if (tokens) {
+      const claims = decodeJwt(tokens.idToken);
+      document.querySelector('#status').textContent = `${claims['cognito:username']} としてログイン中`;
+      document.querySelector('#id-token').textContent = JSON.stringify(claims, null, 2);
+    }
+
+    document.querySelector('#logout').addEventListener('click', async () => {
+      // 手元から消す前に、リフレッシュトークンを Cognito で取り消す（盗まれていても使えなくする）
+      if (tokens) await client.send(new RevokeTokenCommand({ ClientId: config.clientId, Token: tokens.refreshToken }));
+      saveTokens(null);
+      // @until 05-04
+      location.assign('./signin.html');
+      // @end
+      // @since 05-04
+      // Entra ID でサインインしたときのために、Hosted UI 側のログイン状態も消す（そのあとトップに戻る）
+      hostedLogout();
+      // @end
+    });
+  </script>
+</body>
+</html>

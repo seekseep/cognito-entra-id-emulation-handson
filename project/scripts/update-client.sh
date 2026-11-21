@@ -24,10 +24,8 @@ ARGS=(
   --allowed-o-auth-scopes openid email profile
   --allowed-o-auth-flows-user-pool-client
 )
-# @since 05-04
 # custom:entra_oid をトークンに載せるには、読める属性に入れておく
 ARGS+=(--read-attributes email email_verified name preferred_username custom:entra_oid)
-# @end
 
 aws cognito-idp update-user-pool-client "${ARGS[@]}" \
   --query 'UserPoolClient.{IdPs:SupportedIdentityProviders,Callback:CallbackURLs,Flows:AllowedOAuthFlows}'

@@ -30,7 +30,7 @@
       event.preventDefault();
       const { username, email, password } = formValues(event.target);
       try {
-        const result = await client.send(new SignUpCommand({
+        await client.send(new SignUpCommand({
           ClientId: config.clientId,
           Username: username,
           Password: password,

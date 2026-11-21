@@ -7,9 +7,9 @@ docs: true
 
 ![Entra ID にあるユーザーで Cognito にログイン](./images/00-thumbnail.svg)
 
-entra-local を Cognito の外部 IdP（OIDC）として登録し、画面の「Entra ID でログイン」で Entra のユーザーをアプリに入れます。仕組みは 03-06 の Hosted UI の上に乗っていて、Cognito のログイン画面の代わりに Entra のサインイン画面に回るだけです。気をつけるのは Entra に特有の部分、とくに **ユーザーを何で見分けるか** です。
+entra-local を Cognito の外部 IdP（OIDC）として登録し、サインインの画面の「Entra ID でサインイン」で Entra のユーザーをアプリに入れます。仕組みは 03-06 で説明した Hosted UI（認可コードフロー）の上に乗っていて、Cognito のログイン画面の代わりに Entra のサインイン画面に回ります。気をつけるのは Entra に特有の部分、とくに **ユーザーを何で見分けるか** です。
 
-このレクチャーで足す・変えるファイルは次のとおりです。画面には、ボタンを 1 つ足すだけです。
+このレクチャーで足す・変えるファイルは次のとおりです。
 
 ::changes
 
@@ -23,6 +23,35 @@ curl -s http://localhost:8443/health   # "status":"ok" が返ってから次へ�
 bash scripts/setup.sh              # 前のレクチャーまでに作ったものを作り直す
 source ./env.sh && source ./.cognito.env
 ```
+
+## App Client に Hosted UI の設定を足す
+
+Entra ID でのサインインは、03-06 で説明した Hosted UI の仕組み（認可コードフロー）の上に乗っています。02-03 で作った App Client は、パスワードを受け取るサインイン（`USER_PASSWORD_AUTH`）だけを許しているので、認可コードフローと、サインインのあとに戻ってよい先（コールバック URL）を足します。
+
+```bash
+aws cognito-idp update-user-pool-client \
+  --user-pool-id "$POOL_ID" --client-id "$CLIENT_ID" \
+  --explicit-auth-flows ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH \
+  --prevent-user-existence-errors ENABLED \
+  --supported-identity-providers COGNITO \
+  --callback-urls http://localhost:3000/ \
+  --logout-urls http://localhost:3000/ \
+  --allowed-o-auth-flows code \
+  --allowed-o-auth-scopes openid email profile \
+  --allowed-o-auth-flows-user-pool-client
+```
+
+- `--supported-identity-providers COGNITO` … 使ってよい IdP。このあと `EntraID` を足します
+- `--callback-urls` … ログイン後に戻ってよい先。ここに無い URL へは戻さない（コードを盗まれないため）
+- `--allowed-o-auth-flows code` … 認可コードフローを許す
+
+:::warning[UpdateUserPoolClient は全部を渡し直す]
+`update-user-pool-client` は「渡さなかった設定を既定値に戻す」API です。Hosted UI の設定だけを渡すと、02-03 で付けた `--explicit-auth-flows` が消えて、パスワードでのログイン（CLI・画面のフォーム）ができなくなります。`--prevent-user-existence-errors` も既定値に戻ります。足したい設定だけでなく、今の設定を全部渡し直します。本物の Cognito も同じです。
+:::
+
+これを **`scripts/update-client.sh`** にします。`--supported-identity-providers` には、User Pool に登録してある IdP を全部並べます。`custom:entra_oid` をトークンに載せるための読み取りの許可（`--read-attributes`）も、ここで渡します（下の「`oid` を持ち込む」で説明します）。
+
+::file{path="scripts/update-client.sh"}
 
 ## 外部 IdP を登録する
 
@@ -58,15 +87,11 @@ aws cognito-idp create-identity-provider \
      --custom-attributes Name=entra_oid,AttributeDataType=String,Mutable=true
    ```
 2. 属性のマッピングで `oid` を入れる: `custom:entra_oid=oid`
-3. App Client で読み取りを許す: `--read-attributes ... custom:entra_oid`（`update-client.sh` に足す）
+3. App Client で読み取りを許す: `--read-attributes ... custom:entra_oid`（上の `update-client.sh` で渡しています）
 
-`register-entra.sh` の全体です。最後に `update-client.sh` を呼び、App Client で EntraID を選べるようにします（03-06 で、User Pool に登録してある IdP を全部並べるようにしておきました）。
+`register-entra.sh` の全体です。最後に `update-client.sh` を呼び、App Client で EntraID を選べるようにします（`update-client.sh` は、User Pool に登録してある IdP を全部並べます）。
 
 ::file{path="scripts/register-entra.sh"}
-
-`update-client.sh` には、読み取りを許す属性を足します。
-
-::file{path="scripts/update-client.sh"}
 
 `list-users.sh` には、`custom:entra_oid` の列を足します。
 
@@ -76,15 +101,66 @@ aws cognito-idp create-identity-provider \
 
 ::file{path="scripts/setup.sh"}
 
-## 画面にボタンを足す
+## 認可コードフローと PKCE
 
-`public/index.html` に「Entra ID でログイン」のボタンを足します。
+「Entra ID でサインイン」を押してから戻ってくるまでに、次のことが起きています（開発者ツールの Network タブで追えます）。
+
+1. 画面が `code_verifier`（ランダムな文字列）を作り、そのハッシュ `code_challenge` を付けて `/oauth2/authorize` へ移る
+2. Cognito が Entra ID のサインイン画面へ回し、ユーザーが Entra のパスワードを入れる
+3. Cognito が **認可コード** を付けて、登録された戻り先（`http://localhost:3000/?code=...`）へ戻す
+4. 画面が認可コードと `code_verifier` を `/oauth2/token` に送り、トークンを受け取る
+
+認可コードは URL に載るので、横取りされるかもしれません。PKCE では、最初に送ったハッシュの元（`code_verifier`）を知っている人しかコードをトークンに換えられません。Floci も、`code_verifier` が合わないと `invalid_grant` を返します。
+
+`public/cognito.js` の後ろに、この流れをライブラリなしで足します。
+
+```js
+const verifier = randomString();
+const challenge = base64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
+const state = randomString();
+// ...
+const params = {
+  client_id: config.clientId,
+  response_type: 'code',
+  redirect_uri: redirectUri,
+  scope: 'openid email profile',
+  state,
+  code_challenge: challenge,
+  code_challenge_method: 'S256',
+};
+// ...
+const url = new URL(discovery.authorization_endpoint);
+url.search = new URLSearchParams(params);
+location.assign(url);
+```
+
+認可・トークンのエンドポイントは、User Pool の discovery（`<iss>/.well-known/openid-configuration`）から読んでいます。Floci では `http://localhost:4566/cognito-idp/oauth2/authorize`、本物では `https://<ドメイン>.auth.<リージョン>.amazoncognito.com/oauth2/authorize` です。
+
+トークンエンドポイントの応答は `id_token` のような snake_case なので、パスワードでサインインしたときと同じ形（`idToken`）にそろえて保存します。こうしておくと、ログイン中の画面（`home.html`）は 03-05 のまま使えます。
+
+- `hostedLogin('EntraID')` … `identity_provider=EntraID`（`register-entra.sh` の `--provider-name`）を付けて `/oauth2/authorize` へ移ります。Cognito は自分のログイン画面を飛ばして、Entra のサインイン画面へ直行します
+- `handleCallback()` … 戻ってきた `?code=...` を `code_verifier` と一緒に `/oauth2/token` へ送り、トークンを保存します
+- `hostedLogout()` … Cognito の `/logout` に移り、Hosted UI 側のログイン状態（Cookie）も消します
+
+::file{path="public/cognito.js"}
+
+サインインの画面に「Entra ID でサインイン」のボタンを足します。
+
+::file{path="public/signin.html"}
+
+Entra ID から戻ってくる先（コールバック URL）はトップ（`http://localhost:3000/`）です。トップで認可コードをトークンに換え、ログイン中の画面へ移ります。
 
 ::file{path="public/index.html"}
 
-`public/main.js` では、03-06 の `hostedLogin` に IdP の名前 `EntraID`（`register-entra.sh` の `--provider-name`）を渡すだけです。`/oauth2/authorize` に `identity_provider=EntraID` が付き、Cognito は自分のログイン画面を飛ばして、Entra のサインイン画面へ直行します。
-
 ::file{path="public/main.js"}
+
+ログイン中の画面のサインアウトでは、手元のトークンを消したあと、Cognito の `/logout` にも移ります。
+
+::file{path="public/home.html"}
+
+:::warning[本番でのトークンの置き場所]
+`sessionStorage` は、ページに XSS があると JavaScript から読まれてしまう場所です（前のレクチャーの注意と同じです）。この画面のようにブラウザが `/oauth2/token` を直接呼ぶ作りでは、httpOnly の Cookie に置くことはできません。本番では、トークンの交換をサーバー側で行い、ブラウザとは httpOnly の Cookie のセッションでやり取りする形（BFF: Backend for Frontend）を検討してください。
+:::
 
 ## 動かす
 
@@ -92,7 +168,7 @@ aws cognito-idp create-identity-provider \
 bash scripts/register-entra.sh
 ```
 
-<http://localhost:3000> を開き（開いていたら読み込み直し）、「Entra ID でログイン」を押します。entra-local のサインイン画面で `taro@entralocal.dev` / `Passw0rd!` を入れます。戻ってきたら ID トークンを見てください。
+<http://localhost:3000> の「サインイン」を開き（開いていたら読み込み直し）、「Entra ID でサインイン」を押します。entra-local のサインイン画面で `taro@entralocal.dev` / `Passw0rd!` を入れます。トップに戻り、ログイン中の画面に移ったら、ID トークンを見てください。
 
 開発者ツールの Network タブでは、`localhost:3000` → `localhost:4566/.../oauth2/authorize` → `localhost:8443/.../authorize`（Entra）→ `localhost:4566/.../oauth2/idpresponse` → `localhost:3000/?code=...` と移るのが見えます。Entra のトークンを受け取るのは Cognito で、画面が受け取るのは **Cognito のトークン** です。
 
@@ -138,7 +214,7 @@ Cognito のカスタム属性は、あとから足すことはできますが、
 
 ## このレクチャーを終えた handson/
 
-これで `handson/` は完成です。02-04 の `create-user-pool.sh` 1 つから始まって、Cognito のユーザー・トークン・画面・Hosted UI・Entra ID と、1 つずつ足してきました。`setup.sh` を開くと、その順番がそのまま並んでいます。
+これで `handson/` は完成です。02-04 の `create-user-pool.sh` 1 つから始まって、画面・Cognito のユーザー・トークン・Entra ID と、1 つずつ足してきました。`setup.sh` を開くと、その順番がそのまま並んでいます。
 
 ::codeview
 
@@ -148,9 +224,9 @@ Cognito のカスタム属性は、あとから足すことはできますが、
 
 アプリの登録のリダイレクト URI と、Cognito（Floci）が送ってくる `redirect_uri`（`http://localhost:4566/cognito-idp/oauth2/idpresponse`）が 1 文字でも違うと拒否されます。`.entra.env` を消してから `bash scripts/entra-register-app.sh` で登録し直し、`bash scripts/register-entra.sh` で Cognito 側の登録も新しいクライアント ID とシークレットに合わせます。
 
-### ログアウトしたのに、「Entra ID でログイン」でパスワードを聞かれません
+### サインアウトしたのに、「Entra ID でサインイン」でパスワードを聞かれません
 
-画面のログアウトが消すのは、手元のトークンと Cognito のログイン状態だけです。Entra 側のサインイン（entra-local の Cookie）は残っているので、Entra はそのまま Cognito に戻します。本物の Entra ID と Cognito でも同じで、Cognito の `/logout` は外部 IdP のサインインを終わらせません。
+画面のサインアウトが消すのは、手元のトークンと Cognito のログイン状態だけです。Entra 側のサインイン（entra-local の Cookie）は残っているので、Entra はそのまま Cognito に戻します。本物の Entra ID と Cognito でも同じで、Cognito の `/logout` は外部 IdP のサインインを終わらせません。
 
 別のユーザーで試したいときは、Entra のサインアウトの入口（discovery の `end_session_endpoint`）を開いてから、もう一度押してください。
 
@@ -159,6 +235,10 @@ http://localhost:8443/11111111-1111-1111-1111-111111111111/oauth2/v2.0/logout
 ```
 
 本番で Entra からもサインアウトさせたいときは、Cognito の `/logout` のあとに、この入口（`https://login.microsoftonline.com/<テナント ID>/oauth2/v2.0/logout`）へ移します。
+
+### `state` は何のためにありますか？
+
+ログイン画面から戻ってきた応答が、自分が出した要求への応答かを確かめるためです。別のサイトに仕込まれたリンクから、攻撃者の認可コードで戻されるのを防ぎます（CSRF 対策）。
 
 ### Entra のアプリロールやグループで認可したいときは？
 
