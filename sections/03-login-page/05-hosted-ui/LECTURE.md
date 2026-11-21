@@ -25,6 +25,68 @@ docs: true
 
 Floci の Hosted UI には、ログインの画面しかありません。サインアップ・確認コード・パスワードを忘れたときの画面が無いので、03 の流れ（メールボックス → サインアップ → ログイン）を Hosted UI だけでは通せません。本物の Cognito の Hosted UI には、これらの画面があります。
 
+## 試してみる
+
+画面のコードは足さずに、コマンドとブラウザだけで、Floci の Hosted UI でログインしてみます。03-03 でサインアップして確認した `carol` を使います。
+
+### 準備
+
+```bash
+podman compose up -d
+source ./env.sh && source ./.cognito.env
+```
+
+### App Client に認可コードフローを許す
+
+02-03 で作った App Client は、パスワードを受け取るログイン（`USER_PASSWORD_AUTH`）だけを許しています。認可コードフローと、ログインのあとに戻ってよい先（コールバック URL）を足します。
+
+```bash
+aws cognito-idp update-user-pool-client \
+  --user-pool-id "$POOL_ID" --client-id "$CLIENT_ID" \
+  --explicit-auth-flows ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH \
+  --prevent-user-existence-errors ENABLED \
+  --supported-identity-providers COGNITO \
+  --callback-urls http://localhost:3000/ \
+  --logout-urls http://localhost:3000/ \
+  --allowed-o-auth-flows code \
+  --allowed-o-auth-scopes openid email profile \
+  --allowed-o-auth-flows-user-pool-client
+```
+
+`update-user-pool-client` は「渡さなかった設定を既定値に戻す」API なので、今の設定（`--explicit-auth-flows` など）も全部渡し直します。この設定は `setup.sh` には入れていないので、Floci を作り直すと元に戻ります（04-04 で、もう一度設定します）。
+
+### ログインの URL を作る
+
+PKCE の値を作ります。`VERIFIER`（ランダムな文字列）は手元に残し、そのハッシュ `CHALLENGE` だけを URL に付けます。
+
+```bash
+VERIFIER=$(openssl rand -hex 32)
+CHALLENGE=$(printf '%s' "$VERIFIER" | openssl dgst -sha256 -binary | openssl base64 -A | tr '+/' '-_' | tr -d '=')
+echo "http://localhost:4566/cognito-idp/oauth2/authorize?response_type=code&client_id=$CLIENT_ID&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F&scope=openid+email+profile&code_challenge=$CHALLENGE&code_challenge_method=S256"
+```
+
+### ブラウザでログインする
+
+出てきた URL をブラウザで開きます。Floci のログイン画面（Hosted UI）が出るので、`carol` / `Passw0rd!` でログインします。ログインが終わると、トップ（`http://localhost:3000/?code=...`）に戻ってきます。アドレス欄の `code=` のあとの値が **認可コード** です。
+
+### 認可コードをトークンに換える
+
+認可コードと `VERIFIER` を、トークンのエンドポイントに送ります。`{ }` の所は、アドレス欄の値に書き換えてから実行します（`{ }` ごと消します）。
+
+```bash "{アドレス欄の code= のあとの値}"
+CODE={アドレス欄の code= のあとの値}
+curl -s -X POST http://localhost:4566/cognito-idp/oauth2/token \
+  -H 'content-type: application/x-www-form-urlencoded' \
+  -d grant_type=authorization_code \
+  -d client_id="$CLIENT_ID" \
+  -d code="$CODE" \
+  --data-urlencode redirect_uri=http://localhost:3000/ \
+  -d code_verifier="$VERIFIER" | jq 'keys'
+# ["access_token", "expires_in", "id_token", "refresh_token", "token_type"]
+```
+
+パスワードはアプリ（`localhost:3000`）を一度も通らず、アプリが受け取ったのは認可コードだけです。そのコードも、`VERIFIER` を知らなければトークンに換えられません。同じコードでもう一度送ると、`invalid_grant`（一度しか使えない）になります。
+
 ## 04 で使うところ
 
 Entra ID のユーザーでログインするときは、アプリは `/oauth2/authorize` に `identity_provider=EntraID` を付けて移ります。Cognito は自分のログイン画面を飛ばして、Entra のサインイン画面へ回します。Entra でのサインインが終わると、Cognito が認可コードを付けてアプリに戻します。この認可コードフロー（と PKCE）の書き方は、04-04 で扱います。
