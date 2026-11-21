@@ -19,7 +19,7 @@ services:
     volumes:
       - ./public:/usr/share/nginx/html:ro
   # @end
-  # @since 05-01
+  # @since 04-01
 
   entra-local:
     # amd64 向けのイメージしか無い。Apple Silicon の Mac ではエミュレーションで動く（起動に少し時間がかかる）

@@ -52,7 +52,7 @@ export function decodeJwt(token) {
   return JSON.parse(decodeURIComponent(escape(atob(payload))));
 }
 // @end
-// @since 05-04
+// @since 04-04
 
 // ---- Hosted UI の仕組み（Authorization Code + PKCE）で、外部 IdP（Entra ID）にサインインする。流れを目で追うため、ライブラリを使わずに書く ----
 

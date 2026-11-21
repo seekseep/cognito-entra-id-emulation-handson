@@ -7,7 +7,7 @@ docs: true
 
 ![Hosted UI について](./images/00-thumbnail.svg)
 
-ここまでは、サインアップ・サインインの画面を自分で作り、Cognito の API を直接呼びました。Cognito には、ログイン画面そのものを Cognito が用意する **Hosted UI**（マネージドログイン）もあります。このハンズオンでは Cognito 自身のユーザーには使いませんが、05 で Entra ID のユーザーでサインインするときに、同じ仕組みを使います。
+ここまでは、サインアップ・サインインの画面を自分で作り、Cognito の API を直接呼びました。Cognito には、ログイン画面そのものを Cognito が用意する **Hosted UI**（マネージドログイン）もあります。このハンズオンでは Cognito 自身のユーザーには使いませんが、04 で Entra ID のユーザーでサインインするときに、同じ仕組みを使います。
 
 ## Hosted UI とは
 
@@ -25,6 +25,6 @@ docs: true
 
 Floci の Hosted UI には、ログインの画面しかありません。サインアップ・確認コード・パスワードを忘れたときの画面が無いので、03 の流れ（メールボックス → サインアップ → サインイン → ログイン）を Hosted UI だけでは通せません。本物の Cognito の Hosted UI には、これらの画面があります。
 
-## 05 で使うところ
+## 04 で使うところ
 
-Entra ID のユーザーでサインインするときは、アプリは `/oauth2/authorize` に `identity_provider=EntraID` を付けて移ります。Cognito は自分のログイン画面を飛ばして、Entra のサインイン画面へ回します。Entra でのサインインが終わると、Cognito が認可コードを付けてアプリに戻します。この認可コードフロー（と PKCE）の書き方は、05-04 で扱います。
+Entra ID のユーザーでサインインするときは、アプリは `/oauth2/authorize` に `identity_provider=EntraID` を付けて移ります。Cognito は自分のログイン画面を飛ばして、Entra のサインイン画面へ回します。Entra でのサインインが終わると、Cognito が認可コードを付けてアプリに戻します。この認可コードフロー（と PKCE）の書き方は、04-04 で扱います。

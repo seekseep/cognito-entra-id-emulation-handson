@@ -167,8 +167,8 @@ export default defineConfig({
         { label: '01. 準備', items: [{ autogenerate: { directory: '01-setup' } }] },
         { label: '02. Cognito を用意する', items: [{ autogenerate: { directory: '02-cognito' } }] },
         { label: '03. HTML でログインする', items: [{ autogenerate: { directory: '03-login-page' } }] },
-        { label: '04. コマンドで確かめる', items: [{ autogenerate: { directory: '04-cli' } }] },
-        { label: '05. Entra ID と連携する', items: [{ autogenerate: { directory: '05-cognito-with-entra-id' } }] },
+        { label: '04. Entra ID と連携する', items: [{ autogenerate: { directory: '04-cognito-with-entra-id' } }] },
+        { label: '05. コマンドで確かめる', items: [{ autogenerate: { directory: '05-cli' } }] },
         { label: '関連するハンズオン', link: '/related/' },
       ],
       editLink: {

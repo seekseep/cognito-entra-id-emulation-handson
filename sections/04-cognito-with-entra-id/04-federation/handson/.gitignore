@@ -1,0 +1,4 @@
+.cognito.env
+public/config.json
+.entra.env
+.entra.*.env

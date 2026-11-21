@@ -1,40 +1,37 @@
 {
   "$comment": "最終形（05 を終えた状態）のファイルが、どのレクチャーで登場するか。ファイルの中で行が増える所は、ファイルの中の @since / @until で書く。site/scripts/build-snapshots.mjs が、ここからレクチャーごとの状態（sections/<sec>/<lec>/handson/）を作る",
-  "lectures": ["02-01", "02-04", "03-01", "03-02", "03-03", "03-04", "03-05", "04-01", "04-02", "04-03", "05-01", "05-02", "05-03", "05-04"],
+  "lectures": ["02-01", "02-04", "03-01", "03-02", "03-03", "03-04", "03-05", "04-01", "04-02", "04-04", "04-05", "05-01", "05-02", "05-03"],
   "files": {
-    "compose.yaml": { "since": "02-01", "about": "コンテナの定義。Floci から始まり、05 で entra-local が増える" },
+    "compose.yaml": { "since": "02-01", "about": "コンテナの定義。Floci から始まり、03 で nginx、04 で entra-local が増える" },
     "env.sh": { "since": "02-01", "about": "aws CLI の向き先を Floci に変える" },
     ".gitignore": { "since": "02-04", "about": "手元にだけ置くファイル（ID・トークン・シークレット）" },
 
     "scripts/setup.sh": { "since": "02-04", "about": "ここまでに作ったものを Floci に作り直す。レクチャーごとに 1 行増える" },
     "scripts/create-user-pool.sh": { "since": "02-04", "about": "User Pool と App Client を作り、ID を .cognito.env に残す" },
-    "scripts/create-users.sh": { "since": "04-01", "about": "alice（管理者が作る）と bob（自分でサインアップ）を作る" },
-    "scripts/read-code.sh": { "since": "04-01", "about": "Floci に届いた確認メールからコードを読む" },
-    "scripts/create-groups.sh": { "since": "04-02", "about": "admin グループを作り、alice を入れる" },
-    "scripts/login.sh": { "since": "04-02", "about": "パスワードでログインし、トークンを .tokens.json に残す" },
-    "scripts/decode-jwt.sh": { "since": "04-02", "about": "JWT の中身を読む（署名は確かめない）" },
-    "scripts/verify-jwt.sh": { "since": "04-03", "about": "JWKS で JWT の署名・iss・exp を確かめる" },
-    "scripts/refresh.sh": { "since": "04-03", "about": "リフレッシュトークンで新しいトークンをもらう" },
+    "scripts/create-users.sh": { "since": "05-01", "about": "alice（管理者が作る）と bob（自分でサインアップ）を作る" },
+    "scripts/read-code.sh": { "since": "05-01", "about": "Floci に届いた確認メールからコードを読む" },
+    "scripts/create-groups.sh": { "since": "05-02", "about": "admin グループを作り、alice を入れる" },
+    "scripts/login.sh": { "since": "05-02", "about": "パスワードでログインし、トークンを .tokens.json に残す" },
+    "scripts/decode-jwt.sh": { "since": "05-02", "about": "JWT の中身を読む（署名は確かめない）" },
+    "scripts/verify-jwt.sh": { "since": "05-03", "about": "JWKS で JWT の署名・iss・exp を確かめる" },
+    "scripts/refresh.sh": { "since": "05-03", "about": "リフレッシュトークンで新しいトークンをもらう" },
 
 
-    "public/index.html": { "since": "03-01", "about": "トップの画面。各画面へのリンク。05-04 で Entra ID から戻ってくる受け口にもなる" },
+    "public/index.html": { "since": "03-01", "about": "トップの画面。各画面へのリンク。04-04 で Entra ID から戻ってくる受け口にもなる" },
     "public/main.js": { "since": "03-01", "about": "トップの画面の動き" },
     "public/style.css": { "since": "03-01", "about": "どの画面でも使う見た目" },
-    "public/cognito.js": { "since": "03-01", "about": "どの画面でも使う部分。設定・Cognito の API・トークン。05-04 で Hosted UI の仕組みが増える" },
+    "public/cognito.js": { "since": "03-01", "about": "どの画面でも使う部分。設定・Cognito の API・トークン。04-04 で Hosted UI の仕組みが増える" },
     "public/mail.html": { "since": "03-02", "about": "Floci に届いたメールを読むメールボックス" },
     "public/signup.html": { "since": "03-03", "about": "サインアップの画面" },
     "public/confirm.html": { "since": "03-03", "about": "メールに届いた確認コードを入れる画面" },
-    "public/signin.html": { "since": "03-04", "about": "パスワードでサインインする画面。05-04 で Entra ID のボタンが増える" },
+    "public/signin.html": { "since": "03-04", "about": "パスワードでサインインする画面。04-04 で Entra ID のボタンが増える" },
     "public/home.html": { "since": "03-05", "about": "ログイン中の画面。ID トークンの中身とサインアウト" },
 
-    "scripts/update-client.sh": { "since": "05-04", "about": "App Client に Hosted UI の設定を足す（IdP が増えるたびに流す）" },
+    "scripts/update-client.sh": { "since": "04-05", "about": "App Client に Hosted UI の設定を足す（IdP が増えるたびに流す）" },
 
-    "scripts/entra-endpoints.sh": { "since": "05-01", "about": "entra-local の discovery から、登録に使う URL を抜き出す" },
-    "scripts/entra-register-app.sh": { "since": "05-02", "about": "entra-local に「Cognito から使うアプリ」を登録する" },
-    "scripts/entra-create-user.sh": { "since": "05-03", "about": "entra-local にユーザーを作る" },
-    "scripts/entra-preview-token.sh": { "since": "05-03", "about": "サインインしたら出る ID トークンの中身を見る" },
+    "scripts/entra-register-app.sh": { "since": "04-05", "about": "entra-local に「Cognito から使うアプリ」を登録する" },
+    "scripts/entra-create-user.sh": { "since": "04-05", "about": "entra-local にユーザーを作る" },
 
-    "scripts/register-entra.sh": { "since": "05-04", "about": "entra-local を User Pool の外部 IdP として登録する" },
-    "scripts/list-users.sh": { "since": "05-04", "about": "User Pool のユーザーを一覧する" }
+    "scripts/register-entra.sh": { "since": "04-05", "about": "entra-local を User Pool の外部 IdP として登録する" }
   }
 }

@@ -14,7 +14,7 @@
     <label>パスワード <input name="password" type="password" required></label>
     <button>サインイン</button>
   </form>
-  <!-- @since 05-04 -->
+  <!-- @since 04-04 -->
 
   <section>
     <h2>ほかの方法でサインイン</h2>
@@ -31,7 +31,7 @@
 
   <script type="module">
     import { client, config, formValues, show, saveTokens, InitiateAuthCommand } from './cognito.js';
-    import { hostedLogin } from './cognito.js'; // @since 05-04
+    import { hostedLogin } from './cognito.js'; // @since 04-04
 
     document.querySelector('#signin').addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -54,7 +54,7 @@
         show('InitiateAuth', error);
       }
     });
-    // @since 05-04
+    // @since 04-04
 
     // Cognito に登録した IdP の名前（register-entra.sh の --provider-name）を渡す
     document.querySelector('#entra-login').addEventListener('click', () => hostedLogin('EntraID'));

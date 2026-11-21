@@ -20,7 +20,7 @@
 
   <script type="module">
     import { client, config, getTokens, saveTokens, decodeJwt, RevokeTokenCommand } from './cognito.js';
-    import { hostedLogout } from './cognito.js'; // @since 05-04
+    import { hostedLogout } from './cognito.js'; // @since 04-04
 
     const tokens = getTokens();
     if (tokens) {
@@ -33,10 +33,10 @@
       // 手元から消す前に、リフレッシュトークンを Cognito で取り消す（盗まれていても使えなくする）
       if (tokens) await client.send(new RevokeTokenCommand({ ClientId: config.clientId, Token: tokens.refreshToken }));
       saveTokens(null);
-      // @until 05-04
+      // @until 04-04
       location.assign('./signin.html');
       // @end
-      // @since 05-04
+      // @since 04-04
       // Entra ID でサインインしたときのために、Hosted UI 側のログイン状態も消す（そのあとトップに戻る）
       hostedLogout();
       // @end
