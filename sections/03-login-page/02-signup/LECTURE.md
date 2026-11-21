@@ -52,11 +52,15 @@ await client.send(new SignUpCommand({ ClientId: config.clientId, Username, Passw
 
 ::file{path="public/signup.html"}
 
-**`public/confirm.html`** は、メールに届いた確認コードを入れる画面です。Floci に届いたメールの読み場所へのリンクも置きます。
+**`public/confirm.html`** は、メールに届いた確認コードを入れる画面です。
 
 ::file{path="public/confirm.html"}
 
-トップの画面に、2 つの画面へのリンクを足します。
+Floci は、Cognito が送るメールを実際には送らず、手元にためておきます（`http://localhost:4566/_aws/ses` で JSON の一覧が読めます）。確認コードを読めるよう、ためたメールを表で出す画面 **`public/mail.html`** を作ります。本物の Cognito にはこの一覧は無く、メールはそのまま利用者に届きます。
+
+::file{path="public/mail.html"}
+
+トップの画面に、3 つの画面へのリンクを足します。
 
 ::file{path="public/index.html"}
 
@@ -65,7 +69,7 @@ await client.send(new SignUpCommand({ ClientId: config.clientId, Username, Passw
 <http://localhost:3000> を開きます（開いていたら読み込み直し）。
 
 1. 「サインアップ」を開き、登録する（例: `carol` / `carol@example.com` / `Passw0rd!`）。「メールを確認する」の画面に移り、ユーザー名が入っている
-2. 画面のリンクから <http://localhost:4566/_aws/ses> を開いて確認コードを読み、入れて確認する。「Cognito の応答」に `ConfirmSignUp → 成功` が出る
+2. 画面のリンクから「届いたメール」を開いて確認コードを読み、入れて確認する。「Cognito の応答」に `ConfirmSignUp → 成功` が出る
 3. 「サインアップ」に戻り、同じユーザー名でもう一度登録してみる → `UsernameExistsException`
 
 開発者ツールの Network タブで、次を確かめてください。
