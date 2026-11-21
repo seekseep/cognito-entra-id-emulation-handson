@@ -30,11 +30,18 @@ bash scripts/setup.sh              # 前のレクチャーまでに作ったも�
 
 ## 画面を作る
 
-**`public/index.html`** は、いまは Cognito の API の入口を出す 1 行だけの画面です。
+このあと、サインアップ・確認コード・ログインと画面が増えていきます。どの画面でも使う部分は、先に 2 つのファイルにまとめておきます。
+
+- **`public/style.css`** … どの画面でも使う見た目
+- **`public/cognito.js`** … `config.json` を読み、Cognito の API の入口（`issuer` のオリジン）を求めます。Floci なら `http://localhost:4566`、本物なら `https://cognito-idp.<リージョン>.amazonaws.com` になります
+
+::file{path="public/style.css"}
+
+::file{path="public/cognito.js"}
+
+トップの画面 **`public/index.html`** は、いまは Cognito の API の入口を出す 1 行だけです。**`public/main.js`** が `cognito.js` から入口を受け取って、画面に出します。
 
 ::file{path="public/index.html"}
-
-**`public/main.js`** は、`config.json` を読み、Cognito の API の入口（`issuer` のオリジン）を画面に出します。Floci なら `http://localhost:4566`、本物なら `https://cognito-idp.<リージョン>.amazonaws.com` になります。
 
 ::file{path="public/main.js"}
 

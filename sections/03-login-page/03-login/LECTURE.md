@@ -28,7 +28,7 @@ bash scripts/setup.sh              # 前のレクチャーまでに作ったも�
 
 ## 画面を作る
 
-**`public/index.html`** に、ログインのフォームと、ID トークンの中身を出す欄、ログインしているかの表示を足します。
+トップの画面 **`public/index.html`** に、ログインのフォームと、ID トークンの中身を出す欄、ログインしているかの表示、Cognito の応答を出す欄を足します。
 
 ::file{path="public/index.html"}
 
@@ -41,6 +41,8 @@ const { ok, json } = await cognito('InitiateAuth', {
 });
 ```
 
+**`public/main.js`** には、`cognito.js` から `cognito()` を読み込んで、ログインとログアウトを足します。
+
 「ログアウト」は、手元のトークンを消す前に `RevokeToken` でリフレッシュトークンを Cognito で取り消します。消すだけにすると、もしトークンが盗まれていた場合、ログアウトしたあとも使われ続けます（リフレッシュトークンは既定で 30 日有効です）。
 
 ::file{path="public/main.js"}
@@ -51,7 +53,7 @@ const { ok, json } = await cognito('InitiateAuth', {
 
 1. 前のレクチャーでサインアップした `carol` / `Passw0rd!` でログインする。「ID トークンの中身」に `cognito:username`・`email`・`iss`・`aud` などが出る
 2. 「ログアウト」を押す
-3. 新しくサインアップだけして、確認せずにログインしてみる → `UserNotConfirmedException`
+3. 「サインアップ」で新しく登録し、確認せずにトップに戻ってログインしてみる → `UserNotConfirmedException`
 4. パスワードを間違えてログインしてみる → `NotAuthorizedException`
 
 開発者ツールの Network タブで、次を確かめてください。
