@@ -24,8 +24,10 @@ b64url_decode() {
 # base64url → 16 進の文字列（鍵の数を openssl に渡すため）
 b64url_hex() { b64url_decode "$1" | od -An -v -tx1 | tr -d ' \n'; }
 
+# base64url の文字（A-Z a-z 0-9 - _）だけでできた 3 つの部分か。= や空白が混ざったものは受け付けない
+[[ $TOKEN =~ ^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$ ]] \
+  || ng "JWT の形（ヘッダー.ペイロード.署名）になっていません"
 IFS=. read -r HEADER PAYLOAD SIGNATURE <<< "$TOKEN"
-[[ -n ${SIGNATURE:-} ]] || ng "JWT の形（ヘッダー.ペイロード.署名）になっていません"
 
 # Floci の iss は http://localhost:4566/<プール ID>。本物なら https://cognito-idp.<region>.amazonaws.com/<プール ID>
 # トークンの中の iss ではなく、自分の User Pool から組み立てる
@@ -58,6 +60,9 @@ openssl asn1parse -genconf "$WORK/key.conf" -noout -out "$WORK/key.der"
 openssl pkey -pubin -inform DER -in "$WORK/key.der" -out "$WORK/key.pem"
 printf '%s' "$HEADER.$PAYLOAD" > "$WORK/signed"
 b64url_decode "$SIGNATURE" > "$WORK/signature"
+# RS256 の署名は、鍵（n）と同じ長さのバイト列。余分な文字が付いたものは、ここで弾く
+[[ $(wc -c < "$WORK/signature") -eq $(b64url_decode "$(jq -r .n <<< "$JWK")" | wc -c) ]] \
+  || ng "署名の長さが鍵と合いません（中身が書き換えられています）"
 openssl dgst -sha256 -verify "$WORK/key.pem" -signature "$WORK/signature" "$WORK/signed" > /dev/null 2>&1 \
   || ng "署名が合いません（中身が書き換えられています）"
 
