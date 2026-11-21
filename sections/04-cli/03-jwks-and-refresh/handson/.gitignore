@@ -1,2 +1,3 @@
 .cognito.env
+public/config.json
 .tokens.json

@@ -90,7 +90,6 @@ aws cognito-idp create-identity-provider \
 
 ```bash
 bash scripts/register-entra.sh
-node server.mjs
 ```
 
 <http://localhost:3000> を開き（開いていたら読み込み直し）、「Entra ID でログイン」を押します。entra-local のサインイン画面で `taro@entralocal.dev` / `Passw0rd!` を入れます。戻ってきたら ID トークンを見てください。

@@ -8,6 +8,14 @@ services:
       # 画面（http://localhost:3000）から Cognito の API を直接呼べるようにする
       FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS: http://localhost:3000
 
+  web:
+    # 画面（public/）を配るだけの静的サーバー
+    image: docker.io/library/nginx:1.27-alpine
+    ports:
+      - "127.0.0.1:3000:80"
+    volumes:
+      - ./public:/usr/share/nginx/html:ro
+
   entra-local:
     # amd64 向けのイメージしか無い。Apple Silicon の Mac ではエミュレーションで動く（起動に少し時間がかかる）
     image: ghcr.io/cmaneu/entra-local:0.1.1

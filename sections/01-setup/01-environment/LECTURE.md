@@ -7,7 +7,7 @@ docs: true
 
 ![準備](./images/00-thumbnail.svg)
 
-このハンズオンでは、Cognito と Entra ID をどちらも自分のパソコンの中のコンテナで動かします。AWS のアカウントも Entra のテナントも要りません。この節では、使う道具（Podman・aws CLI・jq・Node.js）を入れます。
+このハンズオンでは、Cognito と Entra ID をどちらも自分のパソコンの中のコンテナで動かします。AWS のアカウントも Entra のテナントも要りません。この節では、使う道具（Podman・aws CLI・jq）を入れます。
 
 ## どの OS で進めるか
 
@@ -117,7 +117,7 @@ podman compose version                                       # Docker Compose ve
 | ポート | 中身 | 使うセクション |
 |---|---|---|
 | 4566 | Floci（Cognito） | すべて |
-| 3000 | 画面（`node server.mjs` の静的サーバー） | 03・05 |
+| 3000 | 画面（nginx のコンテナ） | 03・05 |
 | 8443 | entra-local | 05 |
 
 Docker Desktop・LocalStack・別の Floci などが同じポート（4566・8443・3000）を使っていると、`localhost` へのアクセスの一部がそちらに流れます。`localhost` が IPv6（`::1`）にも IPv4（`127.0.0.1`）にも解決されるため、エラーにならず「ときどき別のサーバーにつながる」という分かりにくい壊れ方をします。始める前に、待ち受けているプログラムを確かめてください。
@@ -187,42 +187,17 @@ jq --version      # jq-1.6 以上
 openssl version   # OpenSSL 3.x か LibreSSL 3.x
 ```
 
-## Node.js
-
-画面を配る静的サーバーで使います。**24 以上**を入れてください（`fetch` や `--env-file` を前提にしています）。入れ方は何でも構いません。
-
-:::::platform
-::::macos
-```bash
-brew install node
-```
-::::
-::::windows-linux
-[nvm](https://github.com/nvm-sh/nvm) で入れる例です（インストールのコマンドは nvm の README にある最新のものを使ってください）。
-
-```bash
-nvm install 24
-```
-::::
-::::windows
-Windows 側に入れた Node.js ではなく、**WSL2 の Ubuntu の中** に入れてください。
-::::
-:::::
-
-```bash
-node --version   # v24.x.x 以上
-```
-
 ## コンテナのイメージを取得する
 
-使うコンテナのイメージを取得しておきます。展開後で合わせて約 530MB あります。
+使うコンテナのイメージを取得しておきます。展開後で合わせて約 580MB あります。
 
 ```bash
 podman pull docker.io/floci/floci:2.4.0
+podman pull docker.io/library/nginx:1.27-alpine
 podman pull --platform linux/amd64 ghcr.io/cmaneu/entra-local:0.1.1
 ```
 
-npm のパッケージは 1 つも入れません。スクリプトは bash と jq で、画面を配る静的サーバーは Node の標準の機能だけで書きます。
+npm のパッケージも Node.js も使いません。スクリプトは bash と jq で書き、画面は nginx のコンテナで配ります。
 
 ## エディタとブラウザ
 

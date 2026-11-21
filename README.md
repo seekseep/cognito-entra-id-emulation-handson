@@ -38,7 +38,7 @@ Amazon Cognito の認証を、AWS アカウントも Entra テナントも使わ
 
 ![HTML でログインする](./sections/03-login-page/01-signup-and-login/images/00-thumbnail.svg)
 
-HTML と JavaScript だけの画面を、Node の標準 API で書いた 40 行ほどの静的サーバーで配ります。画面から Cognito に直接サインアップ・ログインし（SDK も Amplify も使わず `fetch` で）、もらった ID トークンの中身を画面に出します。続けて、ログイン画面ごと Cognito に任せる Hosted UI を、認可コードフロー + PKCE で通します。
+HTML と JavaScript だけの画面を、Podman の nginx のコンテナで配ります。画面から Cognito に直接サインアップ・ログインし（SDK も Amplify も使わず `fetch` で）、もらった ID トークンの中身を画面に出します。続けて、ログイン画面ごと Cognito に任せる Hosted UI を、認可コードフロー + PKCE で通します。
 
 ### 04. コマンドで確かめる
 
@@ -100,4 +100,4 @@ site/                    解説サイト（sections/ を取り込む）
 ## 注意
 
 - 学習用のリポジトリです。Floci・entra-local は、どちらもローカルでの開発・練習のための設定で動かしています。そのまま外部に公開しないでください
-- 確認した版: Floci 2.4.0、entra-local 0.1.1、Node.js 24 以上
+- 確認した版: Floci 2.4.0、entra-local 0.1.1、nginx 1.27

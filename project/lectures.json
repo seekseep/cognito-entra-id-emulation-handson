@@ -16,7 +16,6 @@
     "scripts/verify-jwt.sh": { "since": "04-03", "about": "JWKS で JWT の署名・iss・exp を確かめる" },
     "scripts/refresh.sh": { "since": "04-03", "about": "リフレッシュトークンで新しいトークンをもらう" },
 
-    "server.mjs": { "since": "03-01", "about": "Node の標準 API だけで書いた静的サーバー。画面と /config を配る" },
     "public/index.html": { "since": "03-01", "about": "ログインの画面" },
     "public/main.js": { "since": "03-01", "about": "画面から Cognito に直接サインアップ・ログインし、ID トークンの中身を出す。03-02 で Hosted UI のログインが増える" },
 

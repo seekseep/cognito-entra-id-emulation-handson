@@ -24,3 +24,8 @@ export POOL_ID=$POOL_ID
 export CLIENT_ID=$CLIENT_ID
 ENV
 cat .cognito.env
+
+# 画面が読む設定。どの User Pool に、どのクライアントとしてログインするか（どれもブラウザに渡る値で、秘密ではない）
+cat > public/config.json <<JSON
+{ "issuer": "$AWS_ENDPOINT_URL/$POOL_ID", "clientId": "$CLIENT_ID" }
+JSON

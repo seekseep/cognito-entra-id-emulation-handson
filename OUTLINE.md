@@ -10,10 +10,10 @@ flowchart LR
   subgraph Podman["Podman（ローカル）"]
     floci["Floci :4566<br/>Cognito のエミュレータ<br/>（Hosted UI・/oauth2 もある）"]
     el["entra-local :8443<br/>Entra ID のエミュレータ"]
+    server["nginx :3000<br/>画面（public/）を配る"]
   end
-  server["静的サーバー :3000<br/>（node:http、ホストで動かす）"]
   browser["ブラウザ（HTML + JS）"]
-  server -- "index.html・main.js・/config" --> browser
+  server -- "index.html・main.js・config.json" --> browser
   browser -- "SignUp・InitiateAuth / /oauth2/authorize" --> floci
   floci -- "フェデレーション（OIDC）" --> el
 ```
@@ -56,7 +56,7 @@ flowchart LR
 
 ### 01-environment: 準備
 - Podman: `podman machine init` / `podman machine start`（macOS）、`podman compose` が呼ぶ docker-compose / podman-compose の違い
-- aws CLI v2、jq、Node.js 24 以上
+- aws CLI v2、jq
 
 ---
 
@@ -77,10 +77,10 @@ flowchart LR
 
 ## 03-login-page — HTML でログインする
 
-画面は HTML と JavaScript だけ。Node の標準 API（`node:http`）で書いた静的サーバー（`server.mjs`）で配る。ログインは画面（ブラウザ）から Cognito に直接行う。
+画面は HTML と JavaScript だけ。Podman の nginx のコンテナで配る。ログインは画面（ブラウザ）から Cognito に直接行う。
 
 ### 01-signup-and-login: HTML でサインアップ・ログインする
-- `server.mjs`: `public/` を配り、`/config`（issuer・クライアント ID）を `.cognito.env` から返す
+- nginx のコンテナ（`web`）で `public/` を配る。`setup` が `public/config.json`（issuer・クライアント ID）を書き出す
 - Floci の CORS（`FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS`）
 - `fetch` で `SignUp`・`ConfirmSignUp`・`InitiateAuth`・`RevokeToken`（`X-Amz-Target`、署名なし）
 - ログインしたら ID トークンの中身を画面に出す

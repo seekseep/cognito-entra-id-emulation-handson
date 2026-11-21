@@ -55,12 +55,10 @@ aws cognito-idp create-identity-provider \
 
 ## 4. アプリを向け直す
 
-`.cognito.env` を本物の値にします。静的サーバー（`server.mjs`）は `COGNITO_ENDPOINT` があればそれを Cognito の入口に使います。
+画面が読む `public/config.json` を、本物の User Pool とクライアントの値にします。
 
-```bash
-export POOL_ID=ap-northeast-1_xxxxxxxxx
-export CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxx
-export COGNITO_ENDPOINT=https://cognito-idp.ap-northeast-1.amazonaws.com
+```json
+{ "issuer": "https://cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_xxxxxxxxx", "clientId": "xxxxxxxxxxxxxxxxxxxxxxxxxx" }
 ```
 
 画面は discovery から本物の Hosted UI のエンドポイントを読むので、`public/` の変更は要りません。App Client のコールバック URL に `http://localhost:3000/` を入れておけば、手元の画面から本物の Cognito と Entra でログインできます。`identity_provider=EntraID` を使うので、IdP の名前は `EntraID` で登録してください。

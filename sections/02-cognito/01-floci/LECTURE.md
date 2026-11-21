@@ -9,7 +9,7 @@ docs: true
 
 [Floci](https://floci.io/) は、AWS のサービスを手元で真似するエミュレータです。MIT ライセンスで無料、アカウント登録も要りません。このハンズオンでは Floci の **Cognito** を使います。
 
-![全体の構成。Podman の中で Floci と entra-local が動き、静的サーバーが配る画面から、ブラウザが Floci を使う](./images/01-overview.svg)
+![全体の構成。Podman の中で Floci・entra-local・nginx が動き、nginx が配る画面から、ブラウザが Floci を使う](./images/01-overview.svg)
 
 Floci の Cognito は、User Pool・ユーザー・パスワード認証・グループ・JWKS に加えて、**Hosted UI（ログイン画面）と `/oauth2/authorize`・`/oauth2/token`** も持っています。このおかげで「Cognito が外部の IdP（Entra ID）にログインを任せる」流れまで、ローカルで最後まで通せます。
 
