@@ -11,6 +11,7 @@
  *                                         既定は "example"。デモには配布 ZIP が無いので
  *                                         ボタンは出ない。
  *   ::codeview{defaultFile="main.js"}     最初に開くファイル（既定は先頭）。
+ *   ::codeview{download="false"}         handson/ のエディタに「コードをダウンロード」を出さない。
  *   ::codeview[見出し]{...}                ヘッダの文言を上書きする（既定は example なら
  *                                         「このステップの完成例」、それ以外は「このデモのコード」）。
  *
@@ -215,7 +216,8 @@ export async function expandSentinels(body, { lectureAbsDir, sec, lec, base, whe
       if (handsonId && !attrs.path) {
         out.push(
           buildHandsonEditor(await changesOf(handsonId), {
-            zipUrl: downloadUrlFor(base, sec, lec),
+            // download="false" のときは「コードをダウンロード」を出さない（自分で作るだけの準備の節など）
+            zipUrl: attrs.download === 'false' ? null : downloadUrlFor(base, sec, lec),
             title: cv[1] ? cv[1].trim() : 'このレクチャーを終えた handson/',
           }),
         );

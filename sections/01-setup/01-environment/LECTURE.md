@@ -7,7 +7,7 @@ docs: true
 
 ![準備](./images/00-thumbnail.svg)
 
-このハンズオンでは、Cognito と Entra ID をどちらも自分のパソコンの中のコンテナで動かします。AWS のアカウントも Entra のテナントも要りません。この節では、使う道具（Podman・aws CLI・jq・Node.js）を入れ、配られる `handson/` で Cognito のエミュレータ（Floci）を起動するところまでを済ませます。
+このハンズオンでは、Cognito と Entra ID をどちらも自分のパソコンの中のコンテナで動かします。AWS のアカウントも Entra のテナントも要りません。この節では、使う道具（Podman・aws CLI・jq・Node.js）を入れ、`handson/` フォルダを作って Cognito のエミュレータ（Floci）を起動するところまでを済ませます。
 
 ## どの OS で進めるか
 
@@ -236,45 +236,23 @@ npm のパッケージは 1 つも入れません。スクリプトは bash と 
 
 Floci の Cognito は、User Pool・ユーザー・パスワード認証・グループ・JWKS に加えて、**Hosted UI（ログイン画面）と `/oauth2/authorize`・`/oauth2/token`** も持っています。このおかげで「Cognito が外部の IdP（Entra ID）にログインを任せる」流れまで、ローカルで最後まで通せます。
 
-:::download
-[handson フォルダをダウンロード](./project.zip)
-:::
+### 作業用のフォルダを作る
 
-### 作業用のフォルダを用意する
-
-このハンズオンでは、**`handson/` という 1 つのフォルダに、レクチャーごとにファイルを足していきます**。ダウンロードするのは、ここの 1 回だけです。展開して、好きな場所に置いてください。
+このハンズオンでは、**`handson/` という 1 つのフォルダに、レクチャーごとにファイルを足していきます**。好きな場所に作って、その中に移ります。
 
 ```bash
-unzip 01-setup-01-environment.zip     # handson/ ができる
+mkdir handson
 cd handson
 ```
 
-最初の `handson/` に入っているのは、次の 3 つだけです。
+### compose.yaml を作る
 
-::changes
+起動するコンテナを書く **`compose.yaml`** を作ります。いまは Floci だけです。
 
-ここから、User Pool を作るスクリプト（02）、ログインの画面（03）、Entra ID（04）と、少しずつ増えていきます。各レクチャーの最初に「このレクチャーで足すファイル」の表、最後に「このレクチャーを終えた `handson/`」のエディタを置いてあります。何をいつ足したかを見れば、そのファイルが何のためにあるのかが分かるようにしてあります。
-
-:::notice[途中から始める・追いつく]
-各レクチャーの最後のエディタにある「コードをダウンロード」は、そのレクチャーを終えた状態の `handson/` です。手元のファイルが壊れたときや、途中のレクチャーから始めるときに使ってください。
-:::
-
-### 起動する
-
-[compose.yaml](./handson/compose.yaml) は、Floci だけを起動します。
-
-```yaml
-services:
-  floci:
-    image: docker.io/floci/floci:2.4.0
-    ports:
-      - "127.0.0.1:4566:4566"
-```
+::file{path="compose.yaml"}
 
 - イメージは `2.4.0` に固定しています。`latest` だと、ある日から挙動が変わることがあります
 - ポートは **4566** です。`127.0.0.1:` を付けて、自分のパソコンからだけ届くようにしています。Floci は認証なしで API を受け付けるので、ほかのマシンから触られないようにするためです
-
-::file{path="compose.yaml"}
 
 `handson/` で、コンテナを起動します。
 
@@ -285,19 +263,18 @@ curl -s http://localhost:4566/_floci/health | head -c 120
 
 `-d` は、コンテナを裏で動かし続ける指定です。`curl` で `{"edition":"community","services":{...` のような JSON が返れば起動しています。何も返らないときは、数秒待ってからもう一度 `curl` を打ってください。
 
-### aws CLI を Floci に向ける
+### env.sh を作る
 
-aws CLI と AWS SDK は、環境変数 `AWS_ENDPOINT_URL` があればそこに話しかけます。その設定を [env.sh](./handson/env.sh) にまとめてあるので、ターミナルを開いたら最初に読み込みます。
-
-```bash
-source ./env.sh
-```
+aws CLI は、環境変数 `AWS_ENDPOINT_URL` があればそこに話しかけます。aws CLI を Floci に向ける設定を **`env.sh`** にまとめます。
 
 ::file{path="env.sh"}
 
 Floci はキーの中身を確かめないので、ダミーの `test` で構いません。**本物の AWS のキーを入れないでください**（向き先を間違えたときに本物を触ってしまいます）。
 
+ターミナルを開いたら、最初に読み込みます。読み込んだら、Floci の Cognito に話しかけられるかを確かめます。
+
 ```bash
+source ./env.sh
 aws cognito-idp list-user-pools --max-results 10
 # { "UserPools": [] }
 ```
@@ -337,9 +314,15 @@ podman compose up -d
 | 外部 IdP（OIDC）経由のログイン | 使える。登録のしかたに本物と違う点がある（[04-02](../../04-cognito-with-entra-id/02-federation/LECTURE.md) で扱う） |
 | 外部 IdP（SAML）・Facebook・Apple | 使えない |
 
+### .gitignore を作る
+
+最後に、git で管理するときに入れないファイルを書く **`.gitignore`** を作ります。このハンズオンでは npm のパッケージは入れませんが、Node のプロジェクトで入れないのが決まりの `node_modules/` を書いておきます。このあとのレクチャーで、User Pool の ID やトークン、シークレットを書いたファイルを足していきます。
+
+::file{path=".gitignore"}
+
 ## この節を終えた handson/
 
-::codeview
+::codeview{download="false"}
 
 :::faq
 

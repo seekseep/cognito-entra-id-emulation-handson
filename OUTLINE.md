@@ -57,7 +57,7 @@ flowchart LR
 ### 01-environment: 準備
 - Podman: `podman machine init` / `podman machine start`（macOS）、`podman compose` が呼ぶ docker-compose / podman-compose の違い
 - aws CLI v2、jq、Node.js 24 以上
-- 配られた `handson/` で Floci を起動する: `floci/floci:2.4.0`（バージョンを固定）、compose.yaml、ポート 4566、起動したかは curl で health を見る
+- `handson/` を作り、compose.yaml・env.sh・.gitignore を 1 つずつ作って Floci を起動する: `floci/floci:2.4.0`（バージョンを固定）、compose.yaml、ポート 4566、起動したかは curl で health を見る
 - 共通の環境変数: `AWS_ENDPOINT_URL=http://localhost:4566`、ダミーの `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`、`AWS_REGION`（`env.sh` を `source` する）
 - データはメモリにあり、作り直すと消える。やり直すときは `podman compose down && up`
 - Floci の Cognito で使えるもの・使えないもの（動かして確かめた表）

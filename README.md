@@ -19,7 +19,7 @@ Amazon Cognito の認証を、AWS アカウントも Entra テナントも使わ
 
 | セクション | 使うコンテナ | ローカルで完結すること | 本物が要ること |
 |---|---|---|---|
-| 01. 準備 | Floci | 道具を入れ、配られた `handson/` で Floci を起動する | なし |
+| 01. 準備 | Floci | 道具を入れ、`handson/` を作って Floci を起動する | なし |
 | 02. Cognito を作る | Floci | User Pool・ユーザー・トークン・JWKS | なし |
 | 03. HTML でログインする | Floci | サインアップ・ログイン・Hosted UI | なし |
 | 04. Entra ID と連携する | Floci・entra-local | Cognito 経由の Entra ID（OIDC）ログイン | SAML、MFA・条件付きアクセス |
@@ -46,7 +46,7 @@ entra-local で Entra ID を手元に再現し、アプリの登録・シーク�
 
 ## 進め方
 
-- [準備](./sections/01-setup/01-environment/LECTURE.md) で配る `handson/` という 1 つのフォルダを、レクチャーごとに育てます。ダウンロードするのは、そこの 1 回だけです。
+- [準備](./sections/01-setup/01-environment/LECTURE.md) で作る `handson/` という 1 つのフォルダを、レクチャーごとに育てます。
 - 各レクチャーの最初に、そのレクチャーで作成・変更するファイルの表があります。本文にはファイルの全文を載せ、前のレクチャーから足した行に色を付けています。コピーして作ってください。
 - 各レクチャーの最後に、そのレクチャーを終えたときの `handson/` と、その状態の ZIP（「コードをダウンロード」）があります。途中のレクチャーから始めるときは、ひとつ前のレクチャーの ZIP を展開し、`podman compose up -d` と `npm run setup` を実行します。
 - Floci のデータはコンテナを止めると消えます。`npm run setup` で、前のレクチャーを終えた状態に作り直せます。
