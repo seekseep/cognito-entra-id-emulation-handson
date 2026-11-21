@@ -82,14 +82,19 @@ flowchart LR
 
 画面は HTML と JavaScript だけ。Podman の nginx のコンテナで配る。ログインは画面（ブラウザ）から Cognito に直接行う。
 
-### 01-signup-and-login: HTML でサインアップ・ログインする
+### 01-web: Web の用意
 - nginx のコンテナ（`web`）で `public/` を配る。`setup` が `public/config.json`（issuer・クライアント ID）を書き出す
 - Floci の CORS（`FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS`）
-- `fetch` で `SignUp`・`ConfirmSignUp`・`InitiateAuth`・`RevokeToken`（`X-Amz-Target`、署名なし）
-- ログインしたら ID トークンの中身を画面に出す
+- 画面は config.json を読み、Cognito の API の入口を出すだけ
+
+### 02-signup: サインアップ
+- `fetch` で `SignUp`・`ConfirmSignUp`（`X-Amz-Target`、署名なし）
+
+### 03-login: ログイン
+- `InitiateAuth` でログインし、ID トークンの中身を画面に出す。`RevokeToken` でログアウト
 - `PreventUserExistenceErrors`（Floci では効かない）、トークンの置き場所
 
-### 02-hosted-ui: Cognito の Hosted UI でログインする
+### 04-hosted-ui: Cognito の Hosted UI でログインする
 - フェデレーションの前に、自前ユーザーで Authorization Code + PKCE（`/oauth2/authorize` → Floci のログイン画面 → `/oauth2/token`）
 - App Client の Callback URL・`AllowedOAuthFlows`・スコープ（`update-client.sh`）
 - 画面に「Cognito のログイン画面へ」を足し、パスワードのフォームと見比べる

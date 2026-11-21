@@ -36,7 +36,7 @@ Amazon Cognito の認証を、AWS アカウントも Entra テナントも使わ
 
 ### 03. HTML でログインする
 
-![HTML でログインする](./sections/03-login-page/01-signup-and-login/images/00-thumbnail.svg)
+![HTML でログインする](./sections/03-login-page/01-web/images/00-thumbnail.svg)
 
 HTML と JavaScript だけの画面を、Podman の nginx のコンテナで配ります。画面から Cognito に直接サインアップ・ログインし（SDK も Amplify も使わず `fetch` で）、もらった ID トークンの中身を画面に出します。続けて、ログイン画面ごと Cognito に任せる Hosted UI を、認可コードフロー + PKCE で通します。
 
@@ -72,7 +72,7 @@ entra-local で Entra ID を手元に再現し、アプリの登録・シーク�
 | どこ | ユーザー | パスワード | 作られる所 |
 |---|---|---|---|
 | Cognito | `alice`（admin グループ）/ `bob` | `Passw0rd!` | 04-01・04-02（`bash scripts/setup.sh` で作り直せる） |
-| Cognito | `carol` | `Passw0rd!` | 03-01 で画面からサインアップ（setup では作られない） |
+| Cognito | `carol` | `Passw0rd!` | 03-02 で画面からサインアップ（setup では作られない） |
 | entra-local | `taro@entralocal.dev` | `Passw0rd!` | 05-01（`bash scripts/entra-create-user.sh`） |
 
 ## 関連するハンズオン

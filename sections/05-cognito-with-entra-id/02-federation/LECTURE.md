@@ -7,7 +7,7 @@ docs: true
 
 ![Cognito 経由で Entra ID にログインする](./images/00-thumbnail.svg)
 
-entra-local を Cognito の外部 IdP（OIDC）として登録し、画面の「Entra ID でログイン」で Entra のユーザーをアプリに入れます。仕組みは 03-02 の Hosted UI の上に乗っていて、Cognito のログイン画面の代わりに Entra のサインイン画面に回るだけです。気をつけるのは Entra に特有の部分、とくに **ユーザーを何で見分けるか** です。
+entra-local を Cognito の外部 IdP（OIDC）として登録し、画面の「Entra ID でログイン」で Entra のユーザーをアプリに入れます。仕組みは 03-04 の Hosted UI の上に乗っていて、Cognito のログイン画面の代わりに Entra のサインイン画面に回るだけです。気をつけるのは Entra に特有の部分、とくに **ユーザーを何で見分けるか** です。
 
 このレクチャーで足す・変えるファイルは次のとおりです。画面には、ボタンを 1 つ足すだけです。
 
@@ -60,7 +60,7 @@ aws cognito-idp create-identity-provider \
 2. 属性のマッピングで `oid` を入れる: `custom:entra_oid=oid`
 3. App Client で読み取りを許す: `--read-attributes ... custom:entra_oid`（`update-client.sh` に足す）
 
-`register-entra.sh` の全体です。最後に `update-client.sh` を呼び、App Client で EntraID を選べるようにします（03-02 で、User Pool に登録してある IdP を全部並べるようにしておきました）。
+`register-entra.sh` の全体です。最後に `update-client.sh` を呼び、App Client で EntraID を選べるようにします（03-04 で、User Pool に登録してある IdP を全部並べるようにしておきました）。
 
 ::file{path="scripts/register-entra.sh"}
 
@@ -82,7 +82,7 @@ aws cognito-idp create-identity-provider \
 
 ::file{path="public/index.html"}
 
-`public/main.js` では、03-02 の `hostedLogin` に IdP の名前 `EntraID`（`register-entra.sh` の `--provider-name`）を渡すだけです。`/oauth2/authorize` に `identity_provider=EntraID` が付き、Cognito は自分のログイン画面を飛ばして、Entra のサインイン画面へ直行します。
+`public/main.js` では、03-04 の `hostedLogin` に IdP の名前 `EntraID`（`register-entra.sh` の `--provider-name`）を渡すだけです。`/oauth2/authorize` に `identity_provider=EntraID` が付き、Cognito は自分のログイン画面を飛ばして、Entra のサインイン画面へ直行します。
 
 ::file{path="public/main.js"}
 

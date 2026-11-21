@@ -14,9 +14,11 @@
 </head>
 <body>
   <h1>Cognito ログインの練習</h1>
+  <!-- @since 03-03 -->
   <p id="status">ログインしていません</p>
+  <!-- @end -->
   <p>Cognito の API: <code id="endpoint">読み込み中…</code></p>
-  <!-- @since 03-02 -->
+  <!-- @since 03-04 -->
 
   <section>
     <h2>Hosted UI でログイン</h2>
@@ -27,6 +29,7 @@
     <!-- @end -->
   </section>
   <!-- @end -->
+  <!-- @since 03-02 -->
 
   <form id="signup">
     <h2>サインアップ</h2>
@@ -43,6 +46,8 @@
     <label>確認コード <input name="code" inputmode="numeric" required></label>
     <button>確認する</button>
   </form>
+  <!-- @end -->
+  <!-- @since 03-03 -->
 
   <form id="login">
     <h2>パスワードでログイン</h2>
@@ -56,11 +61,14 @@
     <pre id="id-token">ログインすると表示します</pre>
     <button id="logout">ログアウト</button>
   </section>
+  <!-- @end -->
+  <!-- @since 03-02 -->
 
   <section>
     <h2>Cognito の応答</h2>
     <pre id="output">まだ何もしていません</pre>
   </section>
+  <!-- @end -->
 
   <script type="module" src="./main.js"></script>
 </body>
