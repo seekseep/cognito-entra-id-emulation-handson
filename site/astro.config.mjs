@@ -163,12 +163,12 @@ export default defineConfig({
       ],
       sidebar: [
         { label: 'はじめに', link: '/' },
-        { label: '進め方', link: '/getting-started/' },
         // Starlight v0.39+ では autogenerate を items 配列に入れる（label と autogenerate を同階層に書けない）。
-        { label: '00. 準備', items: [{ autogenerate: { directory: '00-setup' } }] },
-        { label: '01. Cognito を作る', items: [{ autogenerate: { directory: '01-cognito' } }] },
-        { label: '02. HTML でログインする', items: [{ autogenerate: { directory: '02-login-page' } }] },
-        { label: '03. Entra ID と連携する', items: [{ autogenerate: { directory: '03-cognito-with-entra-id' } }] },
+        { label: '01. 準備', items: [{ autogenerate: { directory: '01-setup' } }] },
+        { label: '02. Cognito を作る', items: [{ autogenerate: { directory: '02-cognito' } }] },
+        { label: '03. HTML でログインする', items: [{ autogenerate: { directory: '03-login-page' } }] },
+        { label: '04. Entra ID と連携する', items: [{ autogenerate: { directory: '04-cognito-with-entra-id' } }] },
+        { label: '関連するハンズオン', link: '/related/' },
       ],
       editLink: {
         baseUrl: `${repoUrl}/edit/main/`,

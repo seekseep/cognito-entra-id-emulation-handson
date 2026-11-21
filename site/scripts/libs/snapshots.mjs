@@ -5,10 +5,10 @@
  * - どのファイルがどのレクチャーで登場するかは project/lectures.json の files に書く
  * - ファイルの中で行が増える・差し替わる所は、コメントの目印で書く
  *
- *     // @since 02-02      … ここから @end までは 02-02 から入る（ブロック）
- *     // @until 03-01      … ここから @end までは 03-01 より前だけ（差し替えられる古い行）
+ *     // @since 03-02      … ここから @end までは 03-02 から入る（ブロック）
+ *     // @until 04-01      … ここから @end までは 04-01 より前だけ（差し替えられる古い行）
  *     // @end
- *     foo(), // @since 02-02   … この 1 行だけ。行末の目印は消して出す
+ *     foo(), // @since 03-02   … この 1 行だけ。行末の目印は消して出す
  *
  *   コメントは // と # と <!-- --> のどれでもよい。JSON にも // で書き、出すときに
  *   目印と行末のカンマの余りを取り除く（package.json は最終形の側では JSON として読めない）。
@@ -39,7 +39,7 @@ export async function loadManifest() {
   return manifestCache;
 }
 
-/** `01-cognito/03-tokens-and-groups` → `01-03` */
+/** `02-cognito/03-tokens-and-groups` → `02-03` */
 export function lectureIdOf(sec, lec) {
   return `${sec.slice(0, 2)}-${lec.slice(0, 2)}`;
 }

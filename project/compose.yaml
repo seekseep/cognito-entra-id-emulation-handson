@@ -4,7 +4,7 @@ services:
     ports:
       # ほかのマシンから届かないよう、ループバックにだけ公開する（Floci は認証なしで API を受け付ける）
       - "127.0.0.1:4566:4566"
-    # @since 02-01
+    # @since 03-01
     environment:
       # 画面（http://localhost:3000）から Cognito の API を直接呼べるようにする
       FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS: http://localhost:3000
@@ -15,7 +15,7 @@ services:
       interval: 3s
       timeout: 3s
       retries: 20
-  # @since 03-01
+  # @since 04-01
 
   entra-local:
     # amd64 向けのイメージしか無い。Apple Silicon の Mac ではエミュレーションで動く（起動に少し時間がかかる）

@@ -5,9 +5,9 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 bash scripts/create-user-pool.sh
-bash scripts/create-users.sh # @since 01-02
-bash scripts/create-groups.sh # @since 01-03
-bash scripts/update-client.sh # @since 02-02
-bash scripts/entra-register-app.sh # @since 03-01
-bash scripts/entra-create-user.sh taro '山田 太郎' # @since 03-01
-bash scripts/register-entra.sh # @since 03-02
+bash scripts/create-users.sh # @since 02-02
+bash scripts/create-groups.sh # @since 02-03
+bash scripts/update-client.sh # @since 03-02
+bash scripts/entra-register-app.sh # @since 04-01
+bash scripts/entra-create-user.sh taro '山田 太郎' # @since 04-01
+bash scripts/register-entra.sh # @since 04-02

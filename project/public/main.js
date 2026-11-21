@@ -83,14 +83,14 @@ document.querySelector('#logout').addEventListener('click', async () => {
   // 手元から消す前に、リフレッシュトークンを Cognito で取り消す（盗まれていても使えなくする）
   if (tokens?.refreshToken) await cognito('RevokeToken', { Token: tokens.refreshToken });
   saveTokens(null);
-  // @since 02-02
+  // @since 03-02
   // Hosted UI 側のログイン状態（Cookie）も消す。消さないと、次に Hosted UI へ行ったとき画面が出ずに素通りする
   const url = new URL(discovery.authorization_endpoint.replace('/oauth2/authorize', '/logout'));
   url.search = new URLSearchParams({ client_id: config.clientId, logout_uri: redirectUri });
   location.assign(url);
   // @end
 });
-// @since 02-02
+// @since 03-02
 
 // ---- Hosted UI（Authorization Code + PKCE）。流れを目で追うため、ライブラリを使わずに書く ----
 
@@ -172,7 +172,7 @@ async function handleCallback() {
 }
 
 document.querySelector('#hosted-login').addEventListener('click', () => hostedLogin());
-// @since 03-02
+// @since 04-02
 // Cognito に登録した IdP の名前（register-entra.sh の --provider-name）を渡す
 document.querySelector('#entra-login').addEventListener('click', () => hostedLogin('EntraID'));
 // @end

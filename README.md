@@ -15,44 +15,71 @@ Amazon Cognito の認証を、AWS アカウントも Entra テナントも使わ
 
 手元では **`handson/` という 1 つのフォルダ** を、レクチャーごとに少しずつ育てていきます。User Pool を作るスクリプト 1 つから始まり、画面・Entra ID と、どのファイルをいつ足すかを追いながら進めます。
 
-![全体の構成](./sections/00-setup/02-floci/images/01-overview.svg)
+![全体の構成](./sections/01-setup/01-environment/images/01-overview.svg)
 
 | セクション | 使うコンテナ | ローカルで完結すること | 本物が要ること |
 |---|---|---|---|
-| 01. Cognito を作る | Floci | User Pool・ユーザー・トークン・JWKS | なし |
-| 02. HTML でログインする | Floci | サインアップ・ログイン・Hosted UI | なし |
-| 03. Entra ID と連携する | Floci・entra-local | Cognito 経由の Entra ID（OIDC）ログイン | SAML、MFA・条件付きアクセス |
+| 01. 準備 | Floci | 道具を入れ、配られた `handson/` で Floci を起動する | なし |
+| 02. Cognito を作る | Floci | User Pool・ユーザー・トークン・JWKS | なし |
+| 03. HTML でログインする | Floci | サインアップ・ログイン・Hosted UI | なし |
+| 04. Entra ID と連携する | Floci・entra-local | Cognito 経由の Entra ID（OIDC）ログイン | SAML、MFA・条件付きアクセス |
 
 ## このハンズオンで作るもの
 
-### 01. Cognito を作る
+### 02. Cognito を作る
 
-![User Pool](./sections/01-cognito/01-user-pool/images/00-thumbnail.svg)
+![User Pool](./sections/02-cognito/01-user-pool/images/00-thumbnail.svg)
 
 aws CLI だけで、User Pool と App Client を作り、管理者が作るユーザーとサインアップするユーザーの両方を通します。返ってきた ID トークン・アクセストークンを開いて中身を読み、グループがトークンに載ることを確かめます。最後に JWKS の公開鍵で署名を確かめ、書き換えたトークンが弾かれることを見ます。
 
-### 02. HTML でログインする
+### 03. HTML でログインする
 
-![HTML でログインする](./sections/02-login-page/01-signup-and-login/images/00-thumbnail.svg)
+![HTML でログインする](./sections/03-login-page/01-signup-and-login/images/00-thumbnail.svg)
 
 HTML と JavaScript だけの画面を、Node の標準 API で書いた 40 行ほどの静的サーバーで配ります。画面から Cognito に直接サインアップ・ログインし（SDK も Amplify も使わず `fetch` で）、もらった ID トークンの中身を画面に出します。続けて、ログイン画面ごと Cognito に任せる Hosted UI を、認可コードフロー + PKCE で通します。
 
-### 03. Entra ID と連携する
+### 04. Entra ID と連携する
 
-![Entra ID](./sections/03-cognito-with-entra-id/02-federation/images/00-thumbnail.svg)
+![Entra ID](./sections/04-cognito-with-entra-id/02-federation/images/00-thumbnail.svg)
 
 entra-local で Entra ID を手元に再現し、アプリの登録・シークレット・`tid` や `oid` といった Entra 特有のクレームを確かめます。Cognito の外部 IdP として登録し、画面の「Entra ID でログイン」で入れるようにします。アプリごとに値が変わる `sub` の代わりに、変わらない `oid` を Cognito の属性に持ち込みます。本物のテナントにつなぐ手順と SAML との違いもまとめます。
 
-## 始め方
+## 進め方
 
-1. [道具をそろえる](./sections/00-setup/01-tools/LECTURE.md)
-2. [進め方](./sections/README.md) を読む
-3. [Floci を起動する](./sections/00-setup/02-floci/LECTURE.md) で `handson/` をダウンロードして、最初のレクチャーに進む
+- [準備](./sections/01-setup/01-environment/LECTURE.md) で配る `handson/` という 1 つのフォルダを、レクチャーごとに育てます。ダウンロードするのは、そこの 1 回だけです。
+- 各レクチャーの最初に、そのレクチャーで作成・変更するファイルの表があります。本文にはファイルの全文を載せ、前のレクチャーから足した行に色を付けています。コピーして作ってください。
+- 各レクチャーの最後に、そのレクチャーを終えたときの `handson/` と、その状態の ZIP（「コードをダウンロード」）があります。途中のレクチャーから始めるときは、ひとつ前のレクチャーの ZIP を展開し、`npm run up` と `npm run setup` を実行します。
+- Floci のデータはコンテナを止めると消えます。`npm run setup` で、前のレクチャーを終えた状態に作り直せます。
+
+前提:
+
+- macOS / Windows 10・11（WSL2 の Ubuntu）/ Linux のどれか
+- ターミナルの基本的な操作（`cd`・`ls`）ができる
+- JavaScript を書いたことがある
+
+### 練習用のアカウント
+
+どれも練習用の値です。本物のパスワードに使わないでください。
+
+| どこ | ユーザー | パスワード | 作られる所 |
+|---|---|---|---|
+| Cognito | `alice`（admin グループ）/ `bob` | `Passw0rd!` | 02-02・02-03（`npm run setup` で作り直せる） |
+| Cognito | `carol` | `Passw0rd!` | 03-01 で画面からサインアップ（setup では作られない） |
+| entra-local | `taro@entralocal.dev` | `Passw0rd!` | 04-01（`npm run entra:create-user`） |
+
+## 関連するハンズオン
+
+NestJS のハンズオン 3 本とつながっています。どれから始めても進められます。つながりは [関連するハンズオン](./sections/RELATED.md) にまとめています。
+
+- Cognito と Entra ID をローカルで練習する（このハンズオン）
+- [NestJS で作る REST API](https://seekseep.github.io/nestjs-rest-api-handson/)
+- [NestJS と Cognito で認証と認可](https://seekseep.github.io/nestjs-cognito-auth-handson/)
+- [NestJS のテスト](https://seekseep.github.io/nestjs-testing-handson/)
 
 ## リポジトリの構成
 
 ```text
-project/                 03 を終えた状態の handson/（ここが元。ファイルの中の @since で、いつ足す行かを書く）
+project/                 04 を終えた状態の handson/（ここが元。ファイルの中の @since で、いつ足す行かを書く）
   lectures.json          どのファイルがどのレクチャーで増えるか
 sections/<sec>/<lec>/
   LECTURE.md             教材の本文

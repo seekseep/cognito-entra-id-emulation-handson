@@ -44,29 +44,28 @@ flowchart LR
 
 ### この教材について
 - 目的と、3 つの練習の順番と関係（上の図と表）
+- 進め方（1 つのフォルダを育てる・差分の読み方・節の最後のディレクトリと ZIP・途中の節から始める方法・前提）
 - 「このハンズオンで作るもの」: セクションごとに図と 200 字程度の説明
 
-## sections/README.md（進め方）
-- レクチャーごとに `cd` して動かす進め方、ポートの一覧（4566 / 8443 / 3000）
+## sections/RELATED.md（関連するハンズオン）
+- NestJS の 3 本（REST API・認証と認可・テスト）と、それぞれとのつながり
 
 ---
 
-## 00-setup — 準備
+## 01-setup — 準備
 
-### 01-tools: 道具をそろえる
+### 01-environment: 準備
 - Podman: `podman machine init` / `podman machine start`（macOS）、`podman compose` が呼ぶ docker-compose / podman-compose の違い
 - aws CLI v2、jq、Node.js 24 以上
+- 配られた `handson/` で Floci を起動する: `floci/floci:2.4.0`（バージョンを固定）、compose.yaml、ポート 4566、ヘルスチェック
 - 共通の環境変数: `AWS_ENDPOINT_URL=http://localhost:4566`、ダミーの `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`、`AWS_REGION`（`env.sh` を `source` する）
-
-### 02-floci: Floci を起動する
-- `floci/floci:2.4.0`（バージョンを固定）、compose.yaml、ポート 4566、ヘルスチェック
 - データはメモリにあり、作り直すと消える。やり直すときは `podman compose down && up`
 - Floci の Cognito で使えるもの・使えないもの（動かして確かめた表）
 - コラム: moto と比べると（Hosted UI の有無、`iss`、鍵、ID トークンの email）
 
 ---
 
-## 01-cognito — Cognito 単体（aws CLI だけ）
+## 02-cognito — Cognito 単体（aws CLI だけ）
 
 ### 01-user-pool: User Pool と App Client を作る
 - パスワードポリシー、`ALLOW_USER_PASSWORD_AUTH`、シークレットなしのクライアント、ID を `.cognito.env` に残す
@@ -86,7 +85,7 @@ flowchart LR
 
 ---
 
-## 02-login-page — HTML でログインする
+## 03-login-page — HTML でログインする
 
 画面は HTML と JavaScript だけ。Node の標準 API（`node:http`）で書いた静的サーバー（`server.mjs`）で配る。ログインは画面（ブラウザ）から Cognito に直接行う。
 
@@ -104,7 +103,7 @@ flowchart LR
 
 ---
 
-## 03-cognito-with-entra-id — Entra ID（entra-local）
+## 04-cognito-with-entra-id — Entra ID（entra-local）
 
 ### Entra ID はローカルで再現できるか（セクション冒頭のレクチャー本文で扱う）
 - OIDC の範囲なら [cmaneu/entra-local](https://github.com/cmaneu/entra-local) で再現できる
@@ -125,7 +124,7 @@ flowchart LR
 - アプリ登録、リダイレクト URI `https://<domain>.auth.<region>.amazoncognito.com/oauth2/idpresponse`
 - SAML で登録する場合の差分
 
-### Entra 固有の落とし穴（03 の末尾）
+### Entra 固有の落とし穴（04 の末尾）
 - テナントごとの issuer と `common`、`email` が来ないことがある、groups の overage、シークレットの期限切れ
 
 ---
@@ -137,4 +136,4 @@ flowchart LR
 - entra-local の userinfo には `oid` が入り、`custom:entra_oid=oid` で Cognito の属性に移せる。同じユーザーでもアプリごとに `sub` が変わることも確かめた
 - Hosted UI の `/oauth2/token` は PKCE を確かめる。ブラウザから Cognito の API・トークンエンドポイントを呼ぶには `FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS` が要る
 - Floci は署名なしの `SignUp`・`InitiateAuth`・`RevokeToken` を受け付ける。`PreventUserExistenceErrors: ENABLED` は保存するが効かない
-- 未確認のまま: entra-local を HTTPS のまま Floci からつなぐこと、本物の Entra テナント + 本物の Cognito（03-03 は手順のまとめだけ）
+- 未確認のまま: entra-local を HTTPS のまま Floci からつなぐこと、本物の Entra テナント + 本物の Cognito（04-03 は手順のまとめだけ）

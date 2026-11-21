@@ -7,25 +7,25 @@
     "up": "${COMPOSE:-podman compose} up -d --wait",
     "down": "${COMPOSE:-podman compose} down",
     "reset": "npm run down && npm run up",
-    "setup": "bash scripts/setup.sh", // @since 01-01
-    "read-code": "bash scripts/read-code.sh", // @since 01-02
-    // @since 01-03
+    "setup": "bash scripts/setup.sh", // @since 02-01
+    "read-code": "bash scripts/read-code.sh", // @since 02-02
+    // @since 02-03
     "login": "bash scripts/login.sh",
     "decode": "bash scripts/decode-jwt.sh",
     // @end
-    // @since 01-04
+    // @since 02-04
     "verify": "bash scripts/verify-jwt.sh",
     "refresh": "bash scripts/refresh.sh",
     // @end
-    "start": "node server.mjs", // @since 02-01
-    "update-client": "bash scripts/update-client.sh", // @since 02-02
-    // @since 03-01
+    "start": "node server.mjs", // @since 03-01
+    "update-client": "bash scripts/update-client.sh", // @since 03-02
+    // @since 04-01
     "entra:endpoints": "bash scripts/entra-endpoints.sh",
     "entra:register-app": "bash scripts/entra-register-app.sh",
     "entra:create-user": "bash scripts/entra-create-user.sh",
     "entra:preview-token": "bash scripts/entra-preview-token.sh",
     // @end
-    // @since 03-02
+    // @since 04-02
     "register-entra": "bash scripts/register-entra.sh",
     "users": "bash scripts/list-users.sh",
     // @end
