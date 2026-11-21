@@ -1,6 +1,6 @@
 {
   "$comment": "最終形（05 を終えた状態）のファイルが、どのレクチャーで登場するか。ファイルの中で行が増える所は、ファイルの中の @since / @until で書く。site/scripts/build-snapshots.mjs が、ここからレクチャーごとの状態（sections/<sec>/<lec>/handson/）を作る",
-  "lectures": ["02-01", "02-04", "03-01", "03-02", "03-03", "03-04", "03-05", "04-01", "04-02", "04-04", "04-05", "05-01", "05-02", "05-03"],
+  "lectures": ["02-01", "02-04", "03-01", "03-02", "03-03", "03-04", "04-01", "04-02", "04-04", "04-05", "05-01", "05-02", "05-03"],
   "files": {
     "compose.yaml": { "since": "02-01", "about": "コンテナの定義。Floci から始まり、03 で nginx、04 で entra-local が増える" },
     "env.sh": { "since": "02-01", "about": "aws CLI の向き先を Floci に変える" },
@@ -24,8 +24,8 @@
     "public/mail.html": { "since": "03-02", "about": "Floci に届いたメールを読むメールボックス" },
     "public/signup.html": { "since": "03-03", "about": "サインアップの画面" },
     "public/confirm.html": { "since": "03-03", "about": "メールに届いた確認コードを入れる画面" },
-    "public/signin.html": { "since": "03-04", "about": "パスワードでサインインする画面。04-04 で Entra ID のボタンが増える" },
-    "public/home.html": { "since": "03-05", "about": "ログイン中の画面。ID トークンの中身とサインアウト" },
+    "public/login.html": { "since": "03-04", "about": "パスワードでログインする画面。04-04 で Entra ID のボタンが増える" },
+    "public/home.html": { "since": "03-04", "about": "ログイン中の画面。ID トークンの中身とサインアウト" },
 
     "scripts/update-client.sh": { "since": "04-05", "about": "App Client に Hosted UI の設定を足す（IdP が増えるたびに流す）" },
 

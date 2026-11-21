@@ -93,7 +93,7 @@ curl -s localhost:3000/config.json
 
 ### 画面を開いたら何も表示されません
 
-`config.json` に書かれた User Pool が Floci に無いと、画面の呼び出しは全部失敗します。Floci を作り直したときは `bash scripts/setup.sh` をやり直し、画面を読み込み直してください。開発者ツールの Console に CORS のエラーが出ているときは、`compose.yaml` に `FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS` を足したあとに `podman compose up -d` で Floci を作り直したかを確かめてください。
+`config.json` が無いときは、画面の上に「config.json がありません」と出ます。`bash scripts/setup.sh` を流してから、読み込み直してください。`config.json` に書かれた User Pool が Floci に無いときも、画面の呼び出しは全部失敗します。Floci を作り直したときは `bash scripts/setup.sh` をやり直し、画面を読み込み直してください。開発者ツールの Console に CORS のエラーが出ているときは、`compose.yaml` に `FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS` を足したあとに `podman compose up -d` で Floci を作り直したかを確かめてください。
 
 ### `podman compose up -d` で、ポート 3000 が使えないと出ます
 

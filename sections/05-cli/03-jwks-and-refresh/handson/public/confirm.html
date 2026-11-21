@@ -13,7 +13,7 @@
   <form id="confirm">
     <label>ユーザー名 <input name="username" required></label>
     <label>確認コード <input name="code" inputmode="numeric" required></label>
-    <button>確認する</button>
+    <button disabled>確認する</button>
     <p class="message"></p>
   </form>
 
@@ -30,11 +30,14 @@
       const { username, code } = formValues(event.target);
       try {
         await client.send(new ConfirmSignUpCommand({ ClientId: config.clientId, Username: username, ConfirmationCode: code }));
-        showMessage(event.target, '確認できました。サインインできます');
+        showMessage(event.target, '確認できました。ログインできます');
       } catch (error) {
         showError(event.target, error);
       }
     });
+
+    // スクリプトの準備ができてから押せるようにする（その前に押すと、ブラウザがフォームをふつうに送り、パスワードが URL に載ってしまう）
+    document.querySelector('#confirm button').disabled = false;
   </script>
 </body>
 </html>

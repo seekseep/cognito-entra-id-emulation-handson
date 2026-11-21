@@ -8,12 +8,12 @@
 </head>
 <body>
   <h1>ログイン中の画面</h1>
-  <p id="status">ログインしていません。<a href="./signin.html">サインイン</a>してください</p>
+  <p id="status">ログインしていません。<a href="./login.html">ログイン</a>してください</p>
 
   <section>
     <h2>ID トークンの中身</h2>
     <pre id="id-token">ログインすると表示します</pre>
-    <button id="logout">サインアウト</button>
+    <button id="logout">ログアウト</button>
   </section>
 
   <p><a href="./">トップへ</a></p>
@@ -34,10 +34,10 @@
       if (tokens) await client.send(new RevokeTokenCommand({ ClientId: config.clientId, Token: tokens.refreshToken }));
       saveTokens(null);
       // @until 04-04
-      location.assign('./signin.html');
+      location.assign('./login.html');
       // @end
       // @since 04-04
-      // Entra ID でサインインしたときのために、Hosted UI 側のログイン状態も消す（そのあとトップに戻る）
+      // Entra ID でログインしたときのために、Hosted UI 側のログイン状態も消す（そのあとトップに戻る）
       hostedLogout();
       // @end
     });

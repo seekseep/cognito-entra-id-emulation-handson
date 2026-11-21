@@ -3,23 +3,23 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>サインイン</title>
+  <title>ログイン</title>
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  <h1>サインイン</h1>
+  <h1>ログイン</h1>
 
-  <form id="signin">
+  <form id="login">
     <label>ユーザー名 <input name="username" required></label>
     <label>パスワード <input name="password" type="password" required></label>
-    <button>サインイン</button>
+    <button disabled>ログイン</button>
     <p class="message"></p>
   </form>
   <!-- @since 04-04 -->
 
   <section>
-    <h2>ほかの方法でサインイン</h2>
-    <button id="entra-login">Entra ID でサインイン</button>
+    <h2>ほかの方法でログイン</h2>
+    <button id="entra-login">Entra ID でログイン</button>
   </section>
   <!-- @end -->
 
@@ -29,7 +29,7 @@
     import { client, config, formValues, showMessage, showError, saveTokens, InitiateAuthCommand } from './cognito.js';
     import { hostedLogin } from './cognito.js'; // @since 04-04
 
-    document.querySelector('#signin').addEventListener('submit', async (event) => {
+    document.querySelector('#login').addEventListener('submit', async (event) => {
       event.preventDefault();
       const { username, password } = formValues(event.target);
       try {
@@ -38,20 +38,19 @@
           AuthFlow: 'USER_PASSWORD_AUTH',
           AuthParameters: { USERNAME: username, PASSWORD: password },
         }));
-        // 管理者が作ったユーザーの初回サインインなどでは、トークンの代わりにチャレンジ（ChallengeName）が返る
+        // 管理者が作ったユーザーの初回ログインなどでは、トークンの代わりにチャレンジ（ChallengeName）が返る
         const auth = result.AuthenticationResult;
         if (!auth) return showMessage(event.target, `続けるには追加の手続きが要ります（${result.ChallengeName}）`, { error: true });
         saveTokens({ idToken: auth.IdToken, accessToken: auth.AccessToken, refreshToken: auth.RefreshToken });
-        // @until 03-05
-        showMessage(event.target, 'サインインしました');
-        // @end
-        // @since 03-05
+        // ログイン中の画面へ
         location.assign('./home.html');
-        // @end
       } catch (error) {
         showError(event.target, error);
       }
     });
+
+    // スクリプトの準備ができてから押せるようにする（その前に押すと、ブラウザがフォームをふつうに送り、パスワードが URL に載ってしまう）
+    document.querySelector('#login button').disabled = false;
     // @since 04-04
 
     // Cognito に登録した IdP の名前（register-entra.sh の --provider-name）を渡す

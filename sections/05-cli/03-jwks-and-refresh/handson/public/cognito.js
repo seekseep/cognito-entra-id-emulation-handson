@@ -4,7 +4,12 @@ import { CognitoIdentityProviderClient } from 'https://esm.sh/@aws-sdk/client-co
 export * from 'https://esm.sh/@aws-sdk/client-cognito-identity-provider@3.1163.0';
 
 // どの User Pool に、どのクライアントとして行くかは、setup が書き出す config.json から読む（作り直したときに古い値を使わないよう、キャッシュしない）
-export const config = await (await fetch('/config.json', { cache: 'no-store' })).json();
+const configResponse = await fetch('/config.json', { cache: 'no-store' });
+if (!configResponse.ok) {
+  document.body.insertAdjacentHTML('afterbegin', '<p class="error">config.json がありません。<code>bash scripts/setup.sh</code> を流してから、読み込み直してください</p>');
+  throw new Error('config.json がありません');
+}
+export const config = await configResponse.json();
 // Cognito の API の入口は、issuer のオリジン（Floci は http://localhost:4566、本物は https://cognito-idp.<リージョン>.amazonaws.com）
 export const cognitoEndpoint = new URL(config.issuer).origin;
 
@@ -57,7 +62,7 @@ export function decodeJwt(token) {
   return JSON.parse(decodeURIComponent(escape(atob(payload))));
 }
 
-// ---- Hosted UI の仕組み（Authorization Code + PKCE）で、外部 IdP（Entra ID）にサインインする。流れを目で追うため、ライブラリを使わずに書く ----
+// ---- Hosted UI の仕組み（Authorization Code + PKCE）で、外部 IdP（Entra ID）でログインする。流れを目で追うため、ライブラリを使わずに書く ----
 
 // ログインのあとに戻ってくる URL。App Client の callback URL に登録したものと同じにする
 export const redirectUri = `${location.origin}/`;
@@ -106,14 +111,14 @@ export async function handleCallback() {
   history.replaceState(null, '', redirectUri);
 
   if (params.has('error')) {
-    document.querySelector('#message').textContent = `サインインに失敗しました（${params.get('error')}）`;
+    document.querySelector('#message').textContent = `ログインに失敗しました（${params.get('error')}）`;
     return false;
   }
   const saved = JSON.parse(sessionStorage.getItem('pkce') ?? '{}');
   sessionStorage.removeItem('pkce');
   // 自分が出したリクエストへの応答かを state で確かめる（CSRF 対策）
   if (params.get('state') !== saved.state) {
-    document.querySelector('#message').textContent = 'サインインをやり直してください（state が一致しません）';
+    document.querySelector('#message').textContent = 'ログインをやり直してください（state が一致しません）';
     return false;
   }
 
@@ -130,7 +135,7 @@ export async function handleCallback() {
   });
   const json = await response.json();
   if (!response.ok) {
-    document.querySelector('#message').textContent = `サインインに失敗しました（${json.error}）`;
+    document.querySelector('#message').textContent = `ログインに失敗しました（${json.error}）`;
     return false;
   }
   // トークンエンドポイントの応答は snake_case。パスワードでログインしたときと同じ形にそろえて持つ

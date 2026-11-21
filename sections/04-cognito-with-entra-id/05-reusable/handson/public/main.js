@@ -3,5 +3,5 @@ import { handleCallback } from './cognito.js';
 
 document.querySelector('#endpoint').textContent = cognitoEndpoint;
 
-// Entra ID でのサインインから ?code=... を付けて戻ってきたら、トークンに換えて、ログイン中の画面へ
+// Entra ID でのログインから ?code=... を付けて戻ってきたら、トークンに換えて、ログイン中の画面へ
 if (await handleCallback()) location.replace('./home.html');

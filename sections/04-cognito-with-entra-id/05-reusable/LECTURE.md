@@ -7,7 +7,7 @@ docs: true
 
 ![再利用可能にする](./images/00-thumbnail.svg)
 
-04-02〜04-04 で手で打ったコマンドを、スクリプトにします。Floci を作り直すと、User Pool と一緒に IdP の登録や App Client の設定も消えます。entra-local のアプリとユーザーはボリュームに残りますが、`podman compose down -v` で消したときにも戻せるようにします。最後に `setup.sh` に足して、`bash scripts/setup.sh` 1 回で、Entra ID でサインインできる状態まで作り直せるようにします。
+04-02〜04-04 で手で打ったコマンドを、スクリプトにします。Floci を作り直すと、User Pool と一緒に IdP の登録や App Client の設定も消えます。entra-local のアプリとユーザーはボリュームに残りますが、`podman compose down -v` で消したときにも戻せるようにします。最後に `setup.sh` に足して、`bash scripts/setup.sh` 1 回で、Entra ID でログインできる状態まで作り直せるようにします。
 
 足すファイルは次のとおりです。
 
@@ -62,7 +62,7 @@ curl -s http://localhost:8443/health   # "status":"ok" が返ってから次へ
 bash scripts/setup.sh
 ```
 
-最後に `EntraID を登録しました` と出れば完成です。<http://localhost:3000> の「サインイン」を開き（開いていたら読み込み直し）、「Entra ID でサインイン」で `taro@entralocal.dev` / `Passw0rd!` を入れると、ログイン中の画面に移ります。
+最後に `EntraID を登録しました` と出れば完成です。<http://localhost:3000> の「ログイン」を開き（開いていたら読み込み直し）、「Entra ID でログイン」で `taro@entralocal.dev` / `Passw0rd!` を入れると、ログイン中の画面に移ります。
 
 :::note[Entra のサインインが残っているとき]
 前のレクチャーで Entra にサインインしたままだと、パスワードを聞かれずにそのまま戻ってきます（04-04 の FAQ を参照）。

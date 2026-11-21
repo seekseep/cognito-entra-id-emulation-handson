@@ -7,7 +7,7 @@ docs: true
 
 ![Entra ID にあるユーザーで Cognito にログイン](./images/00-thumbnail.svg)
 
-entra-local を Cognito の外部 IdP（OIDC）として登録し、サインインの画面の「Entra ID でサインイン」で Entra のユーザーをアプリに入れます。仕組みは 03-06 で説明した Hosted UI（認可コードフロー）の上に乗っていて、Cognito のログイン画面の代わりに Entra のサインイン画面に回ります。気をつけるのは Entra に特有の部分、とくに **ユーザーを何で見分けるか** です。
+entra-local を Cognito の外部 IdP（OIDC）として登録し、ログインの画面の「Entra ID でログイン」で Entra のユーザーをアプリに入れます。仕組みは 03-05 で説明した Hosted UI（認可コードフロー）の上に乗っていて、Cognito のログイン画面の代わりに Entra のサインイン画面に回ります。気をつけるのは Entra に特有の部分、とくに **ユーザーを何で見分けるか** です。
 
 このレクチャーで足す・変えるファイルは次のとおりです。
 
@@ -60,7 +60,7 @@ aws cognito-idp create-identity-provider \
 
 ## App Client の設定を変える
 
-Entra ID でのサインインは、03-06 で説明した Hosted UI の仕組み（認可コードフロー）の上に乗っています。02-03 で作った App Client は、パスワードを受け取るサインイン（`USER_PASSWORD_AUTH`）だけを許しているので、認可コードフロー・戻ってよい先（コールバック URL）・使ってよい IdP（`EntraID`）を足します。
+Entra ID でのログインは、03-05 で説明した Hosted UI の仕組み（認可コードフロー）の上に乗っています。02-03 で作った App Client は、パスワードを受け取るログイン（`USER_PASSWORD_AUTH`）だけを許しているので、認可コードフロー・戻ってよい先（コールバック URL）・使ってよい IdP（`EntraID`）を足します。
 
 ```bash
 aws cognito-idp update-user-pool-client \
@@ -78,7 +78,7 @@ aws cognito-idp update-user-pool-client \
 ```
 
 - `--supported-identity-providers COGNITO EntraID` … 使ってよい IdP
-- `--callback-urls` … サインインのあとに戻ってよい先。ここに無い URL へは戻さない（認可コードを盗まれないため）
+- `--callback-urls` … ログインのあとに戻ってよい先。ここに無い URL へは戻さない（認可コードを盗まれないため）
 - `--allowed-o-auth-flows code` … 認可コードフローを許す
 - `--read-attributes ... custom:entra_oid` … アプリがトークンで読める属性。`custom:entra_oid` を入れておかないと、トークンに載りません
 
@@ -88,7 +88,7 @@ aws cognito-idp update-user-pool-client \
 
 ## 認可コードフローと PKCE
 
-「Entra ID でサインイン」を押してから戻ってくるまでに、次のことが起きています（開発者ツールの Network タブで追えます）。
+「Entra ID でログイン」を押してから戻ってくるまでに、次のことが起きています（開発者ツールの Network タブで追えます）。
 
 1. 画面が `code_verifier`（ランダムな文字列）を作り、そのハッシュ `code_challenge` を付けて `/oauth2/authorize` へ移る
 2. Cognito が Entra ID のサインイン画面へ回し、ユーザーが Entra のパスワードを入れる
@@ -121,7 +121,7 @@ location.assign(url);
 
 認可・トークンのエンドポイントは、User Pool の discovery（`<iss>/.well-known/openid-configuration`）から読んでいます。Floci では `http://localhost:4566/cognito-idp/oauth2/authorize`、本物では `https://<ドメイン>.auth.<リージョン>.amazoncognito.com/oauth2/authorize` です。
 
-トークンエンドポイントの応答は `id_token` のような snake_case なので、パスワードでサインインしたときと同じ形（`idToken`）にそろえて保存します。こうしておくと、ログイン中の画面（`home.html`）は 03-05 のまま使えます。
+トークンエンドポイントの応答は `id_token` のような snake_case なので、パスワードでログインしたときと同じ形（`idToken`）にそろえて保存します。こうしておくと、ログイン中の画面（`home.html`）は 03-05 のまま使えます。
 
 - `hostedLogin('EntraID')` … `identity_provider=EntraID`（`register-entra.sh` の `--provider-name`）を付けて `/oauth2/authorize` へ移ります。Cognito は自分のログイン画面を飛ばして、Entra のサインイン画面へ直行します
 - `handleCallback()` … 戻ってきた `?code=...` を `code_verifier` と一緒に `/oauth2/token` へ送り、トークンを保存します
@@ -129,9 +129,9 @@ location.assign(url);
 
 ::file{path="public/cognito.js"}
 
-サインインの画面に「Entra ID でサインイン」のボタンを足します。
+ログインの画面に「Entra ID でログイン」のボタンを足します。
 
-::file{path="public/signin.html"}
+::file{path="public/login.html"}
 
 Entra ID から戻ってくる先（コールバック URL）はトップ（`http://localhost:3000/`）です。トップで認可コードをトークンに換え、ログイン中の画面へ移ります。
 
@@ -139,7 +139,7 @@ Entra ID から戻ってくる先（コールバック URL）はトップ（`htt
 
 ::file{path="public/main.js"}
 
-ログイン中の画面のサインアウトでは、手元のトークンを消したあと、Cognito の `/logout` にも移ります。
+ログイン中の画面のログアウトでは、手元のトークンを消したあと、Cognito の `/logout` にも移ります。
 
 ::file{path="public/home.html"}
 
@@ -149,7 +149,7 @@ Entra ID から戻ってくる先（コールバック URL）はトップ（`htt
 
 ## 動かす
 
-<http://localhost:3000> の「サインイン」を開き（開いていたら読み込み直し）、「Entra ID でサインイン」を押します。entra-local のサインイン画面で `taro@entralocal.dev` / `Passw0rd!` を入れます。トップに戻り、ログイン中の画面に移ったら、ID トークンを見てください。
+<http://localhost:3000> の「ログイン」を開き（開いていたら読み込み直し）、「Entra ID でログイン」を押します。entra-local のサインイン画面で `taro@entralocal.dev` / `Passw0rd!` を入れます。トップに戻り、ログイン中の画面に移ったら、ID トークンを見てください。
 
 開発者ツールの Network タブでは、`localhost:3000` → `localhost:4566/.../oauth2/authorize` → `localhost:8443/.../authorize`（Entra）→ `localhost:4566/.../oauth2/idpresponse` → `localhost:3000/?code=...` と移るのが見えます。Entra のトークンを受け取るのは Cognito で、画面が受け取るのは **Cognito のトークン** です。
 
@@ -207,9 +207,9 @@ Cognito のカスタム属性は、あとから足すことはできますが、
 
 アプリの登録のリダイレクト URI と、Cognito（Floci）が送ってくる `redirect_uri`（`http://localhost:4566/cognito-idp/oauth2/idpresponse`）が 1 文字でも違うと拒否されます。04-02 の手順でアプリを登録し直し、`update-identity-provider` で Cognito 側の登録も新しいクライアント ID とシークレットに合わせます。
 
-### サインアウトしたのに、「Entra ID でサインイン」でパスワードを聞かれません
+### ログアウトしたのに、「Entra ID でログイン」でパスワードを聞かれません
 
-画面のサインアウトが消すのは、手元のトークンと Cognito のログイン状態だけです。Entra 側のサインイン（entra-local の Cookie）は残っているので、Entra はそのまま Cognito に戻します。本物の Entra ID と Cognito でも同じで、Cognito の `/logout` は外部 IdP のサインインを終わらせません。
+画面のログアウトが消すのは、手元のトークンと Cognito のログイン状態だけです。Entra 側のサインイン（entra-local の Cookie）は残っているので、Entra はそのまま Cognito に戻します。本物の Entra ID と Cognito でも同じで、Cognito の `/logout` は外部 IdP のログインを終わらせません。
 
 別のユーザーで試したいときは、Entra のサインアウトの入口（discovery の `end_session_endpoint`）を開いてから、もう一度押してください。
 

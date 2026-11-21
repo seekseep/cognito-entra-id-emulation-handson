@@ -8,12 +8,12 @@
 </head>
 <body>
   <h1>ログイン中の画面</h1>
-  <p id="status">ログインしていません。<a href="./signin.html">サインイン</a>してください</p>
+  <p id="status">ログインしていません。<a href="./login.html">ログイン</a>してください</p>
 
   <section>
     <h2>ID トークンの中身</h2>
     <pre id="id-token">ログインすると表示します</pre>
-    <button id="logout">サインアウト</button>
+    <button id="logout">ログアウト</button>
   </section>
 
   <p><a href="./">トップへ</a></p>
@@ -32,7 +32,7 @@
       // 手元から消す前に、リフレッシュトークンを Cognito で取り消す（盗まれていても使えなくする）
       if (tokens) await client.send(new RevokeTokenCommand({ ClientId: config.clientId, Token: tokens.refreshToken }));
       saveTokens(null);
-      location.assign('./signin.html');
+      location.assign('./login.html');
     });
   </script>
 </body>

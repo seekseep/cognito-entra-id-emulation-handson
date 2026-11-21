@@ -93,15 +93,13 @@ flowchart LR
 ### 03-signup: サインアップ
 - AWS SDK v3 を CDN（esm.sh）から読み込み、`SignUp`・`ConfirmSignUp`（署名なし）。signup.html → confirm.html
 
-### 04-signin: サインイン
-- `InitiateAuth` でサインインし、トークンを sessionStorage に保存する（signin.html）
+### 04-login: ログイン
+- `InitiateAuth` でログインし、トークンを sessionStorage に保存して、ログイン中の画面（home.html）へ移る（login.html）
+- ID トークンの中身を出す。`RevokeToken` でログアウト
 - `PreventUserExistenceErrors`（Floci では効かない）、トークンの置き場所
 
-### 05-login: ログイン
-- ログイン中の画面（home.html）。ID トークンの中身、`RevokeToken` でサインアウト
-
-### 06-hosted-ui: Hosted UI について（説明だけ）
-- Floci の Hosted UI はログイン画面だけ。03 では使わず、04-04 で Entra ID のサインインに同じ仕組み（認可コード + PKCE）を使う
+### 05-hosted-ui: Hosted UI について（説明だけ）
+- Floci の Hosted UI はログイン画面だけ。03 では使わず、04-04 で Entra ID のログインに同じ仕組み（認可コード + PKCE）を使う
 
 ---
 
@@ -124,7 +122,7 @@ flowchart LR
 
 ### 04-federation: Entra ID にあるユーザーで Cognito にログイン
 - aws CLI でカスタム属性・IdP の登録（`oidc_issuer` に v2.0 の issuer、エンドポイントの明示、`AttributeMapping`）・App Client の設定を手で打つ
-- 画面に認可コード + PKCE を足し、「Entra ID でサインイン」→ Cognito のトークン（`EntraID_<sub>`）、`custom:entra_oid`
+- 画面に認可コード + PKCE を足し、「Entra ID でログイン」→ Cognito のトークン（`EntraID_<sub>`）、`custom:entra_oid`
 
 ### 05-reusable: 再利用可能にする
 - entra-register-app.sh・entra-create-user.sh・update-client.sh・register-entra.sh、setup.sh に足す

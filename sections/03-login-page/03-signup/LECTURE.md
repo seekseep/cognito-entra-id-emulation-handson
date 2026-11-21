@@ -48,6 +48,8 @@ await client.send(new SignUpCommand({ ClientId: config.clientId, Username, Passw
 
 **`public/signup.html`** は、サインアップの画面です。`SignUp` が成功したら、確認コードを入れる画面へ移ります（ユーザー名を URL に付けて渡します）。
 
+送信のボタンは、最初は押せない（`disabled`）ようにしておき、スクリプトがフォームを受け持ったところで押せるようにします。スクリプトは `config.json` と CDN の SDK を読み終えてから動くので、その前に押すと、ブラウザがフォームをふつうに送ってしまい、入れたパスワードが URL（`?username=...&password=...`）に載ってしまうからです。確認とログインのフォームも同じにします。
+
 ::file{path="public/signup.html"}
 
 **`public/confirm.html`** は、メールに届いた確認コードを入れる画面です。URL に `?username=...` が付いていれば、ユーザー名を入れておきます。
@@ -65,7 +67,7 @@ await client.send(new SignUpCommand({ ClientId: config.clientId, Username, Passw
 1. 「サインアップ」を開き、登録する（例: `carol` / `carol@example.com` / `Passw0rd!`）。「メールを確認する」の画面に移り、ユーザー名が入っている
 2. 画面のリンクから「メールボックス」を開き、`carol@example.com` 宛ての確認コードを読む
 3. 違うコード（例: `000000`）を入れて「確認する」を押す → フォームに「確認コードが違います」と出る（Network タブの応答は `CodeMismatchException`）
-4. 正しいコードを入れて「確認する」を押す → 「確認できました。サインインできます」と出る
+4. 正しいコードを入れて「確認する」を押す → 「確認できました。ログインできます」と出る
 5. 「サインアップ」に戻り、同じユーザー名でもう一度登録してみる → 「このユーザー名は、すでに使われています」と出る（応答は `UsernameExistsException`）
 6. 別の名前で、短いパスワード（例: `pass`）で登録してみる → 「パスワードは 8 文字以上で、英大文字・英小文字・数字を含めてください」と出る（応答は `InvalidPasswordException`。02-02 で決めたパスワードポリシーです）
 
