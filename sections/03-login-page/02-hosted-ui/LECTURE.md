@@ -27,7 +27,7 @@ source ./env.sh && source ./.cognito.env
 
 ## クライアントに Hosted UI の設定を足す
 
-02-01 で作った App Client は、パスワードを受け取るログイン（`USER_PASSWORD_AUTH`）だけを許しています。Hosted UI を使うには、認可コードフローと、ログイン後に戻ってよい先（コールバック URL）を足します。
+02-03 で作った App Client は、パスワードを受け取るログイン（`USER_PASSWORD_AUTH`）だけを許しています。Hosted UI を使うには、認可コードフローと、ログイン後に戻ってよい先（コールバック URL）を足します。
 
 ```bash
 aws cognito-idp update-user-pool-client \
@@ -47,7 +47,7 @@ aws cognito-idp update-user-pool-client \
 - `--allowed-o-auth-flows code` … 認可コードフローを許す
 
 :::warning[UpdateUserPoolClient は全部を渡し直す]
-`update-user-pool-client` は「渡さなかった設定を既定値に戻す」API です。Hosted UI の設定だけを渡すと、02-01 で付けた `--explicit-auth-flows` が消えて、パスワードでのログイン（CLI・画面のフォーム）ができなくなります。`--prevent-user-existence-errors` も既定値に戻ります。足したい設定だけでなく、今の設定を全部渡し直します。本物の Cognito も同じです。
+`update-user-pool-client` は「渡さなかった設定を既定値に戻す」API です。Hosted UI の設定だけを渡すと、02-03 で付けた `--explicit-auth-flows` が消えて、パスワードでのログイン（CLI・画面のフォーム）ができなくなります。`--prevent-user-existence-errors` も既定値に戻ります。足したい設定だけでなく、今の設定を全部渡し直します。本物の Cognito も同じです。
 :::
 
 これを **`scripts/update-client.sh`** にします。05-02 で外部 IdP を足したときに、このスクリプトをもう一度流します。そのとき IdP の一覧を書き直さなくて済むよう、`--supported-identity-providers` には User Pool に登録してある IdP を全部並べるようにしてあります（今は 1 つも無いので `COGNITO` だけです）。

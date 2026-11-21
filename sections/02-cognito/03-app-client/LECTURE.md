@@ -1,50 +1,27 @@
 ---
-title: User Pool と App Client を作る
+title: App Client を作る
 docs: true
 ---
 
-# User Pool と App Client を作る
+# App Client を作る
 
-![User Pool と App Client を作る](./images/00-thumbnail.svg)
+![App Client を作る](./images/00-thumbnail.svg)
 
-Cognito でユーザーを管理する入れ物が **User Pool**、そこにログインしにくるアプリの登録が **App Client** です。このセクションでは aws CLI だけを使い、User Pool を作るところから、トークンを受け取って署名を確かめるところまでを一通りやります。
-
-このレクチャーでは、まずコマンドを手で打って User Pool と App Client を作り、次に同じことをスクリプトにします。足すファイルは次のとおりです。
+User Pool にログインしにくるアプリの登録が **App Client** です。前のレクチャーで作った User Pool に App Client を作り、そのあと、User Pool と App Client をいつでも作り直せるようにスクリプトにします。足すファイルは次のとおりです。
 
 ::changes
 
-## Floci を起動する
+## 準備
 
-前のレクチャーで用意した `handson/` で作業します。
+`handson/` で作業します。前のレクチャーから続けているなら、そのまま進めます。ターミナルを開き直したときは、`env.sh` を読み込み、User Pool の ID をシェル変数に入れ直します。
 
 ```bash
-cd handson
-podman compose up -d
 source ./env.sh
+export POOL_ID=$(aws cognito-idp list-user-pools --max-results 10 --query 'UserPools[0].Id' --output text)
+echo "$POOL_ID"
 ```
 
-## User Pool を作る
-
-パスワードポリシーを決めて User Pool を作ります。
-
-```bash
-aws cognito-idp create-user-pool \
-  --pool-name practice \
-  --policies 'PasswordPolicy={MinimumLength=8,RequireUppercase=true,RequireLowercase=true,RequireNumbers=true,RequireSymbols=false}' \
-  --auto-verified-attributes email \
-  --query UserPool.Id --output text
-# ap-northeast-1_bba540037
-```
-
-- `--policies` … 8 文字以上・大文字・小文字・数字を必須にします
-- `--auto-verified-attributes email` … サインアップしたらメールに確認コードを送る、という設定です。次のレクチャーで使います
-
-返ってきた ID をシェル変数に入れておきます。`{ }` の所は、直前のコマンドで出た値に書き換えてから実行します（`{ }` ごと消します）。
-
-```bash "{直前の結果で出た User Pool の ID}"
-export POOL_ID={直前の結果で出た User Pool の ID}
-# 例: export POOL_ID=ap-northeast-1_bba540037
-```
+Floci を止めて User Pool が消えていたときは、前のレクチャーの手順で作り直してください。
 
 ## App Client を作る
 
@@ -71,15 +48,13 @@ export CLIENT_ID={直前の結果で出たクライアント ID}
 ## 作ったものを確かめる
 
 ```bash
-aws cognito-idp describe-user-pool --user-pool-id "$POOL_ID" \
-  --query 'UserPool.{Name:Name,Policy:Policies.PasswordPolicy,AutoVerified:AutoVerifiedAttributes}'
 aws cognito-idp describe-user-pool-client --user-pool-id "$POOL_ID" --client-id "$CLIENT_ID" \
   --query 'UserPoolClient.{Name:ClientName,Flows:ExplicitAuthFlows,Secret:ClientSecret}'
 ```
 
 ## スクリプトにする
 
-Floci のデータはメモリにあるので、コンテナを止めると User Pool は消えます。そのたびに打ち直さなくて済むよう、いま打った 2 つのコマンドを **`scripts/create-user-pool.sh`** にします。
+Floci のデータはメモリにあるので、コンテナを止めると User Pool は消えます。そのたびに打ち直さなくて済むよう、前のレクチャーとこのレクチャーで打った 2 つのコマンドを **`scripts/create-user-pool.sh`** にします。
 
 要点は 2 つです。
 

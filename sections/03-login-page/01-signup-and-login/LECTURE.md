@@ -51,7 +51,7 @@ bash scripts/setup.sh
 ::file{path="server.mjs"}
 
 - `/` が来たら `public/index.html` を、`/main.js` が来たら `public/main.js` を返します。`public/` の外（`../server.mjs` など）は返しません
-- `/config` だけは特別で、02-01 で書き出した `.cognito.env` を読み、`issuer`（`http://localhost:4566/<プール ID>`）と `clientId` を JSON で返します。どれもブラウザに渡る値で、秘密ではありません
+- `/config` だけは特別で、02-03 で書き出した `.cognito.env` を読み、`issuer`（`http://localhost:4566/<プール ID>`）と `clientId` を JSON で返します。どれもブラウザに渡る値で、秘密ではありません
 - `.cognito.env` はリクエストのたびに読み直すので、`bash scripts/setup.sh` で User Pool を作り直しても、サーバーを起動し直す必要はありません（画面は読み込み直してください）
 
 ```bash
@@ -122,7 +122,7 @@ const { ok, json } = await cognito('InitiateAuth', {
 :::warning[エラーはそのまま画面に届く]
 画面が Cognito を直接呼ぶので、Cognito のエラー（`UsernameExistsException`・`UserNotConfirmedException` など）はそのまま画面に届きます。言い換えると、画面を使わなくても、誰でも同じ API を呼んで同じ応答を見られます。
 
-ユーザーが存在するかを隠せるのは、App Client の `PreventUserExistenceErrors: ENABLED`（02-01 で付けました）だけです。本物の Cognito では、存在しないユーザーへのログインも、パスワード違いと同じ `NotAuthorizedException` になります。**Floci ではこの設定が効かず**、`UserNotFoundException` が返ります。
+ユーザーが存在するかを隠せるのは、App Client の `PreventUserExistenceErrors: ENABLED`（02-03 で付けました）だけです。本物の Cognito では、存在しないユーザーへのログインも、パスワード違いと同じ `NotAuthorizedException` になります。**Floci ではこの設定が効かず**、`UserNotFoundException` が返ります。
 :::
 
 :::warning[トークンの置き場所]

@@ -136,7 +136,7 @@ bash scripts/setup.sh
 
 Floci は `UserNotFoundException` を返します。本物の Cognito では、App Client の `PreventUserExistenceErrors` が `ENABLED` なら、パスワード違いと同じ `NotAuthorizedException` が返り、ユーザーが存在するかを漏らしません。
 
-02-01 では `--prevent-user-existence-errors ENABLED` を付けてクライアントを作りました。既定値は作り方で変わり、**コンソールで作ったクライアントは `ENABLED`、API や aws CLI で値を渡さずに作ったクライアントは `LEGACY`**（存在しなければ `UserNotFoundException`）です。Floci はこの設定を保存しますが、効きません（付けても `UserNotFoundException` を返します）。
+02-03 では `--prevent-user-existence-errors ENABLED` を付けてクライアントを作りました。既定値は作り方で変わり、**コンソールで作ったクライアントは `ENABLED`、API や aws CLI で値を渡さずに作ったクライアントは `LEGACY`**（存在しなければ `UserNotFoundException`）です。Floci はこの設定を保存しますが、効きません（付けても `UserNotFoundException` を返します）。
 
 02 からは、画面が Cognito を直接呼び、Cognito の応答がそのまま画面に届きます。ユーザーが存在するかを隠せるのは、この設定だけです。本物に向けるときは必ず `ENABLED` にしてください。
 

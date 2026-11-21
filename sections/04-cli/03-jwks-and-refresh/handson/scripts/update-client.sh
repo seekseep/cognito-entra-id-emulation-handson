@@ -13,7 +13,7 @@ PROVIDERS=$(aws cognito-idp list-identity-providers --user-pool-id "$POOL_ID" \
 ARGS=(
   --user-pool-id "$POOL_ID"
   --client-id "$CLIENT_ID"
-  # 02-01 で付けたログインの方法と設定。渡し直さないと既定値に戻り、CLI や画面のフォームからログインできなくなる
+  # 02-03 で付けたログインの方法と設定。渡し直さないと既定値に戻り、CLI や画面のフォームからログインできなくなる
   --explicit-auth-flows ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH
   --prevent-user-existence-errors ENABLED
   --supported-identity-providers COGNITO $PROVIDERS

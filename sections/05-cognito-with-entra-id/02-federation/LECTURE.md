@@ -52,7 +52,7 @@ aws cognito-idp create-identity-provider \
 
 そこで、テナントの中で変わらない `oid` をカスタム属性 `custom:entra_oid` に持ち込みます。
 
-1. User Pool にカスタム属性を足す。02-01 で作った User Pool に、あとから足します（`register-entra.sh` の最初）
+1. User Pool にカスタム属性を足す。02-02 で作った User Pool に、あとから足します（`register-entra.sh` の最初）
    ```bash
    aws cognito-idp add-custom-attributes --user-pool-id "$POOL_ID" \
      --custom-attributes Name=entra_oid,AttributeDataType=String,Mutable=true
@@ -139,7 +139,7 @@ Cognito のカスタム属性は、あとから足すことはできますが、
 
 ## このレクチャーを終えた handson/
 
-これで `handson/` は完成です。02-01 の `create-user-pool.sh` 1 つから始まって、Cognito のユーザー・トークン・画面・Hosted UI・Entra ID と、1 つずつ足してきました。`setup.sh` を開くと、その順番がそのまま並んでいます。
+これで `handson/` は完成です。02-03 の `create-user-pool.sh` 1 つから始まって、Cognito のユーザー・トークン・画面・Hosted UI・Entra ID と、1 つずつ足してきました。`setup.sh` を開くと、その順番がそのまま並んでいます。
 
 ::codeview
 

@@ -57,18 +57,23 @@ flowchart LR
 ### 01-environment: 準備
 - Podman: `podman machine init` / `podman machine start`（macOS）、`podman compose` が呼ぶ docker-compose / podman-compose の違い
 - aws CLI v2、jq、Node.js 24 以上
-- `handson/` を作り、compose.yaml・env.sh・.gitignore を 1 つずつ作って Floci を起動する: `floci/floci:2.4.0`（バージョンを固定）、compose.yaml、ポート 4566、起動したかは curl で health を見る
+
+---
+
+## 02-cognito — Cognito を用意する（Floci の起動・User Pool・App Client・作り直すスクリプト）
+
+### 01-floci: Floci を起動する
+- `handson/` を作り、compose.yaml・env.sh を 1 つずつ作って Floci を起動する: `floci/floci:2.4.0`（バージョンを固定）、compose.yaml、ポート 4566、起動したかは curl で health を見る
 - 共通の環境変数: `AWS_ENDPOINT_URL=http://localhost:4566`、ダミーの `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`、`AWS_REGION`（`env.sh` を `source` する）
 - データはメモリにあり、作り直すと消える。やり直すときは `podman compose down && up`
 - Floci の Cognito で使えるもの・使えないもの（動かして確かめた表）
 - コラム: moto と比べると（Hosted UI の有無、`iss`、鍵、ID トークンの email）
 
----
+### 02-user-pool: User Pool を作る
+- パスワードポリシー、確認コードをメールで送る設定
 
-## 02-cognito — User Pool を作る（作り直すスクリプトまで）
-
-### 01-user-pool: User Pool と App Client を作る
-- パスワードポリシー、`ALLOW_USER_PASSWORD_AUTH`、シークレットなしのクライアント、ID を `.cognito.env` に残す
+### 03-app-client: App Client を作る
+- `ALLOW_USER_PASSWORD_AUTH`、シークレットなしのクライアント、ID を `.cognito.env` に残す、作り直すスクリプト（create-user-pool.sh・setup.sh）
 
 ## 03-login-page — HTML でログインする
 

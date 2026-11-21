@@ -9,30 +9,30 @@ Amazon Cognito の認証を、AWS アカウントも Entra テナントも使わ
 
 やることは 4 つです。
 
-1. ローカルのコンテナに User Pool を作り、いつでも作り直せるようにする
+1. ローカルのコンテナで Cognito（Floci）を起動し、User Pool と App Client を作って、いつでも作り直せるようにする
 2. シンプルな HTML の画面から、サインアップとログインをする
 3. ユーザー・トークン・グループ・署名を、コマンドで操作して確かめる
 4. Cognito に Entra ID をつなぎ、「Entra ID でログイン」で入れるようにする
 
 手元では **`handson/` という 1 つのフォルダ** を、レクチャーごとに少しずつ育てていきます。User Pool を作るスクリプト 1 つから始まり、画面・Entra ID と、どのファイルをいつ足すかを追いながら進めます。
 
-![全体の構成](./sections/01-setup/01-environment/images/01-overview.svg)
+![全体の構成](./sections/02-cognito/01-floci/images/01-overview.svg)
 
 | セクション | 使うコンテナ | ローカルで完結すること | 本物が要ること |
 |---|---|---|---|
-| 01. 準備 | Floci | 道具を入れ、`handson/` を作って Floci を起動する | なし |
-| 02. User Pool を作る | Floci | User Pool と App Client、作り直すスクリプト | なし |
+| 01. 準備 | なし | 道具を入れる | なし |
+| 02. Cognito を用意する | Floci | Floci の起動、User Pool と App Client、作り直すスクリプト | なし |
 | 03. HTML でログインする | Floci | サインアップ・ログイン・Hosted UI | なし |
 | 04. コマンドで確かめる | Floci | ユーザー・トークン・グループ・JWKS での署名の確認 | なし |
 | 05. Entra ID と連携する | Floci・entra-local | Cognito 経由の Entra ID（OIDC）ログイン | SAML、MFA・条件付きアクセス |
 
 ## このハンズオンで作るもの
 
-### 02. User Pool を作る
+### 02. Cognito を用意する
 
-![User Pool](./sections/02-cognito/01-user-pool/images/00-thumbnail.svg)
+![User Pool](./sections/02-cognito/02-user-pool/images/00-thumbnail.svg)
 
-aws CLI で User Pool と App Client を作ります。Floci のデータはコンテナを止めると消えるので、作ったものをいつでも作り直せるスクリプト（`scripts/setup.sh`）も用意します。
+`handson/` を作って Floci を起動し、aws CLI で User Pool と App Client を作ります。Floci のデータはコンテナを止めると消えるので、作ったものをいつでも作り直せるスクリプト（`scripts/setup.sh`）も用意します。
 
 ### 03. HTML でログインする
 
@@ -54,7 +54,7 @@ entra-local で Entra ID を手元に再現し、アプリの登録・シーク�
 
 ## 進め方
 
-- [準備](./sections/01-setup/01-environment/LECTURE.md) で作る `handson/` という 1 つのフォルダを、レクチャーごとに育てます。
+- [Floci を起動する](./sections/02-cognito/01-floci/LECTURE.md) で作る `handson/` という 1 つのフォルダを、レクチャーごとに育てます。
 - 各レクチャーの最初に、そのレクチャーで作成・変更するファイルの表があります。本文にはファイルの全文を載せ、前のレクチャーから足した行に色を付けています。コピーして作ってください。
 - 各レクチャーの最後に、そのレクチャーを終えたときの `handson/` と、その状態の ZIP（「コードをダウンロード」）があります。途中のレクチャーから始めるときは、ひとつ前のレクチャーの ZIP を展開し、`podman compose up -d` と `bash scripts/setup.sh` を実行します。
 - Floci のデータはコンテナを止めると消えます。`bash scripts/setup.sh` で、前のレクチャーを終えた状態に作り直せます。

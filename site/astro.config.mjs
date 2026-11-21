@@ -165,7 +165,7 @@ export default defineConfig({
         { label: 'はじめに', link: '/' },
         // Starlight v0.39+ では autogenerate を items 配列に入れる（label と autogenerate を同階層に書けない）。
         { label: '01. 準備', items: [{ autogenerate: { directory: '01-setup' } }] },
-        { label: '02. User Pool を作る', items: [{ autogenerate: { directory: '02-cognito' } }] },
+        { label: '02. Cognito を用意する', items: [{ autogenerate: { directory: '02-cognito' } }] },
         { label: '03. HTML でログインする', items: [{ autogenerate: { directory: '03-login-page' } }] },
         { label: '04. コマンドで確かめる', items: [{ autogenerate: { directory: '04-cli' } }] },
         { label: '05. Entra ID と連携する', items: [{ autogenerate: { directory: '05-cognito-with-entra-id' } }] },
