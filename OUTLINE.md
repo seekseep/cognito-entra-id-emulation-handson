@@ -73,7 +73,10 @@ flowchart LR
 - パスワードポリシー、確認コードをメールで送る設定
 
 ### 03-app-client: App Client を作る
-- `ALLOW_USER_PASSWORD_AUTH`、シークレットなしのクライアント、ID を `.cognito.env` に残す、作り直すスクリプト（create-user-pool.sh・setup.sh）
+- `ALLOW_USER_PASSWORD_AUTH`、シークレットなしのクライアント
+
+### 04-reusable: 再利用可能にする
+- User Pool と App Client を作るスクリプト（create-user-pool.sh）、ID を `.cognito.env` に残す、作り直すスクリプト（setup.sh）、.gitignore
 
 ## 03-login-page — HTML でログインする
 

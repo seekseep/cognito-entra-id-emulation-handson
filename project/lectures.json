@@ -1,13 +1,13 @@
 {
   "$comment": "最終形（05 を終えた状態）のファイルが、どのレクチャーで登場するか。ファイルの中で行が増える所は、ファイルの中の @since / @until で書く。site/scripts/build-snapshots.mjs が、ここからレクチャーごとの状態（sections/<sec>/<lec>/handson/）を作る",
-  "lectures": ["02-01", "02-03", "03-01", "03-02", "04-01", "04-02", "04-03", "05-01", "05-02"],
+  "lectures": ["02-01", "02-04", "03-01", "03-02", "04-01", "04-02", "04-03", "05-01", "05-02"],
   "files": {
     "compose.yaml": { "since": "02-01", "about": "コンテナの定義。Floci から始まり、05 で entra-local が増える" },
     "env.sh": { "since": "02-01", "about": "aws CLI の向き先を Floci に変える" },
-    ".gitignore": { "since": "02-03", "about": "手元にだけ置くファイル（ID・トークン・シークレット）" },
+    ".gitignore": { "since": "02-04", "about": "手元にだけ置くファイル（ID・トークン・シークレット）" },
 
-    "scripts/setup.sh": { "since": "02-03", "about": "ここまでに作ったものを Floci に作り直す。レクチャーごとに 1 行増える" },
-    "scripts/create-user-pool.sh": { "since": "02-03", "about": "User Pool と App Client を作り、ID を .cognito.env に残す" },
+    "scripts/setup.sh": { "since": "02-04", "about": "ここまでに作ったものを Floci に作り直す。レクチャーごとに 1 行増える" },
+    "scripts/create-user-pool.sh": { "since": "02-04", "about": "User Pool と App Client を作り、ID を .cognito.env に残す" },
     "scripts/create-users.sh": { "since": "04-01", "about": "alice（管理者が作る）と bob（自分でサインアップ）を作る" },
     "scripts/read-code.sh": { "since": "04-01", "about": "Floci に届いた確認メールからコードを読む" },
     "scripts/create-groups.sh": { "since": "04-02", "about": "admin グループを作り、alice を入れる" },

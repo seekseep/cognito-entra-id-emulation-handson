@@ -7,9 +7,7 @@ docs: true
 
 ![App Client を作る](./images/00-thumbnail.svg)
 
-User Pool にログインしにくるアプリの登録が **App Client** です。前のレクチャーで作った User Pool に App Client を作り、そのあと、User Pool と App Client をいつでも作り直せるようにスクリプトにします。足すファイルは次のとおりです。
-
-::changes
+User Pool にログインしにくるアプリの登録が **App Client** です。前のレクチャーで作った User Pool に App Client を作ります。このレクチャーで作るファイルはありません。
 
 ## 準備
 
@@ -52,49 +50,7 @@ aws cognito-idp describe-user-pool-client --user-pool-id "$POOL_ID" --client-id 
   --query 'UserPoolClient.{Name:ClientName,Flows:ExplicitAuthFlows,Secret:ClientSecret}'
 ```
 
-## スクリプトにする
-
-Floci のデータはメモリにあるので、コンテナを止めると User Pool は消えます。そのたびに打ち直さなくて済むよう、前のレクチャーとこのレクチャーで打った 2 つのコマンドを **`scripts/create-user-pool.sh`** にします。
-
-要点は 2 つです。
-
-- コマンドの出力（ID）を `$(...)` で変数に受ける。手で `export` していた所が要らなくなります
-- 最後に ID を **`.cognito.env`** に書き出す。この先のスクリプトは、ここから User Pool とクライアントの ID を読みます
-
-```bash
-cat > .cognito.env <<ENV
-export POOL_ID=$POOL_ID
-export CLIENT_ID=$CLIENT_ID
-ENV
-```
-
-::file{path="scripts/create-user-pool.sh"}
-
-`.cognito.env` は手元の環境ごとに中身が違うファイルなので、git に入れないよう **`.gitignore`** を作って書いておきます。このあとのレクチャーでも、トークンやシークレットを書いたファイルをここに足していきます。
-
-::file{path=".gitignore"}
-
-## 作り直すスクリプトを用意する
-
-もう 1 つ、**`scripts/setup.sh`** を作ります。いまは `create-user-pool.sh` を呼ぶだけですが、これから **レクチャーを 1 つ終えるたびに、そのレクチャーで作ったものを作るスクリプトを 1 行ずつ足していきます**。こうしておくと、Floci を作り直しても `bash scripts/setup.sh` 1 回で「前のレクチャーを終えた状態」に戻れます。
-
-::file{path="scripts/setup.sh"}
-
-動かして確かめます。Floci を作り直して（User Pool が消える）、`setup` で作り直します。
-
-```bash
-podman compose down
-podman compose up -d
-bash scripts/setup.sh
-source ./.cognito.env
-echo "$POOL_ID $CLIENT_ID"
-```
-
-新しい ID が出れば完成です。ターミナルを開き直したときも、`source ./env.sh && source ./.cognito.env` で同じ値に戻せます。
-
-## このレクチャーを終えた handson/
-
-::codeview
+`Flows` に 2 つのログインの方法が並び、`Secret` が `null`（シークレットなし）なら完成です。次のレクチャーで、ここまで手で打ったことをスクリプトにして、いつでも作り直せるようにします。
 
 :::faq
 
@@ -105,9 +61,5 @@ echo "$POOL_ID $CLIENT_ID"
 ### `ALLOW_USER_PASSWORD_AUTH` を付け忘れるとどうなりますか？
 
 `initiate-auth` が `USER_PASSWORD_AUTH flow not enabled for this client` で拒否されます。本物の Cognito の既定は SRP（パスワードそのものを送らない方式）だけを許す設定です。
-
-### `bash: scripts/setup.sh: No such file or directory` と出ます
-
-`handson/` の中で実行しているかを確かめてください。
 
 :::

@@ -138,7 +138,7 @@ Cognito のカスタム属性は、あとから足すことはできますが、
 
 ## このレクチャーを終えた handson/
 
-これで `handson/` は完成です。02-03 の `create-user-pool.sh` 1 つから始まって、Cognito のユーザー・トークン・画面・Hosted UI・Entra ID と、1 つずつ足してきました。`setup.sh` を開くと、その順番がそのまま並んでいます。
+これで `handson/` は完成です。02-04 の `create-user-pool.sh` 1 つから始まって、Cognito のユーザー・トークン・画面・Hosted UI・Entra ID と、1 つずつ足してきました。`setup.sh` を開くと、その順番がそのまま並んでいます。
 
 ::codeview
 

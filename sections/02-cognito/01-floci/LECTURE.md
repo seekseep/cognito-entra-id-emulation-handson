@@ -94,13 +94,13 @@ podman compose down
 podman compose up -d
 ```
 
-02-03 で、作ったものを作り直すスクリプト（`scripts/setup.sh`）を用意し、そのあとレクチャーごとに 1 行ずつ育てていきます。消えても `bash scripts/setup.sh` で、前のレクチャーを終えた状態に戻せます。
+02-04 で、作ったものを作り直すスクリプト（`scripts/setup.sh`）を用意し、そのあとレクチャーごとに 1 行ずつ育てていきます。消えても `bash scripts/setup.sh` で、前のレクチャーを終えた状態に戻せます。
 
 | コマンド | すること |
 |---|---|
 | `podman compose up -d` | `compose.yaml` にあるコンテナを全部起動する（Floci、05 からは entra-local も） |
 | `podman compose down` | 止める。Floci のデータは消える |
-| `bash scripts/setup.sh` | `scripts/setup.sh` を流し、ここまでのレクチャーで Floci に作ったもの（User Pool・ユーザー・グループ・IdP の登録）を作り直す（02-03 から） |
+| `bash scripts/setup.sh` | `scripts/setup.sh` を流し、ここまでのレクチャーで Floci に作ったもの（User Pool・ユーザー・グループ・IdP の登録）を作り直す（02-04 から） |
 
 `setup` をやり直したら、開いている画面を読み込み直してください（User Pool の ID が変わるため）。entra-local（05）のデータだけはボリュームに残り、`podman compose down` でも消えません（消すときは `podman compose down -v`）。
 
