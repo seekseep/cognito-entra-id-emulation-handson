@@ -67,7 +67,7 @@ sudo apt-get update
 sudo apt-get install -y podman
 ```
 
-Windows 版の Podman（Podman Desktop）を使う方法もありますが、その場合も `npm run ...` は WSL2 の中で打つことになり、ポートの届き方が分かりにくくなるので、ここでは WSL2 の中に Podman を入れる方法にそろえます。
+Windows 版の Podman（Podman Desktop）を使う方法もありますが、その場合もコマンドは WSL2 の中で打つことになり、ポートの届き方が分かりにくくなるので、ここでは WSL2 の中に Podman を入れる方法にそろえます。
 ::::
 ::::linux
 ```bash
@@ -106,7 +106,7 @@ podman compose version                                       # Docker Compose ve
 | 渡す先 | 特徴 |
 |---|---|
 | docker-compose（v2） | Docker 公式の実装。`--wait` や `profiles` など、このハンズオンで使う機能が全部そろう。**こちらを使ってください** |
-| podman-compose | Python で書かれた Podman 向けの実装。古い版（Ubuntu 24.04 の apt で入る 1.0 系など）は `--wait` を知らず、`npm run up` が `unrecognized arguments: --wait` で止まる |
+| podman-compose | Python で書かれた Podman 向けの実装。古い版（Ubuntu 24.04 の apt で入る 1.0 系など）は `--wait` を知らず、`podman compose up -d --wait` が `unrecognized arguments: --wait` で止まる |
 
 `podman compose version` が `Docker Compose version v2...` と出れば docker-compose が使われています。`podman-compose version ...` と出る場合は、上の手順で docker-compose を入れてください。両方入っているときは docker-compose が優先されます。
 
@@ -249,7 +249,7 @@ unzip 01-setup-01-environment.zip     # handson/ ができる
 cd handson
 ```
 
-最初の `handson/` に入っているのは、次の 4 つだけです。
+最初の `handson/` に入っているのは、次の 3 つだけです。
 
 ::changes
 
@@ -279,16 +279,14 @@ services:
 
 ::file{path="compose.yaml"}
 
-コンテナの起動と停止は、[package.json](./handson/package.json) の npm scripts にまとめてあります。
+`handson/` で、コンテナを起動します。
 
 ```bash
-npm run up        # podman compose up -d --wait
+podman compose up -d --wait
 curl -s http://localhost:4566/_floci/health | head -c 120
 ```
 
-`--wait` はヘルスチェックが通るまで待ってから戻ります。`Container ... Healthy` と出れば準備完了です。
-
-::file{path="package.json"}
+`-d` は裏で動かし続ける指定、`--wait` はヘルスチェックが通るまで待ってから戻る指定です。`Container ... Healthy` と出れば準備完了です。
 
 ### aws CLI を Floci に向ける
 
@@ -312,19 +310,19 @@ aws cognito-idp list-user-pools --max-results 10
 Floci は既定でデータをメモリに持ちます。コンテナを作り直すと、User Pool もユーザーも消えます。やり直したいときは作り直すのがいちばん早いです。
 
 ```bash
-npm run reset     # npm run down && npm run up
+podman compose down
+podman compose up -d --wait
 ```
 
 次のレクチャーから、作ったものを作り直すスクリプト（`scripts/setup.sh`）を 1 行ずつ育てていきます。消えても `npm run setup` で、前のレクチャーを終えた状態に戻せます。
 
 | コマンド | すること |
 |---|---|
-| `npm run up` | `compose.yaml` にあるコンテナを全部起動する（Floci、04 からは entra-local も） |
-| `npm run down` | 止める |
-| `npm run reset` | 止めて起動し直す。Floci のデータは消える |
+| `podman compose up -d --wait` | `compose.yaml` にあるコンテナを全部起動する（Floci、04 からは entra-local も） |
+| `podman compose down` | 止める。Floci のデータは消える |
 | `npm run setup` | `scripts/setup.sh` を流し、ここまでのレクチャーで Floci に作ったもの（User Pool・ユーザー・グループ・IdP の登録）を作り直す（02-01 から） |
 
-`setup` をやり直したら、開いている画面を読み込み直してください（User Pool の ID が変わるため）。entra-local（04）のデータだけはボリュームに残り、`npm run reset` でも消えません（消すときは `podman compose down -v`）。
+`setup` をやり直したら、開いている画面を読み込み直してください（User Pool の ID が変わるため）。entra-local（04）のデータだけはボリュームに残り、`podman compose down` でも消えません（消すときは `podman compose down -v`）。
 
 ### Floci の Cognito で使えるもの・使えないもの
 
@@ -350,13 +348,7 @@ npm run reset     # npm run down && npm run up
 
 ### Docker Desktop ではだめですか？
 
-だめではありません。npm scripts は環境変数 `COMPOSE` があればそれを使うので、先に設定しておけば `npm run up` などがそのまま Docker で動きます。
-
-```bash
-export COMPOSE="docker compose"
-```
-
-本文に出てくる `podman compose ...` や `podman ...` のコマンドは、`docker compose ...`・`docker ...` に読み替えてください。本文の中のコンテナ名やネットワークの説明は Podman で確かめたもので、Docker では通しで確かめていません。
+だめではありません。本文に出てくる `podman compose ...` や `podman ...` のコマンドは、`docker compose ...`・`docker ...` に読み替えてください。本文の中のコンテナ名やネットワークの説明は Podman で確かめたもので、Docker では通しで確かめていません。
 
 ### WSL2 の中で起動したのに、Windows のブラウザから `localhost:3000` が開けません
 
@@ -366,7 +358,7 @@ WSL2 は既定で、中で待ち受けたポートを Windows の `localhost` �
 
 仮想マシンのイメージを取得している最中のことがあります。初回は数分かかります。それでも進まないときは `podman machine stop` → `podman machine start` を試してください。
 
-### `npm run up` が `exit status 1` で終わります
+### `podman compose up -d --wait` が `exit status 1` で終わります
 
 ヘルスチェックが通らなかったときの表示です。`podman compose ps` で状態を、`podman compose logs floci` でログを見てください。ポート 4566 をほかのプログラム（LocalStack や別の Floci など）が使っていると起動できません。
 

@@ -46,10 +46,10 @@ discovery から登録に使う値を抜き出す **`scripts/entra-endpoints.sh`
 
 ## 起動する
 
-`npm run up` で、Floci はそのまま、entra-local が新しく起動します。
+`podman compose up -d --wait` で、Floci はそのまま、entra-local が新しく起動します。
 
 ```bash
-npm run up
+podman compose up -d --wait
 npm run entra:endpoints
 ```
 
@@ -197,6 +197,6 @@ A  "sub": "7AVwZdeJEDtlOYPBd5JlCISHoby578la6SIPMq3Q27Q"  "aud": "542d7c9b-..."  
 
 ### データを消したいときは？
 
-ユーザーやアプリ登録は、entra-local のデータボリュームに SQLite で残ります。`npm run reset` では消えません。消すときは `podman compose down -v` でボリュームごと消し、`npm run up`・`npm run setup` で作り直します。残っている間は、`npm run entra:register-app` は登録済みのアプリを使い続け、`npm run entra:create-user` は既にいるユーザーを表示するだけなので、手順を上から流し直しても止まりません。
+ユーザーやアプリ登録は、entra-local のデータボリュームに SQLite で残ります。`podman compose down` では消えません。消すときは `podman compose down -v` でボリュームごと消し、`podman compose up -d --wait`・`npm run setup` で作り直します。残っている間は、`npm run entra:register-app` は登録済みのアプリを使い続け、`npm run entra:create-user` は既にいるユーザーを表示するだけなので、手順を上から流し直しても止まりません。
 
 :::

@@ -18,7 +18,7 @@ docs: true
 `handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `npm run setup` で前のレクチャーを終えた状態を作り直します。
 
 ```bash
-npm run up
+podman compose up -d --wait
 npm run setup              # 前のレクチャーまでに作ったものを作り直す
 source ./env.sh && source ./.cognito.env
 ```
@@ -129,7 +129,8 @@ ID トークンにもアクセストークンにも `"cognito:groups": ["admin"]
 ::file{path="scripts/setup.sh"}
 
 ```bash
-npm run reset
+podman compose down
+podman compose up -d --wait
 npm run setup     # 最後に alice のグループ（["admin"]）が出る
 ```
 

@@ -25,7 +25,7 @@ HTML と JavaScript だけの画面を作り、ブラウザから **Cognito に�
 `handson/` で作業します。Floci を止めていたときは、起動してから `npm run setup` で前のレクチャーを終えた状態を作り直します。
 
 ```bash
-npm run up
+podman compose up -d --wait
 npm run setup              # 前のレクチャーまでに作ったものを作り直す
 ```
 
@@ -40,7 +40,7 @@ npm run setup              # 前のレクチャーまでに作ったものを作
 設定を変えたので Floci を作り直します。**作り直すと Floci のデータは消える** ので、`setup` をやり直します（ここで `setup.sh` を育ててきたことが効きます）。
 
 ```bash
-npm run up
+podman compose up -d --wait
 npm run setup
 ```
 
@@ -148,7 +148,7 @@ const { ok, json } = await cognito('InitiateAuth', {
 
 ### 画面を開いたら何も表示されません
 
-`/config` が返す User Pool が Floci に無いと、画面の呼び出しは全部失敗します。Floci を作り直したときは `npm run setup` をやり直し、画面を読み込み直してください。開発者ツールの Console に CORS のエラーが出ているときは、`compose.yaml` に `FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS` を足したあとに `npm run up` で Floci を作り直したかを確かめてください。
+`/config` が返す User Pool が Floci に無いと、画面の呼び出しは全部失敗します。Floci を作り直したときは `npm run setup` をやり直し、画面を読み込み直してください。開発者ツールの Console に CORS のエラーが出ているときは、`compose.yaml` に `FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS` を足したあとに `podman compose up -d --wait` で Floci を作り直したかを確かめてください。
 
 ### `npm start` で `EADDRINUSE` と出ます
 

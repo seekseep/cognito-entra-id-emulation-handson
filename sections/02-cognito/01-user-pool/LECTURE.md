@@ -19,7 +19,7 @@ Cognito でユーザーを管理する入れ物が **User Pool**、そこにロ�
 
 ```bash
 cd handson
-npm run up
+podman compose up -d --wait
 source ./env.sh
 ```
 
@@ -105,14 +105,15 @@ ENV
 
 ::file{path="scripts/setup.sh"}
 
-`package.json` の `scripts` に `setup` を足します。
+**`package.json`** を作り、`scripts` に `setup` を書きます。これから、自分で作ったスクリプトを `npm run <名前>` で呼べるように、ここに並べていきます。
 
 ::file{path="package.json"}
 
 動かして確かめます。Floci を作り直して（User Pool が消える）、`setup` で作り直します。
 
 ```bash
-npm run reset
+podman compose down
+podman compose up -d --wait
 npm run setup
 source ./.cognito.env
 echo "$POOL_ID $CLIENT_ID"
