@@ -72,7 +72,7 @@ entra-local で Entra ID を手元に再現し、アプリの登録・シーク�
 | どこ | ユーザー | パスワード | 作られる所 |
 |---|---|---|---|
 | Cognito | `alice`（admin グループ）/ `bob` | `Passw0rd!` | 04-01・04-02（`bash scripts/setup.sh` で作り直せる） |
-| Cognito | `carol` | `Passw0rd!` | 03-02 で画面からサインアップ（setup では作られない） |
+| Cognito | `carol` | `Passw0rd!` | 03-02〜03-04 で画面からサインアップして確認（setup では作られない） |
 | entra-local | `taro@entralocal.dev` | `Passw0rd!` | 05-03（`bash scripts/entra-create-user.sh`） |
 
 ## 関連するハンズオン

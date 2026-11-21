@@ -30,14 +30,13 @@
       event.preventDefault();
       const { username, email, password } = formValues(event.target);
       try {
-        await client.send(new SignUpCommand({
+        const result = await client.send(new SignUpCommand({
           ClientId: config.clientId,
           Username: username,
           Password: password,
           UserAttributes: [{ Name: 'email', Value: email }],
         }));
-        // 登録できたら、メールに届いた確認コードを入れる画面へ
-        location.assign(`./confirm.html?username=${encodeURIComponent(username)}`);
+        show('SignUp', result);
       } catch (error) {
         show('SignUp', error);
       }

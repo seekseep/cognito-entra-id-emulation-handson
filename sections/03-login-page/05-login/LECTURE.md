@@ -52,7 +52,7 @@ const result = await client.send(new InitiateAuthCommand({
 
 <http://localhost:3000> を開きます（開いていたら読み込み直し）。
 
-1. 前のレクチャーでサインアップした `carol` / `Passw0rd!` でログインする。「ID トークンの中身」に `cognito:username`・`email`・`iss`・`aud` などが出る
+1. 03-02〜03-04 でサインアップして確認した `carol` / `Passw0rd!` でログインする。「ID トークンの中身」に `cognito:username`・`email`・`iss`・`aud` などが出る
 2. 「ログアウト」を押す
 3. 「サインアップ」で新しく登録し、確認せずにトップに戻ってログインしてみる → `UserNotConfirmedException`
 4. パスワードを間違えてログインしてみる → `NotAuthorizedException`

@@ -1,8 +1,8 @@
 import { cognitoEndpoint } from './cognito.js';
-import { client, config, formValues, show, InitiateAuthCommand, RevokeTokenCommand } from './cognito.js'; // @since 03-03
+import { client, config, formValues, show, InitiateAuthCommand, RevokeTokenCommand } from './cognito.js'; // @since 03-05
 
 document.querySelector('#endpoint').textContent = cognitoEndpoint;
-// @since 03-03
+// @since 03-05
 
 // ---- パスワードでログインする ----
 
@@ -53,7 +53,7 @@ document.querySelector('#logout').addEventListener('click', async () => {
     show('RevokeToken', {});
   }
   saveTokens(null);
-  // @since 03-04
+  // @since 03-06
   // Hosted UI 側のログイン状態（Cookie）も消す。消さないと、次に Hosted UI へ行ったとき画面が出ずに素通りする
   const url = new URL(discovery.authorization_endpoint.replace('/oauth2/authorize', '/logout'));
   url.search = new URLSearchParams({ client_id: config.clientId, logout_uri: redirectUri });
@@ -61,7 +61,7 @@ document.querySelector('#logout').addEventListener('click', async () => {
   // @end
 });
 // @end
-// @since 03-04
+// @since 03-06
 
 // ---- Hosted UI（Authorization Code + PKCE）。流れを目で追うため、ライブラリを使わずに書く ----
 
@@ -149,4 +149,4 @@ document.querySelector('#entra-login').addEventListener('click', () => hostedLog
 // @end
 await handleCallback();
 // @end
-render(); // @since 03-03
+render(); // @since 03-05

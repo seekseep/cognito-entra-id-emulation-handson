@@ -7,10 +7,10 @@ docs: true
 
 ![サインアップ](./images/00-thumbnail.svg)
 
-画面から **Cognito に直接** サインアップし、メールに届いた確認コードで確認します。
+画面から **Cognito に直接** サインアップします。サインアップすると、確認コードを書いたメールが送られます（メールを読むのと、コードで確認するのは、次の 2 つのレクチャーで足します）。
 
 ```text
-サインアップ   ブラウザ ──SignUp・ConfirmSignUp──▶ Cognito（Floci、:4566）
+サインアップ   ブラウザ ──SignUp──▶ Cognito（Floci、:4566）
 ```
 
 このレクチャーで足す・変えるファイルは次のとおりです。
@@ -27,8 +27,6 @@ bash scripts/setup.sh              # 前のレクチャーまでに作ったも�
 ```
 
 ## 画面を作る
-
-サインアップの画面と、メールに届いた確認コードを入れる画面を、別々に作ります。
 
 まず、Cognito の API を呼ぶ準備を **`public/cognito.js`** に足します。Cognito の API は、AWS SDK for JavaScript v3（`@aws-sdk/client-cognito-identity-provider`）で呼びます。npm で入れずに、CDN（esm.sh）からブラウザが直接読み込みます。
 
@@ -48,19 +46,11 @@ await client.send(new SignUpCommand({ ClientId: config.clientId, Username, Passw
 
 ::file{path="public/cognito.js"}
 
-**`public/signup.html`** は、サインアップの画面です。`SignUp` が成功したら、確認コードを入れる画面へ移ります（ユーザー名を URL に付けて渡します）。
+**`public/signup.html`** は、サインアップの画面です。いまは、`SignUp` の結果を「Cognito の応答」に出すだけです。
 
 ::file{path="public/signup.html"}
 
-**`public/confirm.html`** は、メールに届いた確認コードを入れる画面です。
-
-::file{path="public/confirm.html"}
-
-Floci は、Cognito が送るメールを実際には送らず、手元にためておきます（`http://localhost:4566/_aws/ses` で JSON の一覧が読めます）。確認コードを読めるよう、ためたメールを表で出す画面 **`public/mail.html`** を作ります。本物の Cognito にはこの一覧は無く、メールはそのまま利用者に届きます。
-
-::file{path="public/mail.html"}
-
-トップの画面に、3 つの画面へのリンクを足します。
+トップの画面に、サインアップの画面へのリンクを足します。
 
 ::file{path="public/index.html"}
 
@@ -68,17 +58,14 @@ Floci は、Cognito が送るメールを実際には送らず、手元にため
 
 <http://localhost:3000> を開きます（開いていたら読み込み直し）。
 
-1. 「サインアップ」を開き、登録する（例: `carol` / `carol@example.com` / `Passw0rd!`）。「メールを確認する」の画面に移り、ユーザー名が入っている
-2. 画面のリンクから「届いたメール」を開いて確認コードを読み、入れて確認する。「Cognito の応答」に `ConfirmSignUp → 成功` が出る
-3. 「サインアップ」に戻り、同じユーザー名でもう一度登録してみる → `UsernameExistsException`
+1. 「サインアップ」を開き、登録する（例: `carol` / `carol@example.com` / `Passw0rd!`）。「Cognito の応答」に `SignUp → 成功` と、`UserConfirmed: false`・`CodeDeliveryDetails`（確認コードをメールで送ったこと）が出る
+2. 同じユーザー名でもう一度登録してみる → `SignUp → 失敗` と `UsernameExistsException`
 
 開発者ツールの Network タブで、次を確かめてください。
 
 - 要求は `localhost:4566` に飛んでいる
 - 要求のヘッダーに `x-amz-target: AWSCognitoIdentityProviderService.SignUp` が付いている。SDK も、02 の aws CLI と同じ API を呼んでいます
 - `localhost:4566` への要求の前に、`OPTIONS` の要求（CORS の下調べ）が出ている
-
-`carol` は `setup` では作られません。Floci を作り直したときは、ここでサインアップし直してください。
 
 ## このレクチャーを終えた handson/
 

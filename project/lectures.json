@@ -1,6 +1,6 @@
 {
   "$comment": "最終形（05 を終えた状態）のファイルが、どのレクチャーで登場するか。ファイルの中で行が増える所は、ファイルの中の @since / @until で書く。site/scripts/build-snapshots.mjs が、ここからレクチャーごとの状態（sections/<sec>/<lec>/handson/）を作る",
-  "lectures": ["02-01", "02-04", "03-01", "03-02", "03-03", "03-04", "04-01", "04-02", "04-03", "05-01", "05-02", "05-03", "05-04"],
+  "lectures": ["02-01", "02-04", "03-01", "03-02", "03-03", "03-04", "03-05", "03-06", "04-01", "04-02", "04-03", "05-01", "05-02", "05-03", "05-04"],
   "files": {
     "compose.yaml": { "since": "02-01", "about": "コンテナの定義。Floci から始まり、05 で entra-local が増える" },
     "env.sh": { "since": "02-01", "about": "aws CLI の向き先を Floci に変える" },
@@ -16,15 +16,15 @@
     "scripts/verify-jwt.sh": { "since": "04-03", "about": "JWKS で JWT の署名・iss・exp を確かめる" },
     "scripts/refresh.sh": { "since": "04-03", "about": "リフレッシュトークンで新しいトークンをもらう" },
 
-    "public/index.html": { "since": "03-01", "about": "トップの画面。03-03 でログイン、03-04 で Hosted UI が増える" },
+    "public/index.html": { "since": "03-01", "about": "トップの画面。03-05 でログイン、03-06 で Hosted UI が増える" },
     "public/style.css": { "since": "03-01", "about": "どの画面でも使う見た目" },
     "public/cognito.js": { "since": "03-01", "about": "どの画面でも使う部分。設定を読み、Cognito の API を呼ぶ" },
     "public/signup.html": { "since": "03-02", "about": "サインアップの画面" },
-    "public/confirm.html": { "since": "03-02", "about": "メールに届いた確認コードを入れる画面" },
-    "public/mail.html": { "since": "03-02", "about": "Floci に届いたメールを読む画面" },
-    "public/main.js": { "since": "03-01", "about": "トップの画面の動き。03-03 でログイン、03-04 で Hosted UI のログインが増える" },
+    "public/confirm.html": { "since": "03-04", "about": "メールに届いた確認コードを入れる画面" },
+    "public/mail.html": { "since": "03-03", "about": "Floci に届いたメールを読む画面" },
+    "public/main.js": { "since": "03-01", "about": "トップの画面の動き。03-05 でログイン、03-06 で Hosted UI のログインが増える" },
 
-    "scripts/update-client.sh": { "since": "03-04", "about": "App Client に Hosted UI の設定を足す（IdP が増えるたびに流す）" },
+    "scripts/update-client.sh": { "since": "03-06", "about": "App Client に Hosted UI の設定を足す（IdP が増えるたびに流す）" },
 
     "scripts/entra-endpoints.sh": { "since": "05-01", "about": "entra-local の discovery から、登録に使う URL を抜き出す" },
     "scripts/entra-register-app.sh": { "since": "05-02", "about": "entra-local に「Cognito から使うアプリ」を登録する" },
