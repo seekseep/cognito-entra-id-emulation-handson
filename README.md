@@ -48,8 +48,8 @@ entra-local で Entra ID を手元に再現し、アプリの登録・シーク�
 
 - [準備](./sections/01-setup/01-environment/LECTURE.md) で作る `handson/` という 1 つのフォルダを、レクチャーごとに育てます。
 - 各レクチャーの最初に、そのレクチャーで作成・変更するファイルの表があります。本文にはファイルの全文を載せ、前のレクチャーから足した行に色を付けています。コピーして作ってください。
-- 各レクチャーの最後に、そのレクチャーを終えたときの `handson/` と、その状態の ZIP（「コードをダウンロード」）があります。途中のレクチャーから始めるときは、ひとつ前のレクチャーの ZIP を展開し、`podman compose up -d` と `npm run setup` を実行します。
-- Floci のデータはコンテナを止めると消えます。`npm run setup` で、前のレクチャーを終えた状態に作り直せます。
+- 各レクチャーの最後に、そのレクチャーを終えたときの `handson/` と、その状態の ZIP（「コードをダウンロード」）があります。途中のレクチャーから始めるときは、ひとつ前のレクチャーの ZIP を展開し、`podman compose up -d` と `bash scripts/setup.sh` を実行します。
+- Floci のデータはコンテナを止めると消えます。`bash scripts/setup.sh` で、前のレクチャーを終えた状態に作り直せます。
 
 前提:
 
@@ -63,9 +63,9 @@ entra-local で Entra ID を手元に再現し、アプリの登録・シーク�
 
 | どこ | ユーザー | パスワード | 作られる所 |
 |---|---|---|---|
-| Cognito | `alice`（admin グループ）/ `bob` | `Passw0rd!` | 02-02・02-03（`npm run setup` で作り直せる） |
+| Cognito | `alice`（admin グループ）/ `bob` | `Passw0rd!` | 02-02・02-03（`bash scripts/setup.sh` で作り直せる） |
 | Cognito | `carol` | `Passw0rd!` | 03-01 で画面からサインアップ（setup では作られない） |
-| entra-local | `taro@entralocal.dev` | `Passw0rd!` | 04-01（`npm run entra:create-user`） |
+| entra-local | `taro@entralocal.dev` | `Passw0rd!` | 04-01（`bash scripts/entra-create-user.sh`） |
 
 ## 関連するハンズオン
 

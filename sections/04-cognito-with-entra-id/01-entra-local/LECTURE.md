@@ -38,11 +38,9 @@ entra-local は、管理 API に認証が無く、シードのユーザーとパ
 
 ::file{path="compose.yaml"}
 
-discovery から登録に使う値を抜き出す **`scripts/entra-endpoints.sh`** を作り、`package.json` に `entra:` で始まるコマンドを足します（このレクチャーで作るスクリプトの分を、まとめて足しておきます）。
+discovery から登録に使う値を抜き出す **`scripts/entra-endpoints.sh`** を作ります。
 
 ::file{path="scripts/entra-endpoints.sh"}
-
-::file{path="package.json"}
 
 ## 起動する
 
@@ -65,7 +63,7 @@ curl -s http://localhost:8443/health
 起動したら、登録に使う値を discovery から抜き出します。
 
 ```bash
-npm run entra:endpoints
+bash scripts/entra-endpoints.sh
 ```
 
 ```text
@@ -132,7 +130,7 @@ curl -X POST http://localhost:8443/admin/api/apps -H 'content-type: application/
 ::file{path=".gitignore"}
 
 ```bash
-npm run entra:register-app
+bash scripts/entra-register-app.sh
 # 登録しました（クライアント ID: 542d7c9b-...）。シークレットは .entra.env にあります
 ```
 
@@ -145,8 +143,8 @@ npm run entra:register-app
 ::file{path="scripts/entra-preview-token.sh"}
 
 ```bash
-npm run entra:create-user taro '山田 太郎'      # taro@entralocal.dev / Passw0rd!
-npm run entra:preview-token taro@entralocal.dev
+bash scripts/entra-create-user.sh taro '山田 太郎'      # taro@entralocal.dev / Passw0rd!
+bash scripts/entra-preview-token.sh taro@entralocal.dev
 ```
 
 `claims` の部分がトークンの中身です。
@@ -179,10 +177,10 @@ Entra 特有のクレーム:
 
 ```bash
 cp .entra.env .entra.a.env          # アプリ A の控え
-rm .entra.env && npm run entra:register-app   # アプリ B を登録（.entra.env は B になる）
+rm .entra.env && bash scripts/entra-register-app.sh   # アプリ B を登録（.entra.env は B になる）
 
-npm run entra:preview-token taro@entralocal.dev | grep -E '"(aud|sub|oid)"'                       # B
-ENTRA_ENV=.entra.a.env npm run entra:preview-token taro@entralocal.dev | grep -E '"(aud|sub|oid)"'  # A
+bash scripts/entra-preview-token.sh taro@entralocal.dev | grep -E '"(aud|sub|oid)"'                       # B
+ENTRA_ENV=.entra.a.env bash scripts/entra-preview-token.sh taro@entralocal.dev | grep -E '"(aud|sub|oid)"'  # A
 ```
 
 ```text
@@ -212,6 +210,6 @@ A  "sub": "7AVwZdeJEDtlOYPBd5JlCISHoby578la6SIPMq3Q27Q"  "aud": "542d7c9b-..."  
 
 ### データを消したいときは？
 
-ユーザーやアプリ登録は、entra-local のデータボリュームに SQLite で残ります。`podman compose down` では消えません。消すときは `podman compose down -v` でボリュームごと消し、`podman compose up -d`・`npm run setup` で作り直します。残っている間は、`npm run entra:register-app` は登録済みのアプリを使い続け、`npm run entra:create-user` は既にいるユーザーを表示するだけなので、手順を上から流し直しても止まりません。
+ユーザーやアプリ登録は、entra-local のデータボリュームに SQLite で残ります。`podman compose down` では消えません。消すときは `podman compose down -v` でボリュームごと消し、`podman compose up -d`・`bash scripts/setup.sh` で作り直します。残っている間は、`bash scripts/entra-register-app.sh` は登録済みのアプリを使い続け、`bash scripts/entra-create-user.sh` は既にいるユーザーを表示するだけなので、手順を上から流し直しても止まりません。
 
 :::

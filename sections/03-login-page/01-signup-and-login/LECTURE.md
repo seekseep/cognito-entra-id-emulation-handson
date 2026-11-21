@@ -22,11 +22,11 @@ HTML と JavaScript だけの画面を作り、ブラウザから **Cognito に�
 
 ## 準備
 
-`handson/` で作業します。Floci を止めていたときは、起動してから `npm run setup` で前のレクチャーを終えた状態を作り直します。
+`handson/` で作業します。Floci を止めていたときは、起動してから `bash scripts/setup.sh` で前のレクチャーを終えた状態を作り直します。
 
 ```bash
 podman compose up -d
-npm run setup              # 前のレクチャーまでに作ったものを作り直す
+bash scripts/setup.sh              # 前のレクチャーまでに作ったものを作り直す
 ```
 
 ## ブラウザから Floci を直接呼べるようにする
@@ -41,7 +41,7 @@ npm run setup              # 前のレクチャーまでに作ったものを作
 
 ```bash
 podman compose up -d
-npm run setup
+bash scripts/setup.sh
 ```
 
 ## 画面を配る静的サーバー
@@ -52,14 +52,10 @@ npm run setup
 
 - `/` が来たら `public/index.html` を、`/main.js` が来たら `public/main.js` を返します。`public/` の外（`../server.mjs` など）は返しません
 - `/config` だけは特別で、02-01 で書き出した `.cognito.env` を読み、`issuer`（`http://localhost:4566/<プール ID>`）と `clientId` を JSON で返します。どれもブラウザに渡る値で、秘密ではありません
-- `.cognito.env` はリクエストのたびに読み直すので、`npm run setup` で User Pool を作り直しても、サーバーを起動し直す必要はありません（画面は読み込み直してください）
-
-`package.json` に `start` を足します。
-
-::file{path="package.json"}
+- `.cognito.env` はリクエストのたびに読み直すので、`bash scripts/setup.sh` で User Pool を作り直しても、サーバーを起動し直す必要はありません（画面は読み込み直してください）
 
 ```bash
-npm start
+node server.mjs
 curl -s localhost:3000/config
 # {"issuer":"http://localhost:4566/ap-northeast-1_xxxxxxxxx","clientId":"xxxxxxxxxxxxxxxxxxxxxxxxxx"}
 ```
@@ -94,7 +90,7 @@ async function cognito(action, params) {
 - 送り先（`cognitoEndpoint`）は、`/config` の `issuer` のオリジンです。Floci なら `http://localhost:4566`、本物なら `https://cognito-idp.<リージョン>.amazonaws.com` になります
 - `SignUp`・`ConfirmSignUp`・`InitiateAuth`・`RevokeToken` は、AWS の認証情報（署名）なしで、クライアント ID だけで呼べる API です。ブラウザに秘密を置かずに済みます
 
-ログインは、02-03 の `npm run login` と同じ `InitiateAuth`（`USER_PASSWORD_AUTH`）です。返ってきた ID トークンの真ん中（ペイロード）を Base64URL から戻し、画面に出します。02-03 の `decode-jwt.sh` と同じで、署名は確かめていません（表示するだけなので）。
+ログインは、02-03 の `bash scripts/login.sh` と同じ `InitiateAuth`（`USER_PASSWORD_AUTH`）です。返ってきた ID トークンの真ん中（ペイロード）を Base64URL から戻し、画面に出します。02-03 の `decode-jwt.sh` と同じで、署名は確かめていません（表示するだけなので）。
 
 ```js
 const { ok, json } = await cognito('InitiateAuth', {
@@ -109,7 +105,7 @@ const { ok, json } = await cognito('InitiateAuth', {
 
 ## 画面から使う
 
-`npm start` を動かしたまま、<http://localhost:3000> を開きます。
+`node server.mjs` を動かしたまま、<http://localhost:3000> を開きます。
 
 1. サインアップする（例: `carol` / `carol@example.com` / `Passw0rd!`）
 2. 確認の前にログインしてみる → `UserNotConfirmedException`
@@ -148,9 +144,9 @@ const { ok, json } = await cognito('InitiateAuth', {
 
 ### 画面を開いたら何も表示されません
 
-`/config` が返す User Pool が Floci に無いと、画面の呼び出しは全部失敗します。Floci を作り直したときは `npm run setup` をやり直し、画面を読み込み直してください。開発者ツールの Console に CORS のエラーが出ているときは、`compose.yaml` に `FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS` を足したあとに `podman compose up -d` で Floci を作り直したかを確かめてください。
+`/config` が返す User Pool が Floci に無いと、画面の呼び出しは全部失敗します。Floci を作り直したときは `bash scripts/setup.sh` をやり直し、画面を読み込み直してください。開発者ツールの Console に CORS のエラーが出ているときは、`compose.yaml` に `FLOCI_SECURITY_EXTRA_CORS_ALLOWED_ORIGINS` を足したあとに `podman compose up -d` で Floci を作り直したかを確かめてください。
 
-### `npm start` で `EADDRINUSE` と出ます
+### `node server.mjs` で `EADDRINUSE` と出ます
 
 ほかのプログラムがポート 3000 を使っています。[準備](../../01-setup/01-environment/LECTURE.md) のコマンドで、待ち受けているプログラムを確かめてください。
 

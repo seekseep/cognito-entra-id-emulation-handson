@@ -9,7 +9,7 @@ source ./env.sh
 source ./.cognito.env
 POOL_ID=${GIVEN_POOL_ID:-$POOL_ID}
 
-TOKEN=${1:?使い方: npm run verify <トークン>}
+TOKEN=${1:?使い方: bash scripts/verify-jwt.sh <トークン>}
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 

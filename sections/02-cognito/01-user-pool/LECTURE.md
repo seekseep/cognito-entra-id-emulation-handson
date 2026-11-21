@@ -101,20 +101,16 @@ ENV
 
 ## 作り直すスクリプトを用意する
 
-もう 1 つ、**`scripts/setup.sh`** を作ります。いまは `create-user-pool.sh` を呼ぶだけですが、これから **レクチャーを 1 つ終えるたびに、そのレクチャーで作ったものを作るスクリプトを 1 行ずつ足していきます**。こうしておくと、Floci を作り直しても `npm run setup` 1 回で「前のレクチャーを終えた状態」に戻れます。
+もう 1 つ、**`scripts/setup.sh`** を作ります。いまは `create-user-pool.sh` を呼ぶだけですが、これから **レクチャーを 1 つ終えるたびに、そのレクチャーで作ったものを作るスクリプトを 1 行ずつ足していきます**。こうしておくと、Floci を作り直しても `bash scripts/setup.sh` 1 回で「前のレクチャーを終えた状態」に戻れます。
 
 ::file{path="scripts/setup.sh"}
-
-**`package.json`** を作り、`scripts` に `setup` を書きます。これから、自分で作ったスクリプトを `npm run <名前>` で呼べるように、ここに並べていきます。
-
-::file{path="package.json"}
 
 動かして確かめます。Floci を作り直して（User Pool が消える）、`setup` で作り直します。
 
 ```bash
 podman compose down
 podman compose up -d
-npm run setup
+bash scripts/setup.sh
 source ./.cognito.env
 echo "$POOL_ID $CLIENT_ID"
 ```
@@ -137,6 +133,6 @@ echo "$POOL_ID $CLIENT_ID"
 
 ### `bash: scripts/setup.sh: No such file or directory` と出ます
 
-`handson/` の中で実行しているかを確かめてください。npm scripts は `package.json` のあるフォルダで動きます。
+`handson/` の中で実行しているかを確かめてください。
 
 :::

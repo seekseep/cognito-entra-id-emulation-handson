@@ -15,7 +15,7 @@ docs: true
 
 ::platform-choice
 
-コマンドはすべて **bash** で打つ前提です（`npm run setup` の中身も bash のスクリプトです）。
+コマンドはすべて **bash** で打つ前提です（このあと作るスクリプトも bash で書きます）。
 
 :::::platform
 ::::macos
@@ -117,7 +117,7 @@ podman compose version                                       # Docker Compose ve
 | ポート | 中身 | 使うセクション |
 |---|---|---|
 | 4566 | Floci（Cognito） | すべて |
-| 3000 | 画面（`npm start` の静的サーバー） | 03・04 |
+| 3000 | 画面（`node server.mjs` の静的サーバー） | 03・04 |
 | 8443 | entra-local | 04 |
 
 Docker Desktop・LocalStack・別の Floci などが同じポート（4566・8443・3000）を使っていると、`localhost` へのアクセスの一部がそちらに流れます。`localhost` が IPv6（`::1`）にも IPv4（`127.0.0.1`）にも解決されるため、エラーにならず「ときどき別のサーバーにつながる」という分かりにくい壊れ方をします。始める前に、待ち受けているプログラムを確かめてください。
@@ -313,13 +313,13 @@ podman compose down
 podman compose up -d
 ```
 
-次のレクチャーから、作ったものを作り直すスクリプト（`scripts/setup.sh`）を 1 行ずつ育てていきます。消えても `npm run setup` で、前のレクチャーを終えた状態に戻せます。
+次のレクチャーから、作ったものを作り直すスクリプト（`scripts/setup.sh`）を 1 行ずつ育てていきます。消えても `bash scripts/setup.sh` で、前のレクチャーを終えた状態に戻せます。
 
 | コマンド | すること |
 |---|---|
 | `podman compose up -d` | `compose.yaml` にあるコンテナを全部起動する（Floci、04 からは entra-local も） |
 | `podman compose down` | 止める。Floci のデータは消える |
-| `npm run setup` | `scripts/setup.sh` を流し、ここまでのレクチャーで Floci に作ったもの（User Pool・ユーザー・グループ・IdP の登録）を作り直す（02-01 から） |
+| `bash scripts/setup.sh` | `scripts/setup.sh` を流し、ここまでのレクチャーで Floci に作ったもの（User Pool・ユーザー・グループ・IdP の登録）を作り直す（02-01 から） |
 
 `setup` をやり直したら、開いている画面を読み込み直してください（User Pool の ID が変わるため）。entra-local（04）のデータだけはボリュームに残り、`podman compose down` でも消えません（消すときは `podman compose down -v`）。
 

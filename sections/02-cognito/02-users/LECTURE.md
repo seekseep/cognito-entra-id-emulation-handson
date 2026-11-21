@@ -15,11 +15,11 @@ Cognito のユーザーの作り方は 2 通りあります。**管理者が作�
 
 ## 準備
 
-`handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `npm run setup` で前のレクチャーを終えた状態（User Pool と App Client）を作り直します。
+`handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `bash scripts/setup.sh` で前のレクチャーを終えた状態（User Pool と App Client）を作り直します。
 
 ```bash
 podman compose up -d
-npm run setup              # 前のレクチャーまでに作ったものを作り直す
+bash scripts/setup.sh              # 前のレクチャーまでに作ったものを作り直す
 source ./env.sh && source ./.cognito.env
 ```
 
@@ -85,12 +85,10 @@ curl -s http://localhost:4566/_aws/ses | head -c 600
 
 ::file{path="scripts/read-code.sh"}
 
-`package.json` に `read-code` を足すと、`npm run -s read-code <メール>` で呼べます（`-s` は npm 自身の表示を消して、コードだけを出す指定です）。
-
-::file{path="package.json"}
+`bash scripts/read-code.sh <メール>` で呼ぶと、コードだけが出ます。
 
 ```bash
-CODE=$(npm run -s read-code bob@example.com)
+CODE=$(bash scripts/read-code.sh bob@example.com)
 aws cognito-idp confirm-sign-up --client-id "$CLIENT_ID" --username bob --confirmation-code "$CODE"
 ```
 
@@ -110,7 +108,7 @@ aws cognito-idp list-users --user-pool-id "$POOL_ID" \
 
 ::file{path="scripts/create-users.sh"}
 
-`setup.sh` に 1 行足します。これで `npm run setup` が、User Pool を作ってから alice と bob を作るようになります。
+`setup.sh` に 1 行足します。これで `bash scripts/setup.sh` が、User Pool を作ってから alice と bob を作るようになります。
 
 ::file{path="scripts/setup.sh"}
 
@@ -119,7 +117,7 @@ Floci を作り直して、確かめます。
 ```bash
 podman compose down
 podman compose up -d
-npm run setup
+bash scripts/setup.sh
 ```
 
 最後に alice と bob が `CONFIRMED` で並べば完成です。

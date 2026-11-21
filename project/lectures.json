@@ -2,7 +2,6 @@
   "$comment": "最終形（04 を終えた状態）のファイルが、どのレクチャーで登場するか。ファイルの中で行が増える所は、ファイルの中の @since / @until で書く。site/scripts/build-snapshots.mjs が、ここからレクチャーごとの状態（sections/<sec>/<lec>/handson/）を作る",
   "lectures": ["01-01", "02-01", "02-02", "02-03", "02-04", "03-01", "03-02", "04-01", "04-02"],
   "files": {
-    "package.json": { "since": "02-01", "about": "npm run で呼ぶ、自分で作ったスクリプトの一覧。レクチャーごとに増える" },
     "compose.yaml": { "since": "01-01", "about": "コンテナの定義。Floci から始まり、04 で entra-local が増える" },
     "env.sh": { "since": "01-01", "about": "aws CLI の向き先を Floci に変える" },
     ".gitignore": { "since": "02-01", "about": "手元にだけ置くファイル（ID・トークン・シークレット）" },

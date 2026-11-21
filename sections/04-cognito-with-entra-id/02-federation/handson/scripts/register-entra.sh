@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # entra-local を User Pool の外部 IdP（OIDC）として登録し、アプリのクライアントで選べるようにする。
-# 先に npm run entra:register-app（Entra 側にアプリを登録する）を済ませておく。
+# 先に bash scripts/entra-register-app.sh（Entra 側にアプリを登録する）を済ませておく。
 set -euo pipefail
 cd "$(dirname "$0")/.."
 source ./env.sh

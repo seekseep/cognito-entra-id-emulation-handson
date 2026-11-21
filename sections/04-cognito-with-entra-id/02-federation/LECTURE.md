@@ -15,12 +15,12 @@ entra-local を Cognito の外部 IdP（OIDC）として登録し、画面の「
 
 ## 準備
 
-`handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `npm run setup` で前のレクチャーを終えた状態を作り直します。
+`handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `bash scripts/setup.sh` で前のレクチャーを終えた状態を作り直します。
 
 ```bash
 podman compose up -d
 curl -s http://localhost:8443/health   # "status":"ok" が返ってから次へ（entra-local は起動に数秒かかる）
-npm run setup              # 前のレクチャーまでに作ったものを作り直す
+bash scripts/setup.sh              # 前のレクチャーまでに作ったものを作り直す
 source ./env.sh && source ./.cognito.env
 ```
 
@@ -72,9 +72,7 @@ aws cognito-idp create-identity-provider \
 
 ::file{path="scripts/list-users.sh"}
 
-`package.json` に `register-entra` を、`setup.sh` に 1 行足します。
-
-::file{path="package.json"}
+`setup.sh` に 1 行足します。
 
 ::file{path="scripts/setup.sh"}
 
@@ -91,8 +89,8 @@ aws cognito-idp create-identity-provider \
 ## 動かす
 
 ```bash
-npm run register-entra
-npm start
+bash scripts/register-entra.sh
+node server.mjs
 ```
 
 <http://localhost:3000> を開き（開いていたら読み込み直し）、「Entra ID でログイン」を押します。entra-local のサインイン画面で `taro@entralocal.dev` / `Passw0rd!` を入れます。戻ってきたら ID トークンを見てください。
@@ -112,11 +110,11 @@ npm start
 
 
 :::warning[本物の Entra の userinfo には `oid` が無い]
-entra-local は userinfo（`/graph/oidc/userinfo`）でも `oid` を返すので、ここではそこから入ります。本物の Entra ID の userinfo が返すのは `sub`・`name`・`family_name`・`given_name`・`picture`・`email` だけで、`oid` は **ID トークンにしか入りません**（`profile` スコープが必要）。本物の Cognito で `custom:entra_oid` が埋まるかは、Cognito が ID トークンのクレームもマッピングに使うかにかかっており、このハンズオンでは確かめていません。本物のテナントにつないだら、まず `npm run users` で `custom:entra_oid` が入っているかを確かめてください。
+entra-local は userinfo（`/graph/oidc/userinfo`）でも `oid` を返すので、ここではそこから入ります。本物の Entra ID の userinfo が返すのは `sub`・`name`・`family_name`・`given_name`・`picture`・`email` だけで、`oid` は **ID トークンにしか入りません**（`profile` スコープが必要）。本物の Cognito で `custom:entra_oid` が埋まるかは、Cognito が ID トークンのクレームもマッピングに使うかにかかっており、このハンズオンでは確かめていません。本物のテナントにつないだら、まず `bash scripts/list-users.sh` で `custom:entra_oid` が入っているかを確かめてください。
 :::
 
 ```bash
-npm run users
+bash scripts/list-users.sh
 ```
 
 ```text
@@ -149,7 +147,7 @@ Cognito のカスタム属性は、あとから足すことはできますが、
 
 ### entra-local のサインイン画面で「Invalid redirect URI」と出ます
 
-アプリの登録のリダイレクト URI と、Cognito（Floci）が送ってくる `redirect_uri`（`http://localhost:4566/cognito-idp/oauth2/idpresponse`）が 1 文字でも違うと拒否されます。`.entra.env` を消してから `npm run entra:register-app` で登録し直し、`npm run register-entra` で Cognito 側の登録も新しいクライアント ID とシークレットに合わせます。
+アプリの登録のリダイレクト URI と、Cognito（Floci）が送ってくる `redirect_uri`（`http://localhost:4566/cognito-idp/oauth2/idpresponse`）が 1 文字でも違うと拒否されます。`.entra.env` を消してから `bash scripts/entra-register-app.sh` で登録し直し、`bash scripts/register-entra.sh` で Cognito 側の登録も新しいクライアント ID とシークレットに合わせます。
 
 ### ログアウトしたのに、「Entra ID でログイン」でパスワードを聞かれません
 

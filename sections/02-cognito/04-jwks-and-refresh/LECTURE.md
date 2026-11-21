@@ -15,18 +15,18 @@ docs: true
 
 ## 準備
 
-`handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `npm run setup` で前のレクチャーを終えた状態を作り直します。
+`handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `bash scripts/setup.sh` で前のレクチャーを終えた状態を作り直します。
 
 ```bash
 podman compose up -d
-npm run setup              # 前のレクチャーまでに作ったものを作り直す
+bash scripts/setup.sh              # 前のレクチャーまでに作ったものを作り直す
 source ./env.sh && source ./.cognito.env
 ```
 
 トークンを 1 組もらっておきます。
 
 ```bash
-npm run login alice 'Passw0rd!'
+bash scripts/login.sh alice 'Passw0rd!'
 ```
 
 ## discovery と JWKS
@@ -82,12 +82,8 @@ openssl dgst -sha256 -verify "$WORK/key.pem" -signature "$WORK/signature" "$WORK
 
 ::file{path="scripts/verify-jwt.sh"}
 
-`package.json` に `verify` と、あとで使う `refresh` を足します。
-
-::file{path="package.json"}
-
 ```bash
-npm run verify "$(jq -r .AccessToken .tokens.json)"
+bash scripts/verify-jwt.sh "$(jq -r .AccessToken .tokens.json)"
 # OK: 署名と iss と exp を確かめました
 ```
 
@@ -102,8 +98,8 @@ TAMPERED=$(jq -r '
              | .["cognito:groups"] += ["root"]
              | tojson | @base64 | gsub("\\+"; "-") | gsub("/"; "_") | gsub("="; ""))
   | join(".")' .tokens.json)
-npm run -s decode "$TAMPERED"     # cognito:groups が ["admin", "root"] になっている
-npm run verify "$TAMPERED"
+bash scripts/decode-jwt.sh "$TAMPERED"     # cognito:groups が ["admin", "root"] になっている
+bash scripts/verify-jwt.sh "$TAMPERED"
 # NG: 署名が合いません（中身が書き換えられています）
 ```
 
@@ -115,7 +111,7 @@ npm run verify "$TAMPERED"
 
 ```bash
 OTHER=$(aws cognito-idp create-user-pool --pool-name other --query UserPool.Id --output text)
-POOL_ID=$OTHER npm run verify "$(jq -r .AccessToken .tokens.json)"
+POOL_ID=$OTHER bash scripts/verify-jwt.sh "$(jq -r .AccessToken .tokens.json)"
 # NG: JWKS に kid が ap-northeast-1_xxxxxxxxx の鍵がありません
 ```
 
@@ -123,12 +119,12 @@ Floci は User Pool ごとに別の鍵を使います（本物も同じです）
 
 ## トークンを更新する
 
-**`scripts/refresh.sh`** は、`.tokens.json` のリフレッシュトークンを jq で取り出し、`REFRESH_TOKEN_AUTH` で送ります。`package.json` の `refresh` は、上で `verify` と一緒に足してあります。
+**`scripts/refresh.sh`** は、`.tokens.json` のリフレッシュトークンを jq で取り出し、`REFRESH_TOKEN_AUTH` で送ります。
 
 ::file{path="scripts/refresh.sh"}
 
 ```bash
-npm run refresh
+bash scripts/refresh.sh
 ```
 
 ```json nofile
@@ -143,7 +139,7 @@ npm run refresh
 AT=$(jq -r .AccessToken .tokens.json)
 aws cognito-idp global-sign-out --access-token "$AT"
 aws cognito-idp get-user --access-token "$AT"   # NotAuthorizedException: Access Token has been revoked
-npm run verify "$AT"                             # OK: 署名と iss と exp を確かめました
+bash scripts/verify-jwt.sh "$AT"                             # OK: 署名と iss と exp を確かめました
 ```
 
 Cognito に問い合わせれば「取り消し済み」と分かりますが、JWKS で署名を確かめるだけの API には分かりません。JWT は API が Cognito に問い合わせずに済むことと引き換えに、期限までは使えてしまいます。アクセストークンの有効期限を短めにするのはこのためです。

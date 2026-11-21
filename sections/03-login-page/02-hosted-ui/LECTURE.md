@@ -17,11 +17,11 @@ docs: true
 
 ## 準備
 
-`handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `npm run setup` で前のレクチャーを終えた状態を作り直します。
+`handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `bash scripts/setup.sh` で前のレクチャーを終えた状態を作り直します。
 
 ```bash
 podman compose up -d
-npm run setup              # 前のレクチャーまでに作ったものを作り直す
+bash scripts/setup.sh              # 前のレクチャーまでに作ったものを作り直す
 source ./env.sh && source ./.cognito.env
 ```
 
@@ -54,14 +54,12 @@ aws cognito-idp update-user-pool-client \
 
 ::file{path="scripts/update-client.sh"}
 
-`package.json` に `update-client` を足し、`setup.sh` にも 1 行足します。
-
-::file{path="package.json"}
+`setup.sh` にも 1 行足します。
 
 ::file{path="scripts/setup.sh"}
 
 ```bash
-npm run update-client
+bash scripts/update-client.sh
 ```
 
 ## 画面にボタンを足す
@@ -112,7 +110,7 @@ location.assign(url);
 ## 動かす
 
 ```bash
-npm start
+node server.mjs
 ```
 
 <http://localhost:3000> を開き、「Cognito のログイン画面へ」を押します。Floci のログイン画面に移るので、`alice` / `Passw0rd!` でサインインします。画面に戻ってきて、ID トークンの中身が表示されれば成功です。下の「パスワードでログイン」のフォームも、これまでどおり使えます。
@@ -135,7 +133,7 @@ npm start
 
 ## パスワードのフォームは残す？
 
-本番で Hosted UI に寄せるなら、パスワードのフォームは消し、App Client の `ExplicitAuthFlows` から `ALLOW_USER_PASSWORD_AUTH` も外せます。アプリがパスワードに一切触らなくなるのが、Hosted UI のいちばんの利点です。このハンズオンでは、見比べるためと、CLI（`npm run login`）で使うために残しています。
+本番で Hosted UI に寄せるなら、パスワードのフォームは消し、App Client の `ExplicitAuthFlows` から `ALLOW_USER_PASSWORD_AUTH` も外せます。アプリがパスワードに一切触らなくなるのが、Hosted UI のいちばんの利点です。このハンズオンでは、見比べるためと、CLI（`bash scripts/login.sh`）で使うために残しています。
 
 ## このレクチャーを終えた handson/
 
@@ -153,6 +151,6 @@ Hosted UI 側にもログイン状態（Cookie）が残っているからです�
 
 ### 画面を開いたら何も表示されません
 
-User Pool が無いと `/config` は返っても discovery が読めません。Floci を作り直したときは `npm run setup` をやり直し、画面を読み込み直してください（前のレクチャーの FAQ も参照）。
+User Pool が無いと `/config` は返っても discovery が読めません。Floci を作り直したときは `bash scripts/setup.sh` をやり直し、画面を読み込み直してください（前のレクチャーの FAQ も参照）。
 
 :::

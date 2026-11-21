@@ -15,11 +15,11 @@ docs: true
 
 ## 準備
 
-`handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `npm run setup` で前のレクチャーを終えた状態を作り直します。
+`handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `bash scripts/setup.sh` で前のレクチャーを終えた状態を作り直します。
 
 ```bash
 podman compose up -d
-npm run setup              # 前のレクチャーまでに作ったものを作り直す
+bash scripts/setup.sh              # 前のレクチャーまでに作ったものを作り直す
 source ./env.sh && source ./.cognito.env
 ```
 
@@ -49,17 +49,15 @@ ID トークンとアクセストークンは **JWT** です。`.` で区切っ�
 - base64url は、普通の base64 の `+` と `/` を URL で使える `-` と `_` に替えたものです。`gsub` で戻してから `@base64d` に渡します
 - `iat`・`auth_time`・`exp` は UNIX 秒なので、`todate` で読める形にして横に添えます
 
-`package.json` に `login` と `decode` を足し、`.tokens.json` を `.gitignore` に足します（トークンは手元にだけ置くものです）。
-
-::file{path="package.json"}
+`.tokens.json` を `.gitignore` に足します（トークンは手元にだけ置くものです）。
 
 ::file{path=".gitignore"}
 
 alice でログインし、ID トークンを開きます。
 
 ```bash
-npm run login alice 'Passw0rd!'
-jq -r .IdToken .tokens.json | npm run -s decode
+bash scripts/login.sh alice 'Passw0rd!'
+jq -r .IdToken .tokens.json | bash scripts/decode-jwt.sh
 ```
 
 `jq -r .IdToken .tokens.json` は、`.tokens.json` の `IdToken` を引用符なしで取り出します。
@@ -92,7 +90,7 @@ jq -r .IdToken .tokens.json | npm run -s decode
 アクセストークンも開いてみます。
 
 ```bash
-jq -r .AccessToken .tokens.json | npm run -s decode
+jq -r .AccessToken .tokens.json | bash scripts/decode-jwt.sh
 ```
 
 アクセストークンには `aud` がありません。代わりに `client_id` と `scope` が入ります。`email` も入りません。API に渡すのはこちらなので、API は「誰か」を `sub` と `username` で知ることになります。
@@ -110,8 +108,8 @@ aws cognito-idp admin-list-groups-for-user --user-pool-id "$POOL_ID" --username 
 もう一度ログインして、トークンを開きます。
 
 ```bash
-npm run login alice 'Passw0rd!'
-jq -r .AccessToken .tokens.json | npm run -s decode
+bash scripts/login.sh alice 'Passw0rd!'
+jq -r .AccessToken .tokens.json | bash scripts/decode-jwt.sh
 ```
 
 ID トークンにもアクセストークンにも `"cognito:groups": ["admin"]` が入りました。API はこれを見て「管理者だけが使える操作」を許すかを決めます（次のセクションで実装します）。
@@ -131,7 +129,7 @@ ID トークンにもアクセストークンにも `"cognito:groups": ["admin"]
 ```bash
 podman compose down
 podman compose up -d
-npm run setup     # 最後に alice のグループ（["admin"]）が出る
+bash scripts/setup.sh     # 最後に alice のグループ（["admin"]）が出る
 ```
 
 ## このレクチャーを終えた handson/
