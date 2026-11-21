@@ -1,4 +1,4 @@
-// どの画面でも使う部分。設定を読み、Cognito の API を呼ぶ。
+// どの画面でも使う部分。設定を読み、Cognito の API を呼ぶクライアントを用意する。
 
 // どの User Pool に、どのクライアントとして行くかは、setup が書き出す config.json から読む（作り直したときに古い値を使わないよう、キャッシュしない）
 export const config = await (await fetch('/config.json', { cache: 'no-store' })).json();

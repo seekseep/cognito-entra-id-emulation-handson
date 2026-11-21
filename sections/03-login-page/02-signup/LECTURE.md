@@ -30,26 +30,21 @@ bash scripts/setup.sh              # 前のレクチャーまでに作ったも�
 
 サインアップの画面と、メールに届いた確認コードを入れる画面を、別々に作ります。
 
-まず、2 つの画面で使う関数を **`public/cognito.js`** に足します。中心は、Cognito の API を 1 つ呼ぶ関数 `cognito()` です。AWS SDK や Amplify が中でしていることを、`fetch` でそのまま書いています。
+まず、Cognito の API を呼ぶ準備を **`public/cognito.js`** に足します。Cognito の API は、AWS SDK for JavaScript v3（`@aws-sdk/client-cognito-identity-provider`）で呼びます。npm で入れずに、CDN（esm.sh）からブラウザが直接読み込みます。
 
 ```js
-async function cognito(action, params) {
-  const response = await fetch(cognitoEndpoint, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/x-amz-json-1.1',
-      'x-amz-target': `AWSCognitoIdentityProviderService.${action}`,
-    },
-    body: JSON.stringify({ ClientId: config.clientId, ...params }),
-  });
-  // ...
-}
+import { CognitoIdentityProviderClient, SignUpCommand }
+  from 'https://esm.sh/@aws-sdk/client-cognito-identity-provider@3.1163.0';
+
+const client = new CognitoIdentityProviderClient({ region: 'ap-northeast-1', endpoint: cognitoEndpoint });
+await client.send(new SignUpCommand({ ClientId: config.clientId, Username, Password, UserAttributes }));
 ```
 
-- 送り先は 1 か所で、どの操作かは `x-amz-target` ヘッダーで伝えます。02 で aws CLI が送っていたのと同じ形です
-- 送り先（`cognitoEndpoint`）は、`config.json` の `issuer` のオリジンです。Floci なら `http://localhost:4566`、本物なら `https://cognito-idp.<リージョン>.amazonaws.com` になります
+- 版（`@3.1163.0`）を URL に書いて固定します。書かないと、ある日から新しい版が読み込まれて動きが変わることがあります
+- `endpoint` で、送り先を `config.json` の `issuer` のオリジンに向けます。Floci なら `http://localhost:4566` です。本物の Cognito なら `endpoint` は要りません（`region` から決まります）
 - `SignUp`・`ConfirmSignUp`・`InitiateAuth`・`RevokeToken` は、AWS の認証情報（署名）なしで、クライアント ID だけで呼べる API です。ブラウザに秘密を置かずに済みます
-- 応答は、画面の「Cognito の応答」の欄（`#output`）にそのまま出します
+- 失敗すると、`UsernameExistsException` などの名前の例外になります。成功の結果も失敗も、画面の「Cognito の応答」の欄（`#output`）に出します
+- CDN から読み込むので、画面を開くときはインターネットにつながっている必要があります
 
 ::file{path="public/cognito.js"}
 
@@ -70,13 +65,13 @@ async function cognito(action, params) {
 <http://localhost:3000> を開きます（開いていたら読み込み直し）。
 
 1. 「サインアップ」を開き、登録する（例: `carol` / `carol@example.com` / `Passw0rd!`）。「メールを確認する」の画面に移り、ユーザー名が入っている
-2. 画面のリンクから <http://localhost:4566/_aws/ses> を開いて確認コードを読み、入れて確認する。「Cognito の応答」に `ConfirmSignUp → 200` が出る
+2. 画面のリンクから <http://localhost:4566/_aws/ses> を開いて確認コードを読み、入れて確認する。「Cognito の応答」に `ConfirmSignUp → 成功` が出る
 3. 「サインアップ」に戻り、同じユーザー名でもう一度登録してみる → `UsernameExistsException`
 
 開発者ツールの Network タブで、次を確かめてください。
 
 - 要求は `localhost:4566` に飛んでいる
-- 要求のヘッダーに `x-amz-target: AWSCognitoIdentityProviderService.SignUp` が付いている
+- 要求のヘッダーに `x-amz-target: AWSCognitoIdentityProviderService.SignUp` が付いている。SDK も、02 の aws CLI と同じ API を呼んでいます
 - `localhost:4566` への要求の前に、`OPTIONS` の要求（CORS の下調べ）が出ている
 
 `carol` は `setup` では作られません。Floci を作り直したときは、ここでサインアップし直してください。

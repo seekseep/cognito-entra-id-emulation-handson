@@ -35,13 +35,14 @@ bash scripts/setup.sh              # 前のレクチャーまでに作ったも�
 ログインは、aws CLI の `initiate-auth` と同じ `InitiateAuth`（`USER_PASSWORD_AUTH`）です。返ってきた ID トークンの真ん中（ペイロード）を Base64URL から戻し、画面に出します。署名は確かめていません（表示するだけなので）。トークンの中身と署名の確かめ方は、04 でコマンドを使って詳しく見ます。
 
 ```js
-const { ok, json } = await cognito('InitiateAuth', {
+const result = await client.send(new InitiateAuthCommand({
+  ClientId: config.clientId,
   AuthFlow: 'USER_PASSWORD_AUTH',
   AuthParameters: { USERNAME: username, PASSWORD: password },
-});
+}));
 ```
 
-**`public/main.js`** には、`cognito.js` から `cognito()` を読み込んで、ログインとログアウトを足します。
+**`public/main.js`** に、`cognito.js` から `client` と使うコマンドを読み込んで、ログインとログアウトを足します。
 
 「ログアウト」は、手元のトークンを消す前に `RevokeToken` でリフレッシュトークンを Cognito で取り消します。消すだけにすると、もしトークンが盗まれていた場合、ログアウトしたあとも使われ続けます（リフレッシュトークンは既定で 30 日有効です）。
 

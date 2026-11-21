@@ -197,7 +197,7 @@ podman pull docker.io/library/nginx:1.27-alpine
 podman pull --platform linux/amd64 ghcr.io/cmaneu/entra-local:0.1.1
 ```
 
-npm のパッケージも Node.js も使いません。スクリプトは bash と jq で書き、画面は nginx のコンテナで配ります。
+npm のパッケージも Node.js も使いません。スクリプトは bash と jq で書き、画面は nginx のコンテナで配ります。画面から Cognito を呼ぶ AWS SDK は、ブラウザが CDN から読み込みます。
 
 ## エディタとブラウザ
 

@@ -24,18 +24,23 @@
   <p><a href="./">トップへ</a></p>
 
   <script type="module">
-    import { cognito, formValues } from './cognito.js';
+    import { client, config, formValues, show, SignUpCommand } from './cognito.js';
 
     document.querySelector('#signup').addEventListener('submit', async (event) => {
       event.preventDefault();
       const { username, email, password } = formValues(event.target);
-      const { ok } = await cognito('SignUp', {
-        Username: username,
-        Password: password,
-        UserAttributes: [{ Name: 'email', Value: email }],
-      });
-      // 登録できたら、メールに届いた確認コードを入れる画面へ
-      if (ok) location.assign(`./confirm.html?username=${encodeURIComponent(username)}`);
+      try {
+        await client.send(new SignUpCommand({
+          ClientId: config.clientId,
+          Username: username,
+          Password: password,
+          UserAttributes: [{ Name: 'email', Value: email }],
+        }));
+        // 登録できたら、メールに届いた確認コードを入れる画面へ
+        location.assign(`./confirm.html?username=${encodeURIComponent(username)}`);
+      } catch (error) {
+        show('SignUp', error);
+      }
     });
   </script>
 </body>

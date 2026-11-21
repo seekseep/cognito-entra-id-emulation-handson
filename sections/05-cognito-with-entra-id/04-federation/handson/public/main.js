@@ -1,6 +1,5 @@
 import { cognitoEndpoint } from './cognito.js';
-import { cognito, formValues } from './cognito.js';
-import { config, show } from './cognito.js';
+import { client, config, formValues, show, InitiateAuthCommand, RevokeTokenCommand } from './cognito.js';
 
 document.querySelector('#endpoint').textContent = cognitoEndpoint;
 
@@ -31,18 +30,27 @@ function render() {
 document.querySelector('#login').addEventListener('submit', async (event) => {
   event.preventDefault();
   const { username, password } = formValues(event.target);
-  const { ok, json } = await cognito('InitiateAuth', {
-    AuthFlow: 'USER_PASSWORD_AUTH',
-    AuthParameters: { USERNAME: username, PASSWORD: password },
-  });
-  // 管理者が作ったユーザーの初回ログインなどでは、トークンの代わりにチャレンジ（ChallengeName）が返る
-  const result = json.AuthenticationResult;
-  if (ok && result) saveTokens({ idToken: result.IdToken, accessToken: result.AccessToken, refreshToken: result.RefreshToken });
+  try {
+    const result = await client.send(new InitiateAuthCommand({
+      ClientId: config.clientId,
+      AuthFlow: 'USER_PASSWORD_AUTH',
+      AuthParameters: { USERNAME: username, PASSWORD: password },
+    }));
+    show('InitiateAuth', result);
+    // 管理者が作ったユーザーの初回ログインなどでは、トークンの代わりにチャレンジ（ChallengeName）が返る
+    const auth = result.AuthenticationResult;
+    if (auth) saveTokens({ idToken: auth.IdToken, accessToken: auth.AccessToken, refreshToken: auth.RefreshToken });
+  } catch (error) {
+    show('InitiateAuth', error);
+  }
 });
 
 document.querySelector('#logout').addEventListener('click', async () => {
   // 手元から消す前に、リフレッシュトークンを Cognito で取り消す（盗まれていても使えなくする）
-  if (tokens?.refreshToken) await cognito('RevokeToken', { Token: tokens.refreshToken });
+  if (tokens?.refreshToken) {
+    await client.send(new RevokeTokenCommand({ ClientId: config.clientId, Token: tokens.refreshToken }));
+    show('RevokeToken', {});
+  }
   saveTokens(null);
   // Hosted UI 側のログイン状態（Cookie）も消す。消さないと、次に Hosted UI へ行ったとき画面が出ずに素通りする
   const url = new URL(discovery.authorization_endpoint.replace('/oauth2/authorize', '/logout'));
@@ -123,7 +131,7 @@ async function handleCallback() {
     }),
   });
   const json = await response.json();
-  show('token エンドポイント', response.status, json);
+  document.querySelector('#output').textContent = `token エンドポイント → ${response.status}\n${JSON.stringify(json, null, 2)}`;
   if (!response.ok) return;
   // トークンエンドポイントの応答は snake_case。パスワードでログインしたときと同じ形にそろえて持つ
   saveTokens({ idToken: json.id_token, accessToken: json.access_token, refreshToken: json.refresh_token });
