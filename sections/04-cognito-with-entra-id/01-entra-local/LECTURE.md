@@ -75,6 +75,24 @@ curl -s http://localhost:8443/11111111-1111-1111-1111-111111111111/v2.0/.well-kn
 
 `11111111-...` が **テナント ID** です。本物の Entra でも、URL の途中にテナント ID が入り、`/v2.0` で終わる issuer になります。管理ポータルは <http://localhost:8443/> で開けます。
 
+### テナント ID について
+
+**テナント** は、Entra ID の中の 1 つの組織（会社や学校など）の入れ物です。ユーザーやアプリの登録は、テナントの中に置かれます。テナント ID はその入れ物を見分ける GUID で、issuer やエンドポイントの URL の途中に入ります。
+
+| | 本物の Entra ID | entra-local |
+|---|---|---|
+| テナント ID の決まり方 | テナントを作ったときに Microsoft が割り当てる。自分では決められない | 起動するときの設定で決まる。何も指定しないと `11111111-1111-1111-1111-111111111111` |
+| どこで見るか | Microsoft Entra 管理センターの「概要」の「テナント ID」 | `curl -s http://localhost:8443/health` の `tenantId` |
+| テナントの数 | 組織ごとにいくつでもある | 1 つだけ |
+
+`1111...` は entra-local の既定値で、このハンズオンではそのまま使います。変えたいときは、`compose.yaml` の `entra-local` の `environment` に `TENANT_ID` を足します。GUID の形（`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`）でないと、`TENANT_ID: must be a GUID` と出て起動しません。
+
+```yaml
+      TENANT_ID: 22222222-2222-2222-2222-222222222222
+```
+
+変えると、issuer やエンドポイントの URL も新しいテナント ID に変わり、`1111...` の URL は 404 になります。このハンズオンの本文やコマンドは `1111...` で書いているので、変えたときは URL と、04-02 で `.entra.env` に書く `ENTRA_TENANT_ID` も合わせてください。
+
 `compose.yaml` の entra-local の設定:
 
 ```yaml
