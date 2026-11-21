@@ -105,8 +105,8 @@ podman compose version                                       # Docker Compose ve
 
 | 渡す先 | 特徴 |
 |---|---|
-| docker-compose（v2） | Docker 公式の実装。`--wait` や `profiles` など、このハンズオンで使う機能が全部そろう。**こちらを使ってください** |
-| podman-compose | Python で書かれた Podman 向けの実装。古い版（Ubuntu 24.04 の apt で入る 1.0 系など）は `--wait` を知らず、`podman compose up -d --wait` が `unrecognized arguments: --wait` で止まる |
+| docker-compose（v2） | Docker 公式の実装。このハンズオンはこちらで確かめています。**こちらを使ってください** |
+| podman-compose | Python で書かれた Podman 向けの実装。このハンズオンでは確かめていません |
 
 `podman compose version` が `Docker Compose version v2...` と出れば docker-compose が使われています。`podman-compose version ...` と出る場合は、上の手順で docker-compose を入れてください。両方入っているときは docker-compose が優先されます。
 
@@ -269,24 +269,21 @@ services:
     image: docker.io/floci/floci:2.4.0
     ports:
       - "127.0.0.1:4566:4566"
-    healthcheck:
-      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/4566 && ..."]
 ```
 
 - イメージは `2.4.0` に固定しています。`latest` だと、ある日から挙動が変わることがあります
 - ポートは **4566** です。`127.0.0.1:` を付けて、自分のパソコンからだけ届くようにしています。Floci は認証なしで API を受け付けるので、ほかのマシンから触られないようにするためです
-- ヘルスチェックは `/_floci/health` を叩きます。イメージに `curl` も `grep` も入っていないので、bash の `/dev/tcp` で HTTP を手書きしています
 
 ::file{path="compose.yaml"}
 
 `handson/` で、コンテナを起動します。
 
 ```bash
-podman compose up -d --wait
+podman compose up -d
 curl -s http://localhost:4566/_floci/health | head -c 120
 ```
 
-`-d` は裏で動かし続ける指定、`--wait` はヘルスチェックが通るまで待ってから戻る指定です。`Container ... Healthy` と出れば準備完了です。
+`-d` は、コンテナを裏で動かし続ける指定です。`curl` で `{"edition":"community","services":{...` のような JSON が返れば起動しています。何も返らないときは、数秒待ってからもう一度 `curl` を打ってください。
 
 ### aws CLI を Floci に向ける
 
@@ -311,14 +308,14 @@ Floci は既定でデータをメモリに持ちます。コンテナを作り�
 
 ```bash
 podman compose down
-podman compose up -d --wait
+podman compose up -d
 ```
 
 次のレクチャーから、作ったものを作り直すスクリプト（`scripts/setup.sh`）を 1 行ずつ育てていきます。消えても `npm run setup` で、前のレクチャーを終えた状態に戻せます。
 
 | コマンド | すること |
 |---|---|
-| `podman compose up -d --wait` | `compose.yaml` にあるコンテナを全部起動する（Floci、04 からは entra-local も） |
+| `podman compose up -d` | `compose.yaml` にあるコンテナを全部起動する（Floci、04 からは entra-local も） |
 | `podman compose down` | 止める。Floci のデータは消える |
 | `npm run setup` | `scripts/setup.sh` を流し、ここまでのレクチャーで Floci に作ったもの（User Pool・ユーザー・グループ・IdP の登録）を作り直す（02-01 から） |
 
@@ -358,9 +355,9 @@ WSL2 は既定で、中で待ち受けたポートを Windows の `localhost` �
 
 仮想マシンのイメージを取得している最中のことがあります。初回は数分かかります。それでも進まないときは `podman machine stop` → `podman machine start` を試してください。
 
-### `podman compose up -d --wait` が `exit status 1` で終わります
+### 待っても `curl` に何も返りません
 
-ヘルスチェックが通らなかったときの表示です。`podman compose ps` で状態を、`podman compose logs floci` でログを見てください。ポート 4566 をほかのプログラム（LocalStack や別の Floci など）が使っていると起動できません。
+`podman compose ps` で状態を、`podman compose logs floci` でログを見てください。ポート 4566 をほかのプログラム（LocalStack や別の Floci など）が使っていると起動できません。
 
 ### LocalStack や moto ではだめですか？
 

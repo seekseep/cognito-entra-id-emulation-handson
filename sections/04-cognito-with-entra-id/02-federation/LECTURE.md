@@ -18,7 +18,8 @@ entra-local を Cognito の外部 IdP（OIDC）として登録し、画面の「
 `handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `npm run setup` で前のレクチャーを終えた状態を作り直します。
 
 ```bash
-podman compose up -d --wait
+podman compose up -d
+curl -s http://localhost:8443/health   # "status":"ok" が返ってから次へ（entra-local は起動に数秒かかる）
 npm run setup              # 前のレクチャーまでに作ったものを作り直す
 source ./env.sh && source ./.cognito.env
 ```

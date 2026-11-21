@@ -46,10 +46,11 @@ discovery から登録に使う値を抜き出す **`scripts/entra-endpoints.sh`
 
 ## 起動する
 
-`podman compose up -d --wait` で、Floci はそのまま、entra-local が新しく起動します。
+`podman compose up -d` で、Floci はそのまま、entra-local が新しく起動します。entra-local は起動に数秒かかるので、`curl` で `"status":"ok"` が返るのを確かめてから進みます。何も返らないときは、数秒待ってからもう一度打ってください。
 
 ```bash
-podman compose up -d --wait
+podman compose up -d
+curl -s http://localhost:8443/health
 npm run entra:endpoints
 ```
 
@@ -91,7 +92,7 @@ sudo apt-get install -y qemu-user-static
 ::::
 :::::
 
-エミュレーションの下では起動もヘルスチェックも遅くなるので、compose.yaml のヘルスチェックは待ち時間を長め（`start_period: 60s`・`timeout: 15s`）にしてあります。それでも `container is unhealthy` で止まるときは、`podman compose logs entra-local` でログを見てください。
+1 分ほど待っても `curl` に何も返らないときは、`podman compose logs entra-local` でログを見てください。
 
 ## アプリを登録する
 
@@ -197,6 +198,6 @@ A  "sub": "7AVwZdeJEDtlOYPBd5JlCISHoby578la6SIPMq3Q27Q"  "aud": "542d7c9b-..."  
 
 ### データを消したいときは？
 
-ユーザーやアプリ登録は、entra-local のデータボリュームに SQLite で残ります。`podman compose down` では消えません。消すときは `podman compose down -v` でボリュームごと消し、`podman compose up -d --wait`・`npm run setup` で作り直します。残っている間は、`npm run entra:register-app` は登録済みのアプリを使い続け、`npm run entra:create-user` は既にいるユーザーを表示するだけなので、手順を上から流し直しても止まりません。
+ユーザーやアプリ登録は、entra-local のデータボリュームに SQLite で残ります。`podman compose down` では消えません。消すときは `podman compose down -v` でボリュームごと消し、`podman compose up -d`・`npm run setup` で作り直します。残っている間は、`npm run entra:register-app` は登録済みのアプリを使い続け、`npm run entra:create-user` は既にいるユーザーを表示するだけなので、手順を上から流し直しても止まりません。
 
 :::

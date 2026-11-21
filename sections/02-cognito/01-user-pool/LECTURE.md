@@ -19,7 +19,7 @@ Cognito でユーザーを管理する入れ物が **User Pool**、そこにロ�
 
 ```bash
 cd handson
-podman compose up -d --wait
+podman compose up -d
 source ./env.sh
 ```
 
@@ -113,7 +113,7 @@ ENV
 
 ```bash
 podman compose down
-podman compose up -d --wait
+podman compose up -d
 npm run setup
 source ./.cognito.env
 echo "$POOL_ID $CLIENT_ID"

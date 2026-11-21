@@ -18,7 +18,7 @@ Cognito のユーザーの作り方は 2 通りあります。**管理者が作�
 `handson/` で作業します。前のレクチャーから続けているなら、`source` の行だけで構いません。Floci を止めていたときは、起動してから `npm run setup` で前のレクチャーを終えた状態（User Pool と App Client）を作り直します。
 
 ```bash
-podman compose up -d --wait
+podman compose up -d
 npm run setup              # 前のレクチャーまでに作ったものを作り直す
 source ./env.sh && source ./.cognito.env
 ```
@@ -118,7 +118,7 @@ Floci を作り直して、確かめます。
 
 ```bash
 podman compose down
-podman compose up -d --wait
+podman compose up -d
 npm run setup
 ```
 
