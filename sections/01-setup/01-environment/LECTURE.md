@@ -213,12 +213,11 @@ Windows 側に入れた Node.js ではなく、**WSL2 の Ubuntu の中** に入
 node --version   # v24.x.x 以上
 ```
 
-## 当日より前にやっておくこと
+## コンテナのイメージを取得する
 
-コンテナのイメージは、合わせて 500MB ほどになります。勉強会の会場で全員が同時に取得すると時間がかかるので、道具を入れたら、ネットワークのよい所で先に取得しておいてください。
+使うコンテナのイメージを取得しておきます。展開後で合わせて約 530MB あります。
 
 ```bash
-# コンテナのイメージ（展開後で合わせて約 530MB）
 podman pull docker.io/floci/floci:2.4.0
 podman pull --platform linux/amd64 ghcr.io/cmaneu/entra-local:0.1.1
 ```
