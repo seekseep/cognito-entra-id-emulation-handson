@@ -95,7 +95,7 @@ ENV
 
 ::file{path="scripts/create-user-pool.sh"}
 
-`.cognito.env` は手元の環境ごとに中身が違うファイルなので、`.gitignore` に足しておきます。
+`.cognito.env` は手元の環境ごとに中身が違うファイルなので、git に入れないよう **`.gitignore`** を作って書いておきます。このあとのレクチャーでも、トークンやシークレットを書いたファイルをここに足していきます。
 
 ::file{path=".gitignore"}
 

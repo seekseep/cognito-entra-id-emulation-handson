@@ -1,5 +1,4 @@
-node_modules/
-.cognito.env # @since 02-01
+.cognito.env
 .tokens.json # @since 02-03
 # @since 04-01
 .entra.env

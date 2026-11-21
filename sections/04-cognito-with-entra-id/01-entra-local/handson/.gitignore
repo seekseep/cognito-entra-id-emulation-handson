@@ -1,4 +1,3 @@
-node_modules/
 .cognito.env
 .tokens.json
 .entra.env

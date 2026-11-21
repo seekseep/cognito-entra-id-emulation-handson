@@ -245,7 +245,7 @@ mkdir handson
 cd handson
 ```
 
-### compose.yaml を作る
+### 起動するコンテナを書く
 
 起動するコンテナを書く **`compose.yaml`** を作ります。いまは Floci だけです。
 
@@ -286,7 +286,7 @@ curl -s http://localhost:4566/_floci/health | jq '.services["cognito-idp"]'
 
 `"running"` と出れば起動しています。何も出ないときは、数秒待ってからもう一度打ってください。
 
-### env.sh を作る
+### aws CLI の向き先を書く
 
 aws CLI は、環境変数 `AWS_ENDPOINT_URL` があればそこに話しかけます。aws CLI を Floci に向ける設定を **`env.sh`** にまとめます。
 
@@ -294,7 +294,9 @@ aws CLI は、環境変数 `AWS_ENDPOINT_URL` があればそこに話しかけ�
 
 Floci はキーの中身を確かめないので、ダミーの `test` で構いません。**本物の AWS のキーを入れないでください**（向き先を間違えたときに本物を触ってしまいます）。
 
-ターミナルを開いたら、最初に読み込みます。読み込んだら、Floci の Cognito に話しかけられるかを確かめます。
+### aws CLI で確かめる
+
+`env.sh` を読み込み、Floci の Cognito に話しかけられるかを確かめます。ターミナルを開き直したときも、最初に `source ./env.sh` を打ちます。
 
 ```bash
 source ./env.sh
@@ -337,11 +339,6 @@ podman compose up -d
 | 外部 IdP（OIDC）経由のログイン | 使える。登録のしかたに本物と違う点がある（[04-02](../../04-cognito-with-entra-id/02-federation/LECTURE.md) で扱う） |
 | 外部 IdP（SAML）・Facebook・Apple | 使えない |
 
-### .gitignore を作る
-
-最後に、git で管理するときに入れないファイルを書く **`.gitignore`** を作ります。このハンズオンでは npm のパッケージは入れませんが、Node のプロジェクトで入れないのが決まりの `node_modules/` を書いておきます。このあとのレクチャーで、User Pool の ID やトークン、シークレットを書いたファイルを足していきます。
-
-::file{path=".gitignore"}
 
 ## この節を終えた handson/
 

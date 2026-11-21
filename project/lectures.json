@@ -5,7 +5,7 @@
     "package.json": { "since": "02-01", "about": "npm run で呼ぶ、自分で作ったスクリプトの一覧。レクチャーごとに増える" },
     "compose.yaml": { "since": "01-01", "about": "コンテナの定義。Floci から始まり、04 で entra-local が増える" },
     "env.sh": { "since": "01-01", "about": "aws CLI の向き先を Floci に変える" },
-    ".gitignore": { "since": "01-01", "about": "手元にだけ置くファイル（ID・トークン・シークレット）" },
+    ".gitignore": { "since": "02-01", "about": "手元にだけ置くファイル（ID・トークン・シークレット）" },
 
     "scripts/setup.sh": { "since": "02-01", "about": "ここまでに作ったものを Floci に作り直す。レクチャーごとに 1 行増える" },
     "scripts/create-user-pool.sh": { "since": "02-01", "about": "User Pool と App Client を作り、ID を .cognito.env に残す" },

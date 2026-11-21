@@ -1,3 +1,2 @@
-node_modules/
 .cognito.env
 .tokens.json
